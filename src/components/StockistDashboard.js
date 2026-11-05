@@ -1,5 +1,5 @@
-// Ultra-Simple Stockist & Distributor Command Center
-// Easy for wholesale store owners and staff in Dadar & Dawa Bazar
+// Stockist / Distributor Command Center — v2
+// Logged-in stockist view with demand radar and factory reorder
 
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
@@ -11,10 +11,15 @@ import VoiceRequisitionBar from './VoiceRequisitionBar';
 export default function StockistDashboard() {
   const {
     selectedStockist,
+    loggedInStockist,
     orders,
     handleVoiceOrTextInput,
     addTelemetryLog
   } = useApp();
+
+  const activeStockist = loggedInStockist
+    ? { ...selectedStockist, name: loggedInStockist.name, hub: loggedInStockist.hub || selectedStockist.hub }
+    : selectedStockist;
 
   const triggerUpstreamOrder = (mfgName, itemName, qty) => {
     addTelemetryLog(selectedStockist.name, 'UPSTREAM_MFG_ORDER', `Placed bulk order for ${qty} of ${itemName} to ${mfgName}`);
@@ -23,22 +28,36 @@ export default function StockistDashboard() {
 
   return (
     <View style={styles.container}>
-      {/* Voice Bar */}
       <VoiceRequisitionBar />
-
-      {/* Living 2-Pipe Visualizer */}
       <TwoPipeVisualizer />
 
-      {/* Friendly Store Banner */}
+      {/* Logged-in Stockist Banner */}
+      {loggedInStockist && (
+        <View style={styles.authBanner}>
+          <View style={styles.authBannerIconWrap}>
+            <FontAwesome5 name="truck" size={14} color="#d97706" />
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.authBannerName}>{loggedInStockist.name}</Text>
+            <Text style={styles.authBannerSub}>{loggedInStockist.ownerName} | 📍 {loggedInStockist.hub}</Text>
+          </View>
+          <View style={styles.verifiedBadge}>
+            <Ionicons name="checkmark-circle" size={12} color="#d97706" />
+            <Text style={[styles.verifiedText, { color: '#92400e' }]}>Verified</Text>
+          </View>
+        </View>
+      )}
+
+      {/* Store Banner */}
       <View style={styles.storeBanner}>
         <View style={styles.bannerLeft}>
           <View style={styles.storeAvatar}>
             <FontAwesome5 name="store" size={20} color="#d97706" />
           </View>
           <View>
-            <Text style={styles.storeTitle}>{selectedStockist.name}</Text>
+            <Text style={styles.storeTitle}>{activeStockist.name}</Text>
             <Text style={styles.storeSub}>
-              📍 Hub: {selectedStockist.hub} • Brands: {selectedStockist.authorizedBrands.join(', ')}
+              📍 Hub: {activeStockist.hub} • Brands: {(activeStockist.authorizedBrands || []).join(', ')}
             </Text>
           </View>
         </View>
@@ -48,7 +67,7 @@ export default function StockistDashboard() {
           style={styles.scanDemandBtn}
         >
           <Ionicons name="radar" size={18} color="#ffffff" />
-          <Text style={styles.scanDemandBtnText}>Scan Hospital Demand (अस्पतालों की मांग देखें)</Text>
+          <Text style={styles.scanDemandBtnText}>Scan Hospital Demand (अस्पतालों की मांग)</Text>
         </TouchableOpacity>
       </View>
 
@@ -184,9 +203,13 @@ export default function StockistDashboard() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1
-  },
+  container: { flex: 1 },
+  authBanner: { flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: '#fffbeb', borderRadius: 14, borderWidth: 1.5, borderColor: '#fde68a', padding: 12, marginBottom: 14 },
+  authBannerIconWrap: { width: 32, height: 32, borderRadius: 16, backgroundColor: '#fef3c7', alignItems: 'center', justifyContent: 'center' },
+  authBannerName: { fontSize: 13, fontWeight: '800', color: '#0f172a' },
+  authBannerSub: { fontSize: 11, color: '#d97706', marginTop: 1 },
+  verifiedBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: '#fef3c7', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 4 },
+  verifiedText: { fontSize: 10, fontWeight: '800', color: '#92400e' },
   storeBanner: {
     flexDirection: 'row',
     justifyContent: 'space-between',

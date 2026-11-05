@@ -1,12 +1,13 @@
-// Ultra-Simple Hospital Procurement & Ward Dashboard
-// Easy for any age nurse, doctor, or storekeeper to use without technical knowledge
+// Hospital Procurement & Ward Dashboard — v2
+// Category-filtered inventory, ward usage, per-hospital orders
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { Ionicons, FontAwesome5 } from '@expo/vector-icons';
 import { useApp } from '../store/stateManager';
 import TwoPipeVisualizer from './TwoPipeVisualizer';
 import VoiceRequisitionBar from './VoiceRequisitionBar';
+import { CATALOG_CATEGORIES } from '../data/mumbaiData';
 
 export default function HospitalDashboard() {
   const {
@@ -15,13 +16,53 @@ export default function HospitalDashboard() {
     orders,
     wards,
     consumeWardItem,
-    startUberStockistPing
+    startUberStockistPing,
+    loggedInHospital,
+    getOrdersForCurrentView,
   } = useApp();
 
-  const [activeTab, setActiveTab] = useState('INVENTORY'); // 'INVENTORY' | 'WARDS' | 'ORDERS'
+  const [activeTab, setActiveTab] = useState('INVENTORY');
+  const [categoryFilter, setCategoryFilter] = useState('All');
+
+  // Only show this hospital's orders — data isolation
+  const myOrders = getOrdersForCurrentView();
+
+  // Filtered inventory by category
+  const filteredInventory = useMemo(() => {
+    if (categoryFilter === 'All') return inventory;
+    return inventory.filter(i => i.category === categoryFilter);
+  }, [inventory, categoryFilter]);
+
+  // Inventory summary stats
+  const inventoryStats = useMemo(() => ({
+    total: inventory.length,
+    low: inventory.filter(i => i.hospStockLilavati <= i.reorderLevel).length,
+    critical: inventory.filter(i => i.hospStockLilavati <= i.reorderLevel * 0.5).length,
+    ok: inventory.filter(i => i.hospStockLilavati > i.reorderLevel).length,
+  }), [inventory]);
 
   return (
     <View style={styles.container}>
+      {/* Account Banner — show logged-in hospital + first-order status */}
+      {loggedInHospital && (
+        <View style={styles.accountBanner}>
+          <FontAwesome5 name="hospital" size={14} color="#0284c7" />
+          <View style={{ flex: 1 }}>
+            <Text style={styles.accountBannerName}>{loggedInHospital.name}</Text>
+            <Text style={styles.accountBannerSub}>
+              {loggedInHospital.completedFirstOrder
+                ? '✅  Direct Ordering Unlocked — No paperwork needed'
+                : '📋  First Order: Distributor verification required (one-time)'}
+            </Text>
+          </View>
+          {!loggedInHospital.completedFirstOrder && (
+            <View style={styles.firstOrderPill}>
+              <Text style={styles.firstOrderPillText}>1st Order</Text>
+            </View>
+          )}
+        </View>
+      )}
+
       {/* 1. Giant Voice Mic & 1-Tap Orders Bar */}
       <VoiceRequisitionBar />
 
@@ -61,9 +102,29 @@ export default function HospitalDashboard() {
         </TouchableOpacity>
       </View>
 
-      {/* TAB 1: Hospital Stock with Big 1-Tap Reorder Buttons */}
+      {/* TAB 1: Hospital Stock with Category Filter + Stats */}
       {activeTab === 'INVENTORY' && (
         <View style={styles.whiteCard}>
+          {/* Summary Stats */}
+          <View style={styles.inventoryStatsRow}>
+            <View style={[styles.invStatCard, { borderLeftColor: '#0284c7' }]}>
+              <Text style={styles.invStatNum}>{inventoryStats.total}</Text>
+              <Text style={styles.invStatLabel}>Total SKUs</Text>
+            </View>
+            <View style={[styles.invStatCard, { borderLeftColor: '#16a34a' }]}>
+              <Text style={[styles.invStatNum, { color: '#16a34a' }]}>{inventoryStats.ok}</Text>
+              <Text style={styles.invStatLabel}>In Stock</Text>
+            </View>
+            <View style={[styles.invStatCard, { borderLeftColor: '#d97706' }]}>
+              <Text style={[styles.invStatNum, { color: '#d97706' }]}>{inventoryStats.low}</Text>
+              <Text style={styles.invStatLabel}>Low Stock</Text>
+            </View>
+            <View style={[styles.invStatCard, { borderLeftColor: '#dc2626' }]}>
+              <Text style={[styles.invStatNum, { color: '#dc2626' }]}>{inventoryStats.critical}</Text>
+              <Text style={styles.invStatLabel}>Critical</Text>
+            </View>
+          </View>
+
           <View style={styles.cardTopHeader}>
             <View>
               <Text style={styles.sectionTitle}>Hospital Pharmacy Stock ({selectedHospital.name})</Text>
@@ -71,40 +132,69 @@ export default function HospitalDashboard() {
             </View>
           </View>
 
+          {/* Category Filter Chips */}
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categoryScroll}>
+            {CATALOG_CATEGORIES.map(cat => (
+              <TouchableOpacity
+                key={cat}
+                onPress={() => setCategoryFilter(cat)}
+                style={[styles.catChip, categoryFilter === cat && styles.catChipActive]}
+              >
+                <Text style={[styles.catChipText, categoryFilter === cat && styles.catChipTextActive]}>
+                  {cat}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+
+          <Text style={styles.filterResultCount}>
+            {filteredInventory.length} items{categoryFilter !== 'All' ? ` in "${categoryFilter}"` : ''}
+          </Text>
+
           <View style={styles.catalogGrid}>
-            {inventory.map((sku) => {
+            {filteredInventory.map((sku) => {
               const isLow = sku.hospStockLilavati <= sku.reorderLevel;
+              const isCritical = sku.hospStockLilavati <= sku.reorderLevel * 0.5;
               return (
                 <View
                   key={sku.skuId}
-                  style={[styles.skuCard, isLow && styles.skuCardLow]}
+                  style={[styles.skuCard, isLow && styles.skuCardLow, isCritical && styles.skuCardCritical]}
                 >
                   <View style={styles.skuTopRow}>
                     <Text style={styles.skuCategory}>{sku.category}</Text>
-                    <View style={[styles.statusBadge, isLow ? styles.badgeLow : styles.badgeOk]}>
-                      <Text style={[styles.statusBadgeText, isLow ? styles.badgeTextLow : styles.badgeTextOk]}>
-                        {isLow ? '⚠️ LOW STOCK' : '✓ IN STOCK'}
+                    <View style={[styles.statusBadge, isCritical ? styles.badgeCritical : isLow ? styles.badgeLow : styles.badgeOk]}>
+                      <Text style={[styles.statusBadgeText, isCritical ? styles.badgeTextCritical : isLow ? styles.badgeTextLow : styles.badgeTextOk]}>
+                        {isCritical ? '🔴 CRITICAL' : isLow ? '⚠️ LOW STOCK' : '✓ IN STOCK'}
                       </Text>
                     </View>
                   </View>
 
                   <Text style={styles.skuTitle}>{sku.name}</Text>
-                  <Text style={styles.skuBrandName}>Brand: {sku.brand}</Text>
+                  <Text style={styles.skuBrandName}>Brand: {sku.brand} • {sku.unit}</Text>
 
-                  {/* Big Readable Stock Numbers */}
+                  {/* Stock Numbers + Reorder Level */}
                   <View style={styles.stockCountBox}>
-                    <Text style={styles.stockCountNumber}>{sku.hospStockLilavati}</Text>
-                    <Text style={styles.stockCountUnit}>{sku.unit}</Text>
+                    <View>
+                      <Text style={[styles.stockCountNumber, (isLow || isCritical) && { color: '#dc2626' }]}>
+                        {sku.hospStockLilavati}
+                      </Text>
+                      <Text style={styles.stockCountUnit}>{sku.unit}</Text>
+                    </View>
+                    <View style={styles.stockReorderBox}>
+                      <Text style={styles.stockReorderLabel}>Reorder at</Text>
+                      <Text style={styles.stockReorderValue}>{sku.reorderLevel}</Text>
+                      <Text style={styles.stockRateLabel}>Rate: ₹{sku.hospitalRate?.toLocaleString('en-IN')}</Text>
+                    </View>
                   </View>
 
                   {/* Reorder Button */}
                   <TouchableOpacity
-                    onPress={() => startUberStockistPing(sku, 50, isLow ? 'CRITICAL_EMERGENCY' : 'STANDARD')}
-                    style={[styles.reorderBtn, isLow && styles.reorderBtnUrgent]}
+                    onPress={() => startUberStockistPing(sku, 50, isCritical ? 'CRITICAL_EMERGENCY' : isLow ? 'CRITICAL_EMERGENCY' : 'STANDARD')}
+                    style={[styles.reorderBtn, (isLow || isCritical) && styles.reorderBtnUrgent]}
                   >
                     <Ionicons name="radio" size={16} color="#ffffff" />
                     <Text style={styles.reorderBtnText}>
-                      {isLow ? 'Urgent Reorder (मंगवाएं)' : 'Find Best Price (रेट चेक करें)'}
+                      {isCritical ? 'CRITICAL: Order Now!' : isLow ? 'Urgent Reorder (मंगवाएं)' : 'Find Best Price (रेट चेक करें)'}
                     </Text>
                   </TouchableOpacity>
                 </View>
@@ -172,42 +262,59 @@ export default function HospitalDashboard() {
         </View>
       )}
 
-      {/* TAB 3: Active Orders List */}
+      {/* TAB 3: Active Orders List — ONLY this hospital's orders */}
       {activeTab === 'ORDERS' && (
         <View style={styles.whiteCard}>
-          <Text style={styles.sectionTitle}>Active Orders & Live Delivery Tracker</Text>
-
-          <View style={styles.ordersList}>
-            {orders.map((ord) => (
-              <View key={ord.orderId} style={styles.orderCard}>
-                <View style={styles.orderHeader}>
-                  <View>
-                    <Text style={styles.orderIdBadge}>{ord.orderId}</Text>
-                    <Text style={styles.orderTimeText}>{ord.orderDate}</Text>
-                  </View>
-                  <View style={styles.deliveryStatusBadge}>
-                    <Text style={styles.deliveryStatusText}>{ord.deliveryStatus}</Text>
-                  </View>
-                </View>
-
-                <Text style={styles.orderItemListText}>
-                  {ord.items.map(i => `${i.qty} ${i.unit} ${i.name}`).join(' • ')}
-                </Text>
-
-                <View style={styles.orderBottomBar}>
-                  <Text style={styles.supplierText}>
-                    Supplier: <Text style={{ fontWeight: '800', color: '#0f172a' }}>{ord.stockistName}</Text>
-                  </Text>
-                  <Text style={styles.totalPayable}>₹{ord.totalAmount.toLocaleString('en-IN')}</Text>
-                </View>
-
-                <View style={styles.orderLocationRow}>
-                  <Ionicons name="location" size={16} color="#16a34a" />
-                  <Text style={styles.orderLocationText}>Truck Location: {ord.currentLocation}</Text>
-                </View>
-              </View>
-            ))}
+          <View style={styles.cardTopHeader}>
+            <View>
+              <Text style={styles.sectionTitle}>My Orders & Live Delivery Tracker</Text>
+              <Text style={styles.sectionSub}>
+                🔒  Private — only {loggedInHospital?.name || selectedHospital.name}'s orders are shown here
+              </Text>
+            </View>
           </View>
+
+          {myOrders.length === 0 ? (
+            <View style={styles.emptyOrdersBox}>
+              <Ionicons name="receipt-outline" size={36} color="#94a3b8" />
+              <Text style={styles.emptyOrdersTitle}>No orders yet</Text>
+              <Text style={styles.emptyOrdersDesc}>
+                Place your first order using the 🎤 mic or tap 'Urgent Reorder' on any item above.
+              </Text>
+            </View>
+          ) : (
+            <View style={styles.ordersList}>
+              {myOrders.map((ord) => (
+                <View key={ord.orderId} style={styles.orderCard}>
+                  <View style={styles.orderHeader}>
+                    <View>
+                      <Text style={styles.orderIdBadge}>{ord.orderId}</Text>
+                      <Text style={styles.orderTimeText}>{ord.orderDate}</Text>
+                    </View>
+                    <View style={styles.deliveryStatusBadge}>
+                      <Text style={styles.deliveryStatusText}>{ord.deliveryStatus}</Text>
+                    </View>
+                  </View>
+
+                  <Text style={styles.orderItemListText}>
+                    {ord.items.map(i => `${i.qty} ${i.unit} ${i.name}`).join(' • ')}
+                  </Text>
+
+                  <View style={styles.orderBottomBar}>
+                    <Text style={styles.supplierText}>
+                      Supplier: <Text style={{ fontWeight: '800', color: '#0f172a' }}>{ord.stockistName}</Text>
+                    </Text>
+                    <Text style={styles.totalPayable}>₹{ord.totalAmount.toLocaleString('en-IN')}</Text>
+                  </View>
+
+                  <View style={styles.orderLocationRow}>
+                    <Ionicons name="location" size={16} color="#16a34a" />
+                    <Text style={styles.orderLocationText}>Truck Location: {ord.currentLocation}</Text>
+                  </View>
+                </View>
+              ))}
+            </View>
+          )}
         </View>
       )}
     </View>
@@ -293,6 +400,31 @@ const styles = StyleSheet.create({
     backgroundColor: '#fef2f2',
     borderColor: '#fca5a5'
   },
+  skuCardCritical: {
+    backgroundColor: '#fef2f2',
+    borderColor: '#dc2626',
+    borderWidth: 2,
+  },
+  // Inventory stats row
+  inventoryStatsRow: { flexDirection: 'row', gap: 8, marginBottom: 14 },
+  invStatCard: { flex: 1, backgroundColor: '#f8fafc', borderRadius: 10, padding: 10, borderLeftWidth: 3, alignItems: 'center' },
+  invStatNum: { fontSize: 22, fontWeight: '900', color: '#0f172a' },
+  invStatLabel: { fontSize: 9, fontWeight: '700', color: '#64748b', textAlign: 'center', marginTop: 2 },
+  // Category filter chips
+  categoryScroll: { marginBottom: 10 },
+  catChip: { backgroundColor: '#f1f5f9', borderRadius: 20, paddingHorizontal: 12, paddingVertical: 5, marginRight: 8, borderWidth: 1.5, borderColor: '#e2e8f0' },
+  catChipActive: { backgroundColor: '#e0f2fe', borderColor: '#0284c7' },
+  catChipText: { fontSize: 11, fontWeight: '700', color: '#64748b' },
+  catChipTextActive: { color: '#0284c7' },
+  filterResultCount: { fontSize: 11, color: '#94a3b8', marginBottom: 8 },
+  // Critical badge
+  badgeCritical: { backgroundColor: '#fef2f2' },
+  badgeTextCritical: { color: '#dc2626' },
+  // Reorder level + rate sub-display on stock card
+  stockReorderBox: { alignItems: 'flex-end' },
+  stockReorderLabel: { fontSize: 9, color: '#94a3b8', fontWeight: '700' },
+  stockReorderValue: { fontSize: 16, fontWeight: '900', color: '#d97706' },
+  stockRateLabel: { fontSize: 10, color: '#64748b', marginTop: 2 },
   skuTopRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -341,6 +473,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#ffffff',
     borderRadius: 10,
     padding: 10,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 10,
     borderWidth: 1,
@@ -523,5 +657,55 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: '#16a34a',
     fontWeight: '700'
+  },
+  // Account Banner (top of hospital dashboard)
+  accountBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    backgroundColor: '#f0f9ff',
+    borderRadius: 14,
+    borderWidth: 1.5,
+    borderColor: '#bae6fd',
+    padding: 12,
+    marginBottom: 14
+  },
+  accountBannerName: {
+    fontSize: 13,
+    fontWeight: '800',
+    color: '#0f172a'
+  },
+  accountBannerSub: {
+    fontSize: 11,
+    color: '#0369a1',
+    marginTop: 2
+  },
+  firstOrderPill: {
+    backgroundColor: '#f59e0b',
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 4
+  },
+  firstOrderPillText: {
+    color: '#000000',
+    fontSize: 10,
+    fontWeight: '800'
+  },
+  // Empty state for orders
+  emptyOrdersBox: {
+    alignItems: 'center',
+    paddingVertical: 30,
+    gap: 10
+  },
+  emptyOrdersTitle: {
+    fontSize: 16,
+    fontWeight: '800',
+    color: '#475569'
+  },
+  emptyOrdersDesc: {
+    fontSize: 13,
+    color: '#94a3b8',
+    textAlign: 'center',
+    lineHeight: 20
   }
 });

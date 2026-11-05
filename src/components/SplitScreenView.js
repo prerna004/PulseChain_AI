@@ -1,0 +1,239 @@
+// SplitScreenView — Desktop + Mobile Companion in one view
+// P6: Desktop + Mobile split screen sync
+// Left: full command center dashboard (hospital / stockist / mfg)
+// Right: animated phone frame with live-sync mobile companion
+
+import React, { useState, useEffect } from 'react';
+import {
+  View, Text, StyleSheet, TouchableOpacity, ScrollView,
+  useWindowDimensions, Animated
+} from 'react-native';
+import { Ionicons, FontAwesome5 } from '@expo/vector-icons';
+import { useApp } from '../store/stateManager';
+import HospitalDashboard from './HospitalDashboard';
+import StockistDashboard from './StockistDashboard';
+import ManufacturerDashboard from './ManufacturerDashboard';
+import MobileDeviceFrame from './MobileDeviceFrame';
+
+export default function SplitScreenView() {
+  const { width } = useWindowDimensions();
+  const {
+    currentRole,
+    deviceMode, setDeviceMode,
+    addTelemetryLog,
+    orders
+  } = useApp();
+
+  const [lastSyncTime, setLastSyncTime] = useState(new Date());
+  const [syncPulse] = useState(new Animated.Value(1));
+
+  // Pulse animation when sync event occurs
+  const triggerSyncPulse = () => {
+    Animated.sequence([
+      Animated.timing(syncPulse, { toValue: 1.4, duration: 180, useNativeDriver: true }),
+      Animated.spring(syncPulse, { toValue: 1, friction: 4, useNativeDriver: true }),
+    ]).start();
+    setLastSyncTime(new Date());
+  };
+
+  // Listen to BroadcastChannel events (shows sync banner update)
+  useEffect(() => {
+    if (typeof window === 'undefined' || !('BroadcastChannel' in window)) return;
+    let ch;
+    try {
+      ch = new BroadcastChannel('mumbai_medpulse_sync');
+      ch.onmessage = () => triggerSyncPulse();
+    } catch (e) {}
+    return () => { if (ch) ch.close(); };
+  }, []);
+
+  // When orders change, trigger a sync pulse
+  useEffect(() => {
+    triggerSyncPulse();
+  }, [orders.length]);
+
+  const isSplit = width >= 960; // On narrow screens, just show desktop, hide phone frame
+  const roleName = currentRole === 'HOSPITAL' ? 'Hospital' : currentRole === 'STOCKIST' ? 'Stockist' : 'Manufacturer';
+  const roleColor = currentRole === 'HOSPITAL' ? '#0284c7' : currentRole === 'STOCKIST' ? '#d97706' : '#16a34a';
+
+  return (
+    <View style={styles.container}>
+      {/* Sync Status Header */}
+      <View style={[styles.syncHeader, { borderBottomColor: roleColor + '40' }]}>
+        <View style={styles.syncLeft}>
+          <Animated.View style={[styles.syncDot, { backgroundColor: roleColor, transform: [{ scale: syncPulse }] }]} />
+          <Text style={styles.syncStatusText}>
+            LIVE SYNC — {roleName} View
+          </Text>
+          <Text style={styles.syncTimeText}>Last sync: {lastSyncTime.toLocaleTimeString('en-IN', { hour12: false })}</Text>
+        </View>
+
+        <View style={styles.syncRight}>
+          {/* View Mode Switcher */}
+          {[
+            { id: 'DESKTOP_ONLY', icon: 'desktop-outline', label: 'Desktop Only' },
+            { id: 'SPLIT_SYNC', icon: 'tablet-landscape-outline', label: 'Desktop + Mobile' },
+            { id: 'MOBILE_ONLY', icon: 'phone-portrait-outline', label: 'Mobile View' },
+          ].map(mode => (
+            <TouchableOpacity
+              key={mode.id}
+              onPress={() => {
+                setDeviceMode(mode.id);
+                addTelemetryLog('UI', 'VIEW_MODE_CHANGE', `Switched to ${mode.id}`);
+              }}
+              style={[styles.modeBtn, deviceMode === mode.id && { ...styles.modeBtnActive, borderColor: roleColor, backgroundColor: roleColor + '15' }]}
+            >
+              <Ionicons name={mode.icon} size={14} color={deviceMode === mode.id ? roleColor : '#64748b'} />
+              <Text style={[styles.modeBtnText, deviceMode === mode.id && { color: roleColor }]}>{mode.label}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      </View>
+
+      {/* Content Area */}
+      <View style={styles.splitContent}>
+
+        {/* Desktop / Dashboard Side */}
+        {deviceMode !== 'MOBILE_ONLY' && (
+          <ScrollView
+            style={[styles.desktopPane, deviceMode === 'DESKTOP_ONLY' && styles.desktopPaneFull]}
+            showsVerticalScrollIndicator={false}
+          >
+            {currentRole === 'HOSPITAL' && <HospitalDashboard />}
+            {currentRole === 'STOCKIST' && <StockistDashboard />}
+            {currentRole === 'MANUFACTURER' && <ManufacturerDashboard />}
+          </ScrollView>
+        )}
+
+        {/* Divider */}
+        {deviceMode === 'SPLIT_SYNC' && isSplit && (
+          <View style={styles.splitDivider}>
+            <View style={[styles.dividerLine, { backgroundColor: roleColor + '30' }]} />
+            <View style={[styles.dividerPill, { borderColor: roleColor + '40' }]}>
+              <Animated.View style={[styles.dividerDot, { backgroundColor: roleColor, transform: [{ scale: syncPulse }] }]} />
+              <Text style={[styles.dividerText, { color: roleColor }]}>SYNC</Text>
+            </View>
+            <View style={[styles.dividerLine, { backgroundColor: roleColor + '30' }]} />
+          </View>
+        )}
+
+        {/* Mobile Companion Frame Side */}
+        {deviceMode !== 'DESKTOP_ONLY' && isSplit && (
+          <View style={styles.mobilePane}>
+            <View style={styles.mobilePaneHeader}>
+              <Ionicons name="phone-portrait" size={16} color={roleColor} />
+              <Text style={[styles.mobilePanelTitle, { color: roleColor }]}>Mobile Companion</Text>
+              <Text style={styles.mobilePaneSubtitle}>iOS / Android App</Text>
+            </View>
+
+            {/* Sync Events Panel (above phone) */}
+            <View style={styles.syncEventsPanel}>
+              <Text style={styles.syncEventsPanelTitle}>Real-time Sync Events:</Text>
+              <View style={styles.syncEventsList}>
+                {[
+                  { icon: 'radio', label: 'Voice order → Mobile mic synced', color: '#0284c7' },
+                  { icon: 'cube', label: 'Stock update from ward tap', color: '#d97706' },
+                  { icon: 'logo-whatsapp', label: 'WhatsApp import → Desktop table', color: '#16a34a' },
+                ].map((e, i) => (
+                  <View key={i} style={styles.syncEvent}>
+                    <Ionicons name={e.icon} size={12} color={e.color} />
+                    <Text style={[styles.syncEventText, { color: e.color }]}>{e.label}</Text>
+                  </View>
+                ))}
+              </View>
+            </View>
+
+            {/* Phone frame */}
+            <MobileDeviceFrame />
+          </View>
+        )}
+
+        {/* Mobile Only Mode */}
+        {deviceMode === 'MOBILE_ONLY' && (
+          <View style={styles.mobileOnlyCenter}>
+            <MobileDeviceFrame />
+          </View>
+        )}
+      </View>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: { flex: 1 },
+  syncHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: '#ffffff',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#e2e8f0',
+    flexWrap: 'wrap',
+    gap: 10,
+  },
+  syncLeft: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  syncDot: { width: 10, height: 10, borderRadius: 5 },
+  syncStatusText: { fontSize: 12, fontWeight: '800', color: '#0f172a' },
+  syncTimeText: { fontSize: 10, color: '#94a3b8' },
+  syncRight: { flexDirection: 'row', gap: 8, flexWrap: 'wrap' },
+  modeBtn: {
+    flexDirection: 'row', alignItems: 'center', gap: 6,
+    backgroundColor: '#f1f5f9', borderRadius: 10, paddingHorizontal: 12,
+    paddingVertical: 6, borderWidth: 1.5, borderColor: 'transparent'
+  },
+  modeBtnActive: {},
+  modeBtnText: { fontSize: 11, fontWeight: '700', color: '#64748b' },
+  splitContent: { flex: 1, flexDirection: 'row' },
+  desktopPane: { flex: 1, padding: 20 },
+  desktopPaneFull: { flex: 1 },
+  splitDivider: {
+    width: 30,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 20,
+    gap: 0,
+    flexDirection: 'column',
+  },
+  dividerLine: { flex: 1, width: 2, borderRadius: 1 },
+  dividerPill: {
+    borderRadius: 16, borderWidth: 1.5, padding: 8,
+    alignItems: 'center', gap: 4, backgroundColor: '#ffffff',
+    marginVertical: 10,
+  },
+  dividerDot: { width: 8, height: 8, borderRadius: 4 },
+  dividerText: { fontSize: 9, fontWeight: '900', letterSpacing: 1 },
+  mobilePane: {
+    width: 390,
+    borderLeftWidth: 1,
+    borderLeftColor: '#e2e8f0',
+    backgroundColor: '#f8fafc',
+    alignItems: 'center',
+    paddingVertical: 14,
+    paddingHorizontal: 10,
+  },
+  mobilePaneHeader: {
+    flexDirection: 'row', alignItems: 'center', gap: 8,
+    marginBottom: 10,
+  },
+  mobilePanelTitle: { fontSize: 13, fontWeight: '800' },
+  mobilePaneSubtitle: { fontSize: 10, color: '#64748b' },
+  syncEventsPanel: {
+    backgroundColor: '#ffffff',
+    borderRadius: 12,
+    padding: 10,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    marginBottom: 12,
+    width: '100%',
+  },
+  syncEventsPanelTitle: { fontSize: 10, fontWeight: '800', color: '#64748b', marginBottom: 6 },
+  syncEventsList: { gap: 5 },
+  syncEvent: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  syncEventText: { fontSize: 10, fontWeight: '600' },
+  mobileOnlyCenter: {
+    flex: 1, alignItems: 'center', justifyContent: 'center',
+    backgroundColor: '#f1f5f9',
+  },
+});

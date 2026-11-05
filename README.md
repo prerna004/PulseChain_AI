@@ -1,118 +1,175 @@
-# PulseChain AI (MumbaiMed OS) — Hospital Supply Chain & Procurement MVP
+# PulseChain AI — Mumbai Hospital Supply Chain (Native AI App)
+> **WildCatter Ventures Assignment** | Built by Prerna Chotwani
 
-> **Phase I Assignment Submission for WildCatter Ventures (Ashu Dutt)**  
-> **Candidate**: Prerna Chotwani (MCA, VESIT)  
-> **Target Geographic Universe**: Mumbai Metropolitan Region (MMR) Healthcare & MedTech Ecosystem  
-> **Core Mandate**: 100% Native AI, Zero-Click Voice Requisition (Zero Form Fields), Real-Time Synced Desktop & Mobile App, 3-Tier Multi-Role Architecture, Dynamic 2-Pipe Flow (Goods & Payments), Uber-Style Reverse Stockist Ping.
+[![Expo](https://img.shields.io/badge/Expo-SDK%2052-blue)](https://expo.dev) [![React Native](https://img.shields.io/badge/React%20Native-0.76-green)](https://reactnative.dev) [![AI Powered](https://img.shields.io/badge/AI-Agentic%20Voice--to--Order-purple)](./src/ai/agentEngine.js)
 
 ---
 
-## 🌟 Executive Overview & Assignment Checklist
+## 📋 Assignment Requirements → Implementation Map
 
-| Assignment Requirement | Implementation in PulseChain AI | Status |
-| :--- | :--- | :---: |
-| **3 Levels of Supply Chain** | Full dedicated command portals for **(1) Hospitals**, **(2) Stockists/Distributors**, and **(3) Manufacturers**. | ✅ Completed |
-| **All Equipment & Disposables Catalog** | 50+ accurate MedTech SKUs (Sterile Gloves 7.5/7.0, Dispovan Syringes, Polymed Cannulas, BD Vacutainers, 3M N95, Critical Care ICU Drugs) with Mumbai wholesale pricing. | ✅ Completed |
-| **100% Voice / Text Requisition** | Zero form inputs. Web Speech API + Indian English/Hinglish NLP extracts SKU, quantity, packaging, urgency, and destination ward directly from speech. | ✅ Completed |
-| **NEVER ASK FOR FILLING FIELDS** | Strictly followed. All orders, quotes, and replenishments self-generate from natural voice or conversational text. | ✅ Completed |
-| **Uber-Style Stockist Reverse Ping** | Real-time radial ping across Dadar, Princess Street / Dawa Bazar, Andheri, and Kalbadevi stockists with distance, ETA via Western Express Highway, and dynamic quotes. | ✅ Completed |
-| **Limited Universe to Mumbai** | High-fidelity Mumbai universe: Lilavati (Bandra), Hinduja (Mahim), Kokilaben (Andheri), KEM (Parel); Entero Healthcare, Babuline Pharma; HMD Dispovan, Polymed, 3M. | ✅ Completed |
-| **Living 2-Pipe Dynamic Flow** | Animated physics canvas visualizer: **Upper Pipe** (Physical Goods moving West-to-East $\to$) and **Lower Pipe** (Capital & Escrow Payments moving East-to-West $\leftarrow$). | ✅ Completed |
-| **Direct Link to Hospital Inventory** | Ward Digital Twin (OT 1, OT 2, ICU, Emergency). Real-time surgical consumption triggers automated procurement before safety threshold breach. | ✅ Completed |
-| **Conversational Fallback Onboarding** | Speaks back: *"We don't seem to have you on our database. Please share your name, title, hospital and mobile no or WhatsApp business account for us to do your search better"* and registers unknown entities into the data lake. | ✅ Completed |
-| **Synced Desktop & Mobile Companion** | Real-time cross-device sync (<20ms via reactive event bus). Side-by-side Desktop Command Center + iPhone Companion Frame or standalone responsive view. | ✅ Completed |
-| **Permissions Ingestion Simulation** | Dedicated interface connecting WhatsApp Business API streams and Excel/ERP (SAP/Tally) inventory sheets. | ✅ Completed |
-| **Central Data Lake** | Telemetry lake capturing queries, price indices across Mumbai corridors, campus recruiter talent logs, and transaction audit trails. | ✅ Completed |
+| Requirement | Implemented Feature |
+|---|---|
+| Hospital / Stockist / Manufacturer roles | ✅ Role selection + Auth for all 3 roles |
+| Voice/Text ordering (no manual fields) | ✅ `agentEngine.js` — full entity extraction |
+| NEVER ask for filling fields | ✅ All fields auto-filled from voice/text |
+| Uber-style ping for best prices | ✅ `UberPingModal.js` — live multi-stockist bidding |
+| 2-pipe goods + payment flow | ✅ `TwoPipeVisualizer.js` animated dual-flow |
+| Direct hospital inventory link | ✅ Ward consumption → auto-reorder trigger |
+| Central Data Lake | ✅ Full analytics: events, charts, stock status |
+| WhatsApp Business import | ✅ `WhatsAppImportModal.js` — paste & extract |
+| Unknown entity onboarding | ✅ `UnknownEntityModal.js` voice registration |
+| Mumbai hospital/stockist/mfg database | ✅ 8 hospitals, 4 stockists, 7 manufacturers |
+| First-order KYC paperwork | ✅ `FirstOrderPaperworkModal.js` (skipped on 2nd+) |
+| Desktop + Mobile sync | ✅ BroadcastChannel cross-tab sync |
+| Per-hospital data isolation | ✅ Orders scoped per logged-in hospital |
 
 ---
 
-## 🚀 Quick Start Guide
-
-### Prerequisites
-- Node.js (v18+)
-- npm / npx
-
-### Installation & Launch
+## 🚀 Getting Started
 
 ```bash
-# 1. Clone repository
-git clone https://github.com/prerna-chotwani/pulsechain-mumbai-scm.git
-cd pulsechain-mumbai-scm
-
-# 2. Install dependencies (Expo SDK 58, React Native, React Native Web)
+# Install dependencies
 npm install
 
-# 3. Launch Development Server
-npm run web
-```
+# Start development server (Expo)
+npx expo start
 
-Open `http://localhost:8081` in your browser.
+# Run on web (Desktop view)
+npx expo start --web
 
----
+# Run on Android
+npx expo start --android
 
-## 🏗️ Architectural Highlights
-
-### 1. Zero-Click Voice & Conversational Engine (`src/ai/agentEngine.js`)
-- Powered by the Web Speech API (`SpeechRecognition` & `SpeechSynthesis`).
-- Supports Indian English and Hinglish phrases:
-  - *"Order 200 boxes of 7.5 sterile surgical gloves and 50 IV cannulas for Lilavati ICU urgently"*
-  - *"Get me the best prices for gloves across Mumbai stockists"*
-  - *"Show me the inventory that we need to order tomorrow"*
-- Emits voice audio feedback confirming order parameters and dispatch status.
-
-### 2. Living 2-Pipe Dynamic Control Engine (`src/components/TwoPipeVisualizer.js`)
-- **Goods Pipe (Emerald & Cyan)**: Visualizes physical movement:
-  $$\text{Faridabad / Plant} \longrightarrow \text{Bhiwandi CFA Hub} \longrightarrow \text{Dadar Stockist} \longrightarrow \text{Hospital Central Stores} \longrightarrow \text{OT/ICU}$$
-- **Capital & Payment Pipe (Amber & Gold)**: Visualizes financial flows:
-  $$\text{Hospital Accounts} \longrightarrow \text{Automated Escrow} \longrightarrow \text{Stockist Margin} \longrightarrow \text{Manufacturer Settlement}$$
-- Live telemetry cards track order date, delivery SLA, cold-chain temperature ($2-8^\circ\text{C}$ / Ambient), credit aging (30/45/60 days), and early cash settlement discounts.
-
-### 3. Uber-Style "Reverse Ping" Dispatch (`src/components/UberPingModal.js`)
-- Simulates an instant multi-stockist auction across Mumbai:
-  - **Entero Healthcare** (Central Mumbai / Dadar West)
-  - **Babuline Pharma** (Dadar East)
-  - **Princess Street / Dawa Bazar Syndicate** (Kalbadevi / Marine Lines)
-  - **Sagar Medical & Surgicals** (Andheri West)
-- Dynamic route calculations factor in travel times via Western Express Highway, Eastern Freeway, and Bandra-Worli Sea Link.
-
-### 4. Ward Digital Twin (`src/components/HospitalDashboard.js`)
-- Connects directly to operation theatres (OT-1 Cardiac, OT-2 Ortho) and ICU wards.
-- Interactive consumption taps simulate surgical supply usage. As inventory drops below the Reorder Point (ROP), the system automatically launches an emergency requisition.
-
-### 5. Multi-Device Real-Time Sync (`src/components/MobileDeviceFrame.js`)
-- Supports **Split Synced View** where the high-density Desktop Command Center sits alongside an interactive iPhone 16 Pro mockup.
-- Any voice command or ward depletion on the phone immediately updates the desktop control room in under 20ms using an internal `BroadcastChannel` reactive event bus.
-
----
-
-## 📁 Repository Structure
-
-```
-├── App.js                             # Root application with Persona selector & device sync
-├── app.json                           # Expo & Web configuration
-├── package.json                       # Dependencies (Expo SDK 58, React Native, Vector Icons)
-├── IMPLEMENTATION_PLAN.md             # Detailed domain analysis & research roadmap
-├── ARCHITECTURE.md                    # Supply chain mechanics & Agentic AI architecture
-└── src/
-    ├── ai/
-    │   └── agentEngine.js             # Voice recognition, NLP extraction & audio synthesis
-    ├── data/
-    │   └── mumbaiData.js              # Comprehensive Mumbai hospitals, stockists, catalog
-    ├── store/
-    │   └── stateManager.js            # Global reactive store & cross-device event bus
-    └── components/
-        ├── TwoPipeVisualizer.js       # Animated 2-pipe physics canvas (Goods & Payments)
-        ├── VoiceRequisitionBar.js     # Zero-form voice mic & preset conversational bar
-        ├── UberPingModal.js           # Real-time multi-stockist auction radar
-        ├── HospitalDashboard.js       # Ward Digital Twin, inventory ROP, active orders
-        ├── StockistDashboard.js       # "Which hospitals need our products" demand radar
-        ├── ManufacturerDashboard.js   # Stockist inventory oversight & factory dispatch
-        ├── MobileDeviceFrame.js       # Synced iPhone companion mockup & mobile view
-        ├── PermissionsModal.js        # WhatsApp Business & Excel sheet connectors
-        └── CentralDataLakeModal.js    # Telemetry stream & Mumbai price trends
+# Run on iOS
+npx expo start --ios
 ```
 
 ---
 
-## 🔒 Intellectual Property & Submission Notice
-*This assignment is prepared by Prerna Chotwani for WildCatter Ventures (Ashu Dutt) Phase I Internship Evaluation. All rights reserved.*
+## 🏗️ Architecture
+
+```
+PulseChain-main/
+├── App.js                          # Root: role selection + all auth gates
+├── src/
+│   ├── ai/
+│   │   └── agentEngine.js          # Voice NLP — 28 SKU patterns + Hindi synonyms
+│   ├── data/
+│   │   └── mumbaiData.js           # Full Mumbai healthcare dataset
+│   ├── store/
+│   │   └── stateManager.js         # React Context — Auth + Supply Chain state
+│   └── components/
+│       ├── HospitalAuthScreen.js   # Hospital login / signup
+│       ├── StockistAuthScreen.js   # Stockist login / signup
+│       ├── ManufacturerAuthScreen.js # Manufacturer login / signup
+│       ├── HospitalDashboard.js    # Hospital control panel
+│       ├── StockistDashboard.js    # Stockist demand radar + factory orders
+│       ├── ManufacturerDashboard.js # Mfg stockist stock oversight
+│       ├── TwoPipeVisualizer.js    # Animated 2-pipe goods + payment flow
+│       ├── VoiceRequisitionBar.js  # Voice mic + text input bar
+│       ├── UberPingModal.js        # Uber-style stockist bidding
+│       ├── WhatsAppImportModal.js  # WA conversation → auto order
+│       ├── CentralDataLakeModal.js # Analytics: feed, charts, stock table
+│       ├── PermissionsModal.js     # WhatsApp + Excel permissions
+│       ├── UnknownEntityModal.js   # Conversational onboarding
+│       ├── FirstOrderPaperworkModal.js # First-order KYC (auto-skipped after)
+│       └── MobileDeviceFrame.js    # Mobile preview frame
+```
+
+---
+
+## 🎤 Voice Commands Supported
+
+```text
+"Order 500 Dispovan 5ml syringes urgently for OT ward"
+→ Auto-fills: Item=Dispovan 5ml | Qty=500 | Ward=OT | Urgency=CRITICAL
+
+"Get me best prices for Polymed IV cannula 20G"
+→ Triggers Uber-style ping across all Mumbai stockists
+
+"Show me inventory to order tomorrow"
+→ Lists all items below safety threshold with supplier quotes
+
+"Show me which hospitals need our products"
+→ (Stockist) — Mumbai hospital demand radar with live values
+
+"Kal subah tak 100 boxes N95 masks chahiye ICU ke liye"
+→ Hindi/Hinglish supported• All fields extracted
+```
+
+---
+
+## 📦 Medical Catalog — 28 SKUs across 10 Categories
+
+| Category | SKUs |
+|---|---|
+| Surgical Disposables | Latex Gloves 7.5 / 7.0, Nitrile Exam Gloves, OT Drape Set, Surgical Gowns |
+| Infusion & Vascular | IV Cannula 20G/22G, IV Infusion Set |
+| Injections & Syringes | Dispovan 2ml / 5ml / 10ml |
+| Diagnostics & Pathology | BD Vacutainer EDTA, BD Vacutainer Plain |
+| Infection Prevention | 3M N95 Respirators, 3-Ply Surgical Masks, Sterillium Hand Rub |
+| Critical Care Drugs | Noradrenaline 2mg, Propofol 200mg |
+| Wound Care & Dressings | Tegaderm Film, Micropore Tape |
+| Wound Care & Sutures | Vicryl Absorbable, Ethilon Nylon |
+| IV Fluids | Normal Saline, Ringer's Lactate, Dextrose 5% |
+| Medical Equipment | Nebulizer, BP Monitor, Pulse Oximeter, Foley Catheter |
+
+---
+
+## 🔐 Authentication
+
+| Role | Demo Credentials |
+|---|---|
+| Hospital | "Lilavati Hospital & Research Centre" / PIN: 1234 |
+| Stockist | "Entero Healthcare Solutions (Central Mumbai)" / PIN: 1234 |
+| Manufacturer | "Hindustan Syringes & Medical Devices (HMD)" / PIN: 1234 |
+
+All 3 roles support: **Sign Up** (new entity registration) + **Login** (existing entity).
+
+---
+
+## 🏥 Mumbai Database (Pre-seeded)
+
+- **8 Hospitals**: Lilavati, Hinduja, Kokilaben, KEM, Nanavati, Breach Candy, Reliance Foundation, Jaslok
+- **4 Stockists**: Entero Healthcare, Babuline Pharma, Princess Street Syndicate, Sagar Medical
+- **7 Manufacturers**: HMD Dispovan, Poly Medicure, 3M Healthcare, BD India, Cipla, Healthium, Romsons
+
+---
+
+## 📊 Central Data Lake Features
+
+- **Live Event Feed** — searchable + filterable by event type
+- **Analytics Charts** — top event types, top data sources (bar charts)
+- **Category Distribution** — how catalog items are distributed across categories
+- **Inventory Status Table** — all 28 SKUs with CRITICAL / LOW / OK status
+- **CSV Export** — one-click export of all events
+
+---
+
+## 🤖 AI Agent Engine
+
+The `agentEngine.js` is a zero-dependency NLP engine that:
+
+1. **Parses** free-form voice text (English + Hindi + Hinglish)
+2. **Extracts** structured fields: `item`, `quantity`, `urgency`, `ward`, `hospital`, `deliveryPreference`
+3. **Matches** 28 SKUs using keyword synonyms (brand names, generic names, Hindi words)
+4. **Speaks** confirmation back via Web Speech API (`speechSynthesis`)
+5. **Records** every intent to the Central Data Lake
+
+---
+
+## ⚡ Key Features
+
+- **Zero Manual Form Filling** — Voice or text fills everything automatically
+- **First-Order KYC Gate** — New hospitals do paperwork once; skipped forever after
+- **Per-Hospital Data Isolation** — Hospital A cannot see Hospital B's orders
+- **Auto-Replenishment** — Ward depletion below threshold → auto ping stockist
+- **WhatsApp Import** — Paste any WA conversation → AI extracts order
+- **Cross-Device Sync** — BroadcastChannel keeps desktop + mobile in sync
+
+---
+
+## 📄 License
+
+© 2026 WildCatter Ventures — Internal Assignment. All rights reserved.
+Not for public distribution.

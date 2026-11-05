@@ -1,5 +1,5 @@
-// Mumbai Healthcare & MedTech Supply Chain Master Dataset
-// Realistic ecosystem across Hospitals, Stockists, and Manufacturers
+// Mumbai Healthcare & MedTech Supply Chain Master Dataset — EXPANDED v2
+// Full catalog: Disposables, Equipment, Pharma, Surgical + expanded hospital/stockist/mfg data
 
 export const MUMBAI_HOSPITALS = [
   {
@@ -85,6 +85,34 @@ export const MUMBAI_HOSPITALS = [
     whatsapp: '+91 98205 66782',
     creditDays: 30,
     monthlyBudget: '₹1.40 Cr'
+  },
+  {
+    id: 'hosp-7',
+    name: 'Sir H.N. Reliance Foundation Hospital',
+    type: 'Multi-Specialty',
+    beds: 345,
+    area: 'Girgaon, South Mumbai',
+    lat: 18.9651,
+    lng: 72.8186,
+    contactPerson: 'Mr. Vishal Nair (SCM Director)',
+    phone: '+91 98200 82211',
+    whatsapp: '+91 98200 82211',
+    creditDays: 45,
+    monthlyBudget: '₹2.30 Cr'
+  },
+  {
+    id: 'hosp-8',
+    name: 'Jaslok Hospital & Research Centre',
+    type: 'Tertiary Super Specialty',
+    beds: 350,
+    area: 'Pedder Road, South Mumbai',
+    lat: 18.9708,
+    lng: 72.8074,
+    contactPerson: 'Dr. Fiona Pereira (Purchase Manager)',
+    phone: '+91 98201 99344',
+    whatsapp: '+91 98201 99344',
+    creditDays: 30,
+    monthlyBudget: '₹1.70 Cr'
   }
 ];
 
@@ -94,52 +122,75 @@ export const MUMBAI_STOCKISTS = [
     name: 'Entero Healthcare Solutions (Central Mumbai)',
     hub: 'Dadar West / Lower Parel',
     rating: 4.9,
-    distanceKm: { 'hosp-1': 4.2, 'hosp-2': 1.8, 'hosp-3': 11.5, 'hosp-4': 2.1, 'hosp-5': 9.8, 'hosp-6': 6.5 },
+    distanceKm: { 'hosp-1': 4.2, 'hosp-2': 1.8, 'hosp-3': 11.5, 'hosp-4': 2.1, 'hosp-5': 9.8, 'hosp-6': 6.5, 'hosp-7': 7.2, 'hosp-8': 6.8 },
     deliverySLA: '45 mins (Express)',
     contactPerson: 'Mr. Rajesh Shah (Owner)',
     whatsapp: '+91 98200 11223',
-    authorizedBrands: ['Poly Medicure', 'HMD Dispovan', '3M Healthcare', 'BD India'],
+    authorizedBrands: ['Poly Medicure', 'HMD Dispovan', '3M Healthcare', 'BD India', 'Cipla Med'],
     creditOffered: '30-45 Days',
-    warehouseStockLevel: 'High (₹4.2 Cr)'
+    warehouseStockLevel: 'High (₹4.2 Cr)',
+    stockLevels: {
+      'SKU-GLV-75': 1200, 'SKU-GLV-70': 900, 'SKU-CAN-20G': 450, 'SKU-CAN-22G': 620,
+      'SKU-SYR-5ML': 340, 'SKU-SYR-2ML': 480, 'SKU-VAC-EDTA': 800, 'SKU-MSK-N95': 650,
+      'SKU-NOR-2MG': 120, 'SKU-DRS-TGD': 320, 'SKU-DRS-MCP': 900, 'SKU-SUT-VCR': 200,
+      'SKU-FLD-SAL': 600, 'SKU-FLD-RL': 550, 'SKU-SPL-NEB': 40, 'SKU-SPL-BPM': 25
+    }
   },
   {
     id: 'stock-2',
     name: 'Babuline Pharma & Surgical Distribution',
     hub: 'Dadar East (Near Railway Station)',
     rating: 4.8,
-    distanceKm: { 'hosp-1': 5.1, 'hosp-2': 2.6, 'hosp-3': 12.8, 'hosp-4': 1.4, 'hosp-5': 10.4, 'hosp-6': 7.1 },
+    distanceKm: { 'hosp-1': 5.1, 'hosp-2': 2.6, 'hosp-3': 12.8, 'hosp-4': 1.4, 'hosp-5': 10.4, 'hosp-6': 7.1, 'hosp-7': 7.8, 'hosp-8': 7.4 },
     deliverySLA: '60 mins',
     contactPerson: 'Mr. Nilesh Babuline (Director)',
     whatsapp: '+91 98209 88776',
-    authorizedBrands: ['HMD Dispovan', 'Romsons', 'Cipla Critical Care'],
+    authorizedBrands: ['HMD Dispovan', 'Romsons', 'Cipla Critical Care', 'Ethicon J&J'],
     creditOffered: '15-30 Days',
-    warehouseStockLevel: 'High (₹3.1 Cr)'
+    warehouseStockLevel: 'High (₹3.1 Cr)',
+    stockLevels: {
+      'SKU-GLV-75': 800, 'SKU-GLV-70': 700, 'SKU-CAN-20G': 300, 'SKU-CAN-22G': 420,
+      'SKU-SYR-5ML': 280, 'SKU-SYR-2ML': 360, 'SKU-VAC-EDTA': 500, 'SKU-MSK-N95': 400,
+      'SKU-NOR-2MG': 90, 'SKU-SUT-VCR': 150, 'SKU-FLD-SAL': 480, 'SKU-FLD-RL': 420,
+      'SKU-SPL-NEB': 20, 'SKU-SPL-BPM': 18
+    }
   },
   {
     id: 'stock-3',
     name: 'Princess Street / Dawa Bazar Wholesalers Syndicate',
     hub: 'Kalbadevi / Marine Lines (Old Mumbai Hub)',
     rating: 4.7,
-    distanceKm: { 'hosp-1': 14.2, 'hosp-2': 11.8, 'hosp-3': 22.1, 'hosp-4': 8.9, 'hosp-5': 19.5, 'hosp-6': 3.2 },
+    distanceKm: { 'hosp-1': 14.2, 'hosp-2': 11.8, 'hosp-3': 22.1, 'hosp-4': 8.9, 'hosp-5': 19.5, 'hosp-6': 3.2, 'hosp-7': 2.1, 'hosp-8': 2.8 },
     deliverySLA: '90 mins',
     contactPerson: 'Mr. Ketan Parekh (Wholesale Secretary)',
     whatsapp: '+91 98190 55443',
     authorizedBrands: ['Poly Medicure', 'HMD Dispovan', 'Ethicon J&J', 'Healthium Sutures', 'Ansell'],
     creditOffered: 'Cash / 15 Days',
-    warehouseStockLevel: 'Very High (₹12 Cr)'
+    warehouseStockLevel: 'Very High (₹12 Cr)',
+    stockLevels: {
+      'SKU-GLV-75': 3500, 'SKU-GLV-70': 2800, 'SKU-CAN-20G': 1200, 'SKU-CAN-22G': 1600,
+      'SKU-SYR-5ML': 900, 'SKU-SYR-2ML': 1200, 'SKU-VAC-EDTA': 2000, 'SKU-MSK-N95': 1800,
+      'SKU-NOR-2MG': 300, 'SKU-DRS-TGD': 800, 'SKU-DRS-MCP': 2200, 'SKU-SUT-VCR': 600,
+      'SKU-SUT-ETH': 500, 'SKU-FLD-SAL': 1500, 'SKU-FLD-RL': 1200, 'SKU-SPL-NEB': 120, 'SKU-SPL-BPM': 85
+    }
   },
   {
     id: 'stock-4',
     name: 'Sagar Medical & Surgicals (Suburban Hub)',
     hub: 'Andheri West (Near Link Road)',
     rating: 4.85,
-    distanceKm: { 'hosp-1': 8.5, 'hosp-2': 10.9, 'hosp-3': 1.6, 'hosp-4': 14.8, 'hosp-5': 3.2, 'hosp-6': 18.2 },
+    distanceKm: { 'hosp-1': 8.5, 'hosp-2': 10.9, 'hosp-3': 1.6, 'hosp-4': 14.8, 'hosp-5': 3.2, 'hosp-6': 18.2, 'hosp-7': 16.5, 'hosp-8': 17.0 },
     deliverySLA: '30 mins (Suburban Express)',
     contactPerson: 'Mr. Sandeep Gada (Managing Partner)',
     whatsapp: '+91 98211 99884',
-    authorizedBrands: ['Poly Medicure', 'BD India', '3M Healthcare', 'Teleflex'],
+    authorizedBrands: ['Poly Medicure', 'BD India', '3M Healthcare', 'Teleflex', 'HMD Dispovan'],
     creditOffered: '30 Days',
-    warehouseStockLevel: 'Medium (₹2.4 Cr)'
+    warehouseStockLevel: 'Medium (₹2.4 Cr)',
+    stockLevels: {
+      'SKU-GLV-75': 600, 'SKU-GLV-70': 500, 'SKU-CAN-20G': 250, 'SKU-CAN-22G': 350,
+      'SKU-SYR-5ML': 180, 'SKU-SYR-2ML': 240, 'SKU-VAC-EDTA': 400, 'SKU-MSK-N95': 500,
+      'SKU-DRS-TGD': 200, 'SKU-FLD-SAL': 350, 'SKU-FLD-RL': 280, 'SKU-SPL-NEB': 30, 'SKU-SPL-BPM': 20
+    }
   }
 ];
 
@@ -153,7 +204,8 @@ export const MUMBAI_MANUFACTURERS = [
     keyRep: 'Mr. Vikram Malhotra (Zonal Sales Director - West)',
     contact: '+91 98101 22334',
     leadTimeDays: 2,
-    minimumOrderQty: 50000
+    minimumOrderQty: 50000,
+    skus: ['SKU-SYR-5ML', 'SKU-SYR-2ML']
   },
   {
     id: 'mfg-2',
@@ -164,7 +216,8 @@ export const MUMBAI_MANUFACTURERS = [
     keyRep: 'Ms. Deepa Singhal (VP Institutional Sales)',
     contact: '+91 98118 77665',
     leadTimeDays: 3,
-    minimumOrderQty: 20000
+    minimumOrderQty: 20000,
+    skus: ['SKU-CAN-20G', 'SKU-CAN-22G', 'SKU-FLD-SAL', 'SKU-FLD-RL']
   },
   {
     id: 'mfg-3',
@@ -175,7 +228,8 @@ export const MUMBAI_MANUFACTURERS = [
     keyRep: 'Mr. Anuj Saxena (Enterprise Healthcare Lead)',
     contact: '+91 98200 44321',
     leadTimeDays: 2,
-    minimumOrderQty: 10000
+    minimumOrderQty: 10000,
+    skus: ['SKU-MSK-N95', 'SKU-DRS-TGD', 'SKU-DRS-MCP', 'SKU-GLV-75', 'SKU-GLV-70']
   },
   {
     id: 'mfg-4',
@@ -186,7 +240,8 @@ export const MUMBAI_MANUFACTURERS = [
     keyRep: 'Dr. Rajiv Merchant (Clinical Director)',
     contact: '+91 98202 88990',
     leadTimeDays: 3,
-    minimumOrderQty: 15000
+    minimumOrderQty: 15000,
+    skus: ['SKU-VAC-EDTA', 'SKU-CAN-20G']
   },
   {
     id: 'mfg-5',
@@ -197,25 +252,53 @@ export const MUMBAI_MANUFACTURERS = [
     keyRep: 'Mr. Hemant Kothari (Institutional Sales Head)',
     contact: '+91 98203 11445',
     leadTimeDays: 1,
-    minimumOrderQty: 5000
+    minimumOrderQty: 5000,
+    skus: ['SKU-NOR-2MG', 'SKU-FLD-SAL']
+  },
+  {
+    id: 'mfg-6',
+    name: 'Healthium Medtech (Sutures & Wound Care)',
+    brand: 'Healthium / Sutures India',
+    primaryHub: 'Thane & Navi Mumbai Distribution Centre',
+    productLine: 'Absorbable Vicryl Sutures, Silk Sutures, Wound Closure Strips, Haemostats',
+    keyRep: 'Ms. Priya Iyer (Regional Sales Manager)',
+    contact: '+91 98217 44332',
+    leadTimeDays: 2,
+    minimumOrderQty: 3000,
+    skus: ['SKU-SUT-VCR', 'SKU-SUT-ETH']
+  },
+  {
+    id: 'mfg-7',
+    name: 'Romsons Scientific & Surgical Industries',
+    brand: 'Romsons',
+    primaryHub: 'Bhiwandi & Agra Plant (Logistics Western India)',
+    productLine: 'Nebulizer Kits, Urine Bags, Catheter Sets, Oxygen Masks, Ryles Tube',
+    keyRep: 'Mr. Ashok Gupta (Sr. Area Manager - Mumbai)',
+    contact: '+91 98109 55678',
+    leadTimeDays: 3,
+    minimumOrderQty: 8000,
+    skus: ['SKU-SPL-NEB', 'SKU-SPL-OXM']
   }
 ];
 
+// ── FULL EXPANDED MEDICAL CATALOG ─────────────────────────────────────────────
+// Categories: Surgical Disposables | Infusion & Vascular | Injections & Syringes
+//             Diagnostics | Infection Prevention | Critical Care Drugs
+//             Wound Care & Sutures | IV Fluids | Medical Equipment & Monitoring
+
 export const MEDICAL_CATALOG = [
+  // ─── SURGICAL DISPOSABLES ────────────────────────────────────────────────────
   {
     skuId: 'SKU-GLV-75',
     name: 'Sterile Latex Surgical Gloves (Size 7.5)',
     category: 'Surgical Disposables',
     brand: 'Surgicare / Ansell',
     unit: 'Box of 50 pairs',
-    mrp: 1450,
-    mfgPrice: 680,
-    stockistPrice: 790,
-    hospitalRate: 850,
+    mrp: 1450, mfgPrice: 680, stockistPrice: 790, hospitalRate: 850,
     mfgId: 'mfg-3',
     popularStockists: ['stock-1', 'stock-2', 'stock-3'],
     shelfLifeMonths: 36,
-    hospStockLilavati: 140, // Boxes
+    hospStockLilavati: 140,
     reorderLevel: 50,
     consumptionRateDaily: 25
   },
@@ -225,10 +308,7 @@ export const MEDICAL_CATALOG = [
     category: 'Surgical Disposables',
     brand: 'Surgicare / Ansell',
     unit: 'Box of 50 pairs',
-    mrp: 1450,
-    mfgPrice: 680,
-    stockistPrice: 790,
-    hospitalRate: 850,
+    mrp: 1450, mfgPrice: 680, stockistPrice: 790, hospitalRate: 850,
     mfgId: 'mfg-3',
     popularStockists: ['stock-1', 'stock-3', 'stock-4'],
     shelfLifeMonths: 36,
@@ -237,19 +317,60 @@ export const MEDICAL_CATALOG = [
     consumptionRateDaily: 20
   },
   {
+    skuId: 'SKU-GLV-NTRLE',
+    name: 'Nitrile Examination Gloves (Non-sterile, M)',
+    category: 'Surgical Disposables',
+    brand: 'Kimberly-Clark / Shield',
+    unit: 'Box of 100 pcs',
+    mrp: 680, mfgPrice: 320, stockistPrice: 380, hospitalRate: 420,
+    mfgId: 'mfg-3',
+    popularStockists: ['stock-1', 'stock-3'],
+    shelfLifeMonths: 36,
+    hospStockLilavati: 320,
+    reorderLevel: 100,
+    consumptionRateDaily: 60
+  },
+  {
+    skuId: 'SKU-OTT-DRAPE',
+    name: 'Sterile OT Drape Set (Universal)',
+    category: 'Surgical Disposables',
+    brand: '3M Steri-Drape',
+    unit: 'Pack of 10 sets',
+    mrp: 4200, mfgPrice: 1800, stockistPrice: 2200, hospitalRate: 2500,
+    mfgId: 'mfg-3',
+    popularStockists: ['stock-1', 'stock-3'],
+    shelfLifeMonths: 60,
+    hospStockLilavati: 45,
+    reorderLevel: 15,
+    consumptionRateDaily: 5
+  },
+  {
+    skuId: 'SKU-SRG-GOWN',
+    name: 'Disposable Surgical Gowns (Non-woven)',
+    category: 'Surgical Disposables',
+    brand: 'Medispec / Medline',
+    unit: 'Pack of 10 gowns',
+    mrp: 850, mfgPrice: 380, stockistPrice: 450, hospitalRate: 510,
+    mfgId: 'mfg-3',
+    popularStockists: ['stock-1', 'stock-2', 'stock-3'],
+    shelfLifeMonths: 36,
+    hospStockLilavati: 180,
+    reorderLevel: 60,
+    consumptionRateDaily: 20
+  },
+
+  // ─── INFUSION & VASCULAR ACCESS ──────────────────────────────────────────────
+  {
     skuId: 'SKU-CAN-20G',
     name: 'Polymed IV Cannula 20G (Pink with Port)',
     category: 'Infusion & Vascular Access',
     brand: 'Poly Medicure',
     unit: 'Box of 100 pcs',
-    mrp: 3200,
-    mfgPrice: 1400,
-    stockistPrice: 1650,
-    hospitalRate: 1820,
+    mrp: 3200, mfgPrice: 1400, stockistPrice: 1650, hospitalRate: 1820,
     mfgId: 'mfg-2',
     popularStockists: ['stock-1', 'stock-2', 'stock-4'],
     shelfLifeMonths: 60,
-    hospStockLilavati: 38, // Trigger warning!
+    hospStockLilavati: 38,
     reorderLevel: 45,
     consumptionRateDaily: 15
   },
@@ -259,10 +380,7 @@ export const MEDICAL_CATALOG = [
     category: 'Infusion & Vascular Access',
     brand: 'Poly Medicure',
     unit: 'Box of 100 pcs',
-    mrp: 3200,
-    mfgPrice: 1400,
-    stockistPrice: 1650,
-    hospitalRate: 1820,
+    mrp: 3200, mfgPrice: 1400, stockistPrice: 1650, hospitalRate: 1820,
     mfgId: 'mfg-2',
     popularStockists: ['stock-1', 'stock-3', 'stock-4'],
     shelfLifeMonths: 60,
@@ -271,19 +389,32 @@ export const MEDICAL_CATALOG = [
     consumptionRateDaily: 12
   },
   {
+    skuId: 'SKU-IFS-15DR',
+    name: 'IV Infusion Set (15 drops/ml) with Airway',
+    category: 'Infusion & Vascular Access',
+    brand: 'Romsons / Polymed',
+    unit: 'Box of 50 sets',
+    mrp: 1200, mfgPrice: 550, stockistPrice: 660, hospitalRate: 740,
+    mfgId: 'mfg-2',
+    popularStockists: ['stock-1', 'stock-2', 'stock-3'],
+    shelfLifeMonths: 60,
+    hospStockLilavati: 150,
+    reorderLevel: 50,
+    consumptionRateDaily: 18
+  },
+
+  // ─── INJECTIONS & SYRINGES ────────────────────────────────────────────────────
+  {
     skuId: 'SKU-SYR-5ML',
     name: 'HMD Dispovan 5ml Single-Use Syringes with Needle',
     category: 'Injections & Syringes',
     brand: 'Dispovan (HMD)',
     unit: 'Carton of 1000 pcs',
-    mrp: 4500,
-    mfgPrice: 2100,
-    stockistPrice: 2450,
-    hospitalRate: 2680,
+    mrp: 4500, mfgPrice: 2100, stockistPrice: 2450, hospitalRate: 2680,
     mfgId: 'mfg-1',
     popularStockists: ['stock-1', 'stock-2', 'stock-3'],
     shelfLifeMonths: 60,
-    hospStockLilavati: 22, // Critical low!
+    hospStockLilavati: 22,
     reorderLevel: 30,
     consumptionRateDaily: 8
   },
@@ -293,10 +424,7 @@ export const MEDICAL_CATALOG = [
     category: 'Injections & Syringes',
     brand: 'Dispovan (HMD)',
     unit: 'Carton of 1000 pcs',
-    mrp: 4100,
-    mfgPrice: 1900,
-    stockistPrice: 2200,
-    hospitalRate: 2390,
+    mrp: 4100, mfgPrice: 1900, stockistPrice: 2200, hospitalRate: 2390,
     mfgId: 'mfg-1',
     popularStockists: ['stock-1', 'stock-2', 'stock-3'],
     shelfLifeMonths: 60,
@@ -305,15 +433,28 @@ export const MEDICAL_CATALOG = [
     consumptionRateDaily: 10
   },
   {
+    skuId: 'SKU-SYR-10ML',
+    name: 'HMD Dispovan 10ml Single-Use Syringes',
+    category: 'Injections & Syringes',
+    brand: 'Dispovan (HMD)',
+    unit: 'Carton of 500 pcs',
+    mrp: 3800, mfgPrice: 1700, stockistPrice: 2000, hospitalRate: 2200,
+    mfgId: 'mfg-1',
+    popularStockists: ['stock-1', 'stock-2'],
+    shelfLifeMonths: 60,
+    hospStockLilavati: 60,
+    reorderLevel: 20,
+    consumptionRateDaily: 6
+  },
+
+  // ─── DIAGNOSTICS & PATHOLOGY ──────────────────────────────────────────────────
+  {
     skuId: 'SKU-VAC-EDTA',
     name: 'BD Vacutainer K2 EDTA Blood Collection Tubes (Lavender)',
     category: 'Diagnostics & Pathology',
     brand: 'Becton Dickinson (BD)',
     unit: 'Pack of 100 tubes',
-    mrp: 1800,
-    mfgPrice: 850,
-    stockistPrice: 1020,
-    hospitalRate: 1150,
+    mrp: 1800, mfgPrice: 850, stockistPrice: 1020, hospitalRate: 1150,
     mfgId: 'mfg-4',
     popularStockists: ['stock-1', 'stock-4'],
     shelfLifeMonths: 18,
@@ -322,15 +463,28 @@ export const MEDICAL_CATALOG = [
     consumptionRateDaily: 14
   },
   {
+    skuId: 'SKU-VAC-PLAIN',
+    name: 'BD Vacutainer SST (Plain) Blood Collection Tubes',
+    category: 'Diagnostics & Pathology',
+    brand: 'Becton Dickinson (BD)',
+    unit: 'Pack of 100 tubes',
+    mrp: 1600, mfgPrice: 780, stockistPrice: 940, hospitalRate: 1060,
+    mfgId: 'mfg-4',
+    popularStockists: ['stock-1', 'stock-3', 'stock-4'],
+    shelfLifeMonths: 18,
+    hospStockLilavati: 65,
+    reorderLevel: 25,
+    consumptionRateDaily: 10
+  },
+
+  // ─── INFECTION PREVENTION ─────────────────────────────────────────────────────
+  {
     skuId: 'SKU-MSK-N95',
     name: '3M 1860 Health Care Particulate N95 Respirators',
     category: 'Infection Prevention',
     brand: '3M MedTech',
     unit: 'Box of 20 masks',
-    mrp: 2200,
-    mfgPrice: 950,
-    stockistPrice: 1180,
-    hospitalRate: 1320,
+    mrp: 2200, mfgPrice: 950, stockistPrice: 1180, hospitalRate: 1320,
     mfgId: 'mfg-3',
     popularStockists: ['stock-1', 'stock-3', 'stock-4'],
     shelfLifeMonths: 60,
@@ -339,21 +493,222 @@ export const MEDICAL_CATALOG = [
     consumptionRateDaily: 10
   },
   {
+    skuId: 'SKU-MSK-SRG3PLY',
+    name: 'Surgical 3-Ply Face Masks (ASTM Level 2)',
+    category: 'Infection Prevention',
+    brand: 'Karam / Med-Comfort',
+    unit: 'Box of 50 masks',
+    mrp: 350, mfgPrice: 140, stockistPrice: 175, hospitalRate: 200,
+    mfgId: 'mfg-3',
+    popularStockists: ['stock-1', 'stock-2', 'stock-3', 'stock-4'],
+    shelfLifeMonths: 36,
+    hospStockLilavati: 500,
+    reorderLevel: 150,
+    consumptionRateDaily: 80
+  },
+  {
+    skuId: 'SKU-INF-HAB',
+    name: 'Hand Rub Disinfectant — Sterillium (500ml)',
+    category: 'Infection Prevention',
+    brand: 'Bode Chemie / HUF India',
+    unit: 'Carton of 12 bottles',
+    mrp: 4800, mfgPrice: 2200, stockistPrice: 2600, hospitalRate: 2900,
+    mfgId: 'mfg-3',
+    popularStockists: ['stock-1', 'stock-3'],
+    shelfLifeMonths: 24,
+    hospStockLilavati: 28,
+    reorderLevel: 10,
+    consumptionRateDaily: 3
+  },
+
+  // ─── CRITICAL CARE ICU DRUGS ──────────────────────────────────────────────────
+  {
     skuId: 'SKU-NOR-2MG',
     name: 'Noradrenaline Bitartrate Injection 2mg/2ml',
     category: 'Critical Care ICU Drugs',
     brand: 'Cipla Med',
     unit: 'Box of 10 ampoules',
-    mrp: 950,
-    mfgPrice: 420,
-    stockistPrice: 510,
-    hospitalRate: 590,
+    mrp: 950, mfgPrice: 420, stockistPrice: 510, hospitalRate: 590,
     mfgId: 'mfg-5',
     popularStockists: ['stock-2', 'stock-1'],
     shelfLifeMonths: 24,
-    hospStockLilavati: 12, // Critical low!
+    hospStockLilavati: 12,
     reorderLevel: 20,
     consumptionRateDaily: 6
+  },
+  {
+    skuId: 'SKU-PRF-200MG',
+    name: 'Propofol 200mg/20ml Emulsion Injection',
+    category: 'Critical Care ICU Drugs',
+    brand: 'Cipla / Fresenius',
+    unit: 'Box of 5 vials',
+    mrp: 2800, mfgPrice: 1200, stockistPrice: 1450, hospitalRate: 1640,
+    mfgId: 'mfg-5',
+    popularStockists: ['stock-1', 'stock-2'],
+    shelfLifeMonths: 18,
+    hospStockLilavati: 24,
+    reorderLevel: 10,
+    consumptionRateDaily: 4
+  },
+
+  // ─── WOUND CARE & SUTURES ─────────────────────────────────────────────────────
+  {
+    skuId: 'SKU-DRS-TGD',
+    name: '3M Tegaderm Transparent Film Dressing (10x12cm)',
+    category: 'Wound Care & Dressings',
+    brand: '3M MedTech',
+    unit: 'Box of 50 pcs',
+    mrp: 3200, mfgPrice: 1400, stockistPrice: 1700, hospitalRate: 1900,
+    mfgId: 'mfg-3',
+    popularStockists: ['stock-1', 'stock-3', 'stock-4'],
+    shelfLifeMonths: 60,
+    hospStockLilavati: 60,
+    reorderLevel: 20,
+    consumptionRateDaily: 8
+  },
+  {
+    skuId: 'SKU-DRS-MCP',
+    name: '3M Micropore Surgical Tape (1" x 10 yds)',
+    category: 'Wound Care & Dressings',
+    brand: '3M MedTech',
+    unit: 'Box of 24 rolls',
+    mrp: 1100, mfgPrice: 480, stockistPrice: 580, hospitalRate: 650,
+    mfgId: 'mfg-3',
+    popularStockists: ['stock-1', 'stock-2', 'stock-3', 'stock-4'],
+    shelfLifeMonths: 60,
+    hospStockLilavati: 110,
+    reorderLevel: 35,
+    consumptionRateDaily: 12
+  },
+  {
+    skuId: 'SKU-SUT-VCR',
+    name: 'Vicryl Polyglactin 910 Absorbable Sutures (2-0)',
+    category: 'Wound Care & Sutures',
+    brand: 'Healthium / Ethicon',
+    unit: 'Box of 12 sutures',
+    mrp: 2400, mfgPrice: 1050, stockistPrice: 1280, hospitalRate: 1440,
+    mfgId: 'mfg-6',
+    popularStockists: ['stock-1', 'stock-3'],
+    shelfLifeMonths: 36,
+    hospStockLilavati: 35,
+    reorderLevel: 12,
+    consumptionRateDaily: 4
+  },
+  {
+    skuId: 'SKU-SUT-ETH',
+    name: 'Ethilon Nylon Non-Absorbable Sutures (3-0)',
+    category: 'Wound Care & Sutures',
+    brand: 'Ethicon / J&J',
+    unit: 'Box of 12 sutures',
+    mrp: 1800, mfgPrice: 800, stockistPrice: 980, hospitalRate: 1100,
+    mfgId: 'mfg-6',
+    popularStockists: ['stock-2', 'stock-3'],
+    shelfLifeMonths: 36,
+    hospStockLilavati: 28,
+    reorderLevel: 10,
+    consumptionRateDaily: 3
+  },
+
+  // ─── IV FLUIDS ────────────────────────────────────────────────────────────────
+  {
+    skuId: 'SKU-FLD-SAL',
+    name: 'Normal Saline (0.9% NaCl) 500ml IV Bag',
+    category: 'IV Fluids',
+    brand: 'Cipla / Fresenius Kabi',
+    unit: 'Carton of 24 bags',
+    mrp: 2100, mfgPrice: 950, stockistPrice: 1150, hospitalRate: 1300,
+    mfgId: 'mfg-5',
+    popularStockists: ['stock-1', 'stock-2', 'stock-3'],
+    shelfLifeMonths: 24,
+    hospStockLilavati: 80,
+    reorderLevel: 30,
+    consumptionRateDaily: 15
+  },
+  {
+    skuId: 'SKU-FLD-RL',
+    name: "Ringer's Lactate 500ml IV Bag",
+    category: 'IV Fluids',
+    brand: 'Cipla / B. Braun',
+    unit: 'Carton of 24 bags',
+    mrp: 2200, mfgPrice: 1000, stockistPrice: 1200, hospitalRate: 1360,
+    mfgId: 'mfg-2',
+    popularStockists: ['stock-1', 'stock-2', 'stock-3'],
+    shelfLifeMonths: 24,
+    hospStockLilavati: 65,
+    reorderLevel: 25,
+    consumptionRateDaily: 12
+  },
+  {
+    skuId: 'SKU-FLD-DEXT',
+    name: 'Dextrose 5% (D5W) 500ml IV Bag',
+    category: 'IV Fluids',
+    brand: 'Baxter / Fresenius Kabi',
+    unit: 'Carton of 24 bags',
+    mrp: 2000, mfgPrice: 880, stockistPrice: 1060, hospitalRate: 1200,
+    mfgId: 'mfg-5',
+    popularStockists: ['stock-1', 'stock-3'],
+    shelfLifeMonths: 24,
+    hospStockLilavati: 55,
+    reorderLevel: 20,
+    consumptionRateDaily: 10
+  },
+
+  // ─── MEDICAL EQUIPMENT & MONITORING ──────────────────────────────────────────
+  {
+    skuId: 'SKU-SPL-NEB',
+    name: 'Portable Compressor Nebulizer Machine',
+    category: 'Medical Equipment',
+    brand: 'Romsons / Omron',
+    unit: 'Unit',
+    mrp: 3800, mfgPrice: 1600, stockistPrice: 2000, hospitalRate: 2300,
+    mfgId: 'mfg-7',
+    popularStockists: ['stock-1', 'stock-3', 'stock-4'],
+    shelfLifeMonths: 0,
+    hospStockLilavati: 12,
+    reorderLevel: 5,
+    consumptionRateDaily: 0.5
+  },
+  {
+    skuId: 'SKU-SPL-BPM',
+    name: 'Digital Automatic Blood Pressure Monitor',
+    category: 'Medical Equipment',
+    brand: 'Omron / Rossmax',
+    unit: 'Unit',
+    mrp: 2800, mfgPrice: 1200, stockistPrice: 1500, hospitalRate: 1750,
+    mfgId: 'mfg-7',
+    popularStockists: ['stock-1', 'stock-3', 'stock-4'],
+    shelfLifeMonths: 0,
+    hospStockLilavati: 8,
+    reorderLevel: 3,
+    consumptionRateDaily: 0.2
+  },
+  {
+    skuId: 'SKU-SPL-OXM',
+    name: 'Fingertip Pulse Oximeter (SpO2)',
+    category: 'Medical Equipment',
+    brand: 'Romsons / ChoiceMMed',
+    unit: 'Unit',
+    mrp: 1800, mfgPrice: 750, stockistPrice: 950, hospitalRate: 1100,
+    mfgId: 'mfg-7',
+    popularStockists: ['stock-1', 'stock-2', 'stock-3', 'stock-4'],
+    shelfLifeMonths: 0,
+    hospStockLilavati: 22,
+    reorderLevel: 8,
+    consumptionRateDaily: 0.3
+  },
+  {
+    skuId: 'SKU-SPL-FOLEY',
+    name: "Foley's Catheter (14 Fr, Silicone)",
+    category: 'Urology & Catheterization',
+    brand: 'Romsons / Teleflex',
+    unit: 'Box of 10 pcs',
+    mrp: 1400, mfgPrice: 580, stockistPrice: 720, hospitalRate: 820,
+    mfgId: 'mfg-7',
+    popularStockists: ['stock-1', 'stock-2', 'stock-4'],
+    shelfLifeMonths: 60,
+    hospStockLilavati: 40,
+    reorderLevel: 15,
+    consumptionRateDaily: 5
   }
 ];
 
@@ -373,13 +728,12 @@ export const INITIAL_SUPPLY_CHAIN_ORDERS = [
     totalAmount: 91200,
     orderDate: '01 Nov 2026, 09:30 AM',
     deliveredBy: '01 Nov 2026, 02:30 PM (Today)',
-    deliveryStatus: 'IN_TRANSIT', // 'QUEUED', 'DISPATCHED', 'IN_TRANSIT', 'DELIVERED'
+    deliveryStatus: 'IN_TRANSIT',
     transitRoute: 'Dadar West via Senapati Bapat Marg -> Bandra Reclamation -> Lilavati Gate 2',
     currentLocation: 'Mahim Causeway Bridge (ETA 18 mins)',
     goodsProgressPct: 75,
     temperatureC: 'Ambient (24°C)',
-    // Payment Pipe details
-    paymentStatus: 'ESCROW_LOCKED', // 'PENDING', 'ESCROW_LOCKED', 'RELEASED_TO_STOCKIST', 'SETTLED_TO_MFG'
+    paymentStatus: 'ESCROW_LOCKED',
     paymentDueBy: '31 Dec 2026 (60-day credit)',
     cashProgressPct: 35,
     creditAgingDays: 60,
@@ -442,5 +796,24 @@ export const HOSPITAL_WARDS = [
   { id: 'ward-ot-1', name: 'Operation Theatre 1 (Cardiac Surgery)', floor: '3rd Floor - OT Wing', activeBeds: 2, status: 'IN_SURGERY' },
   { id: 'ward-ot-2', name: 'Operation Theatre 2 (Orthopedics)', floor: '3rd Floor - OT Wing', activeBeds: 1, status: 'IN_SURGERY' },
   { id: 'ward-icu-a', name: 'Intensive Care Unit (Medical ICU)', floor: '4th Floor - Tower B', activeBeds: 18, status: 'HIGH_OCCUPANCY' },
-  { id: 'ward-emg', name: 'Emergency & Trauma Bay', floor: 'Ground Floor', activeBeds: 12, status: 'CRITICAL_TRIAGE' }
+  { id: 'ward-emg', name: 'Emergency & Trauma Bay', floor: 'Ground Floor', activeBeds: 12, status: 'CRITICAL_TRIAGE' },
+  { id: 'ward-gen-m', name: 'General Ward — Male', floor: '5th Floor', activeBeds: 28, status: 'NORMAL' },
+  { id: 'ward-gen-f', name: 'General Ward — Female', floor: '6th Floor', activeBeds: 24, status: 'NORMAL' },
+  { id: 'ward-pvt', name: 'Private & Semi-Private Rooms', floor: '7th Floor', activeBeds: 16, status: 'NORMAL' }
+];
+
+// ─── CATALOG CATEGORIES (for filter UI) ──────────────────────────────────────
+export const CATALOG_CATEGORIES = [
+  'All',
+  'Surgical Disposables',
+  'Infusion & Vascular Access',
+  'Injections & Syringes',
+  'Diagnostics & Pathology',
+  'Infection Prevention',
+  'Critical Care ICU Drugs',
+  'Wound Care & Dressings',
+  'Wound Care & Sutures',
+  'IV Fluids',
+  'Medical Equipment',
+  'Urology & Catheterization',
 ];

@@ -5,12 +5,21 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Modal, TextInput } from 'react-native';
 import { Ionicons, FontAwesome5 } from '@expo/vector-icons';
 import { useApp } from '../store/stateManager';
+import FirstOrderPaperworkModal from './FirstOrderPaperworkModal';
 
 export default function UberPingModal() {
-  const { activeUberPing, setActiveUberPing, confirmOrderDispatch } = useApp();
+  const {
+    activeUberPing,
+    setActiveUberPing,
+    confirmOrderDispatch,
+    loggedInHospital,
+    markFirstOrderComplete,
+    currentRole
+  } = useApp();
 
   const [qty, setQty] = useState(100);
   const [selectedStockistId, setSelectedStockistId] = useState(null);
+  const [showPaperwork, setShowPaperwork] = useState(false);
 
   // Sync state whenever activeUberPing changes
   useEffect(() => {
@@ -42,13 +51,38 @@ export default function UberPingModal() {
   const finalTotal = currentSelectedQuote ? currentSelectedQuote.quotedRate * qty : 0;
 
   const handleFinalConfirm = () => {
-    if (currentSelectedQuote) {
-      confirmOrderDispatch(currentSelectedQuote, qty);
+    if (!currentSelectedQuote) return;
+
+    // First-order gate: show paperwork modal if hospital hasn't done their first order yet
+    const isHospitalRole = currentRole === 'HOSPITAL';
+    const needsPaperwork = isHospitalRole && loggedInHospital && !loggedInHospital.completedFirstOrder;
+
+    if (needsPaperwork) {
+      setShowPaperwork(true);
+      return;
     }
+
+    // Direct order (2nd order onwards or non-hospital role)
+    confirmOrderDispatch(currentSelectedQuote, qty);
+  };
+
+  const handlePaperworkComplete = () => {
+    setShowPaperwork(false);
+    if (loggedInHospital) markFirstOrderComplete(loggedInHospital.id);
+    if (currentSelectedQuote) confirmOrderDispatch(currentSelectedQuote, qty);
   };
 
   return (
-    <Modal visible={true} transparent animationType="fade">
+    <>
+      {showPaperwork && currentSelectedQuote && (
+        <FirstOrderPaperworkModal
+          selectedQuote={currentSelectedQuote}
+          orderItem={activeUberPing?.sku}
+          onComplete={handlePaperworkComplete}
+          onCancel={() => setShowPaperwork(false)}
+        />
+      )}
+      <Modal visible={true} transparent animationType="fade">
       <View style={styles.backdrop}>
         <View style={styles.modalCard}>
           {/* Header */}
@@ -233,8 +267,9 @@ export default function UberPingModal() {
             </TouchableOpacity>
           </View>
         </View>
-      </View>
-    </Modal>
+        </View>
+      </Modal>
+    </>
   );
 }
 
