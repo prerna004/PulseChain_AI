@@ -1,7 +1,7 @@
 // PulseChain AI — v3 Full Implementation
 // Hospital + Stockist + Manufacturer Auth | Full Catalog | Voice-to-Order | WhatsApp Import | Data Lake Analytics
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -47,7 +47,29 @@ function MainScreen() {
   const [showHospitalAuth, setShowHospitalAuth] = useState(false);
   const [showStockistAuth, setShowStockistAuth] = useState(false);
   const [showManufacturerAuth, setShowManufacturerAuth] = useState(false);
-  const [hasChosenRole, setHasChosenRole] = useState(false);
+  const [hasChosenRole, setHasChosenRole] = useState(true);
+
+  // Auto-close auth screens once an entity logs in
+  useEffect(() => {
+    if (loggedInHospital && showHospitalAuth) {
+      setShowHospitalAuth(false);
+      setHasChosenRole(true);
+    }
+  }, [loggedInHospital]);
+
+  useEffect(() => {
+    if (loggedInStockist && showStockistAuth) {
+      setShowStockistAuth(false);
+      setHasChosenRole(true);
+    }
+  }, [loggedInStockist]);
+
+  useEffect(() => {
+    if (loggedInManufacturer && showManufacturerAuth) {
+      setShowManufacturerAuth(false);
+      setHasChosenRole(true);
+    }
+  }, [loggedInManufacturer]);
 
   // ── AUTH SCREENS ─────────────────────────────────────────────────────────────
   if (showHospitalAuth) {
@@ -291,7 +313,6 @@ function MainScreen() {
       <PermissionsModal />
       <CentralDataLakeModal />
       <WhatsAppImportModal />
-      <FirstOrderPaperworkModal />
     </SafeAreaView>
   );
 }

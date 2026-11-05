@@ -71,9 +71,9 @@ export default function SplitScreenView() {
         <View style={styles.syncRight}>
           {/* View Mode Switcher */}
           {[
-            { id: 'DESKTOP_ONLY', icon: 'desktop-outline', label: 'Desktop Only' },
-            { id: 'SPLIT_SYNC', icon: 'tablet-landscape-outline', label: 'Desktop + Mobile' },
-            { id: 'MOBILE_ONLY', icon: 'phone-portrait-outline', label: 'Mobile View' },
+            { id: 'DESKTOP_ONLY', icon: 'desktop-outline', label: '💻 Laptop View' },
+            { id: 'SPLIT_SYNC', icon: 'tablet-landscape-outline', label: '💻+📱 Split Screen (Both)' },
+            { id: 'MOBILE_ONLY', icon: 'phone-portrait-outline', label: '📱 Mobile View' },
           ].map(mode => (
             <TouchableOpacity
               key={mode.id}

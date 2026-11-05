@@ -26,6 +26,7 @@ export default function ManufacturerAuthScreen({ onBack }) {
   const [signupTitle, setSignupTitle] = useState('');
   const [signupCompany, setSignupCompany] = useState('');
   const [signupBrand, setSignupBrand] = useState('');
+  const [signupArea, setSignupArea] = useState('Bhiwandi C&F');
   const [signupPhone, setSignupPhone] = useState('');
   const [signupPin, setSignupPin] = useState('');
   const [signupPin2, setSignupPin2] = useState('');
@@ -68,6 +69,8 @@ export default function ManufacturerAuthScreen({ onBack }) {
         title: signupTitle.trim() || 'Sales Manager',
         companyName: signupCompany.trim(),
         brand: signupBrand.trim() || signupCompany.trim(),
+        area: signupArea || 'Bhiwandi C&F',
+        hub: signupArea || 'Bhiwandi C&F',
         phone: signupPhone.trim(),
         pin: signupPin.trim(),
       });

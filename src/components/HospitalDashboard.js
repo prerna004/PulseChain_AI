@@ -2,12 +2,12 @@
 // Category-filtered inventory, ward usage, per-hospital orders
 
 import React, { useState, useMemo } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Modal, TextInput } from 'react-native';
 import { Ionicons, FontAwesome5 } from '@expo/vector-icons';
 import { useApp } from '../store/stateManager';
 import TwoPipeVisualizer from './TwoPipeVisualizer';
 import VoiceRequisitionBar from './VoiceRequisitionBar';
-import { CATALOG_CATEGORIES } from '../data/mumbaiData';
+import { CATALOG_CATEGORIES, calculateDistanceKm } from '../data/mumbaiData';
 
 export default function HospitalDashboard() {
   const {
@@ -18,14 +18,105 @@ export default function HospitalDashboard() {
     consumeWardItem,
     startUberStockistPing,
     loggedInHospital,
+    loginHospital,
+    logoutHospital,
+    registeredHospitals,
     getOrdersForCurrentView,
+    allStockists,
+    allManufacturers,
+    placeDirectOrder,
+    bridges
   } = useApp();
 
   const [activeTab, setActiveTab] = useState('INVENTORY');
   const [categoryFilter, setCategoryFilter] = useState('All');
+  const [supplierTypeFilter, setSupplierTypeFilter] = useState('ALL'); // 'ALL' | 'STOCKIST' | 'MANUFACTURER'
+  const [onboardingSupplier, setOnboardingSupplier] = useState(null);
+  const [selectedSkuToOrder, setSelectedSkuToOrder] = useState(null);
+  const [orderQty, setOrderQty] = useState('50');
+  const [licenseNo, setLicenseNo] = useState('MH-MUM-DL-2026-8819');
+  const [receivingDock, setReceivingDock] = useState('Gate 2 - OT Emergency Bay');
+  const [orderFeedback, setOrderFeedback] = useState(null);
 
-  // Only show this hospital's orders — data isolation
-  const myOrders = getOrdersForCurrentView();
+  const activeHosp = loggedInHospital || selectedHospital || registeredHospitals[0];
+  const hLat = activeHosp.lat || 19.0515;
+  const hLng = activeHosp.lng || 72.8291;
+
+  // 1. Calculate & Rank Nearest Stockists strictly by proximity
+  const nearestStockists = useMemo(() => {
+    return (allStockists || [])
+      .map(stk => {
+        const dist = calculateDistanceKm(hLat, hLng, stk.lat || 19.0178, stk.lng || 72.8478);
+        const isBridged = (bridges || []).some(b => b.hospitalId === activeHosp.id && b.stockistId === stk.id);
+        const isUnlocked = activeHosp.completedFirstOrder || isBridged;
+        const eta = dist < 3 ? '15-20 mins (Express)' : dist < 6 ? '25-35 mins' : dist < 12 ? '40-50 mins' : '1 hr';
+        return { ...stk, distanceKm: dist, eta, isUnlocked };
+      })
+      .sort((a, b) => a.distanceKm - b.distanceKm);
+  }, [allStockists, activeHosp, bridges, hLat, hLng]);
+
+  // 2. Calculate & Rank Nearest Primary Manufacturers (OEMs) strictly by logistics proximity
+  const nearestManufacturers = useMemo(() => {
+    return (allManufacturers || [])
+      .map(mfg => {
+        const dist = calculateDistanceKm(hLat, hLng, mfg.lat || 19.2968, mfg.lng || 73.0631);
+        const isBridged = (bridges || []).some(b => b.hospitalId === activeHosp.id && b.mfgId === mfg.id);
+        const isUnlocked = activeHosp.completedFirstOrder || isBridged;
+        const eta = dist < 20 ? '45 mins (Priority Freight)' : '1.5-2 hrs (National Highway)';
+        return { ...mfg, distanceKm: dist, eta, isUnlocked };
+      })
+      .sort((a, b) => a.distanceKm - b.distanceKm);
+  }, [allManufacturers, activeHosp, bridges, hLat, hLng]);
+
+  // Quick 1-tap direct order handler
+  const handleQuickDirectOrder = (supplier, isMfg = false) => {
+    const sku = inventory.find(i => i.skuId === 'SKU-GLV-75') || inventory[0];
+    const newOrd = placeDirectOrder({
+      hospital: activeHosp,
+      supplier,
+      sku,
+      qty: 50,
+      isManufacturer: isMfg
+    });
+    setOrderFeedback(`Order ${newOrd.orderId} dispatched from ${supplier.name}! Transit pipeline generated.`);
+    setTimeout(() => setOrderFeedback(null), 5000);
+  };
+
+  // Submit 1-time onboarding registration
+  const submitOnboardingAndOrder = () => {
+    if (!onboardingSupplier) return;
+    const isMfg = onboardingSupplier.type === 'MANUFACTURER';
+    const sku = selectedSkuToOrder || inventory.find(i => i.skuId === 'SKU-GLV-75') || inventory[0];
+    const newOrd = placeDirectOrder({
+      hospital: activeHosp,
+      supplier: onboardingSupplier.supplier,
+      sku,
+      qty: parseInt(orderQty, 10) || 50,
+      isManufacturer: isMfg,
+      essentialDetails: {
+        licenseNo,
+        receivingDock,
+        verifiedAt: new Date().toISOString()
+      }
+    });
+    setOnboardingSupplier(null);
+    setOrderFeedback(`1-Time KYC Verified! Direct ordering now unlocked permanently. Order ${newOrd.orderId} dispatched.`);
+    setTimeout(() => setOrderFeedback(null), 6000);
+  };
+
+  // Helper to get private isolated inventory stock for this hospital
+  const getStockForHospital = (sku, hospitalId) => {
+    if (sku.hospitalStock && sku.hospitalStock[hospitalId] !== undefined) {
+      return sku.hospitalStock[hospitalId];
+    }
+    if (hospitalId === 'hosp-1') return sku.hospStockLilavati;
+    return sku.hospStockLilavati || Math.round(sku.reorderLevel * 1.5);
+  };
+
+  // Only show this hospital's orders — strict data isolation
+  const myOrders = useMemo(() => {
+    return (orders || []).filter(o => o.hospitalId === activeHosp.id);
+  }, [orders, activeHosp.id]);
 
   // Filtered inventory by category
   const filteredInventory = useMemo(() => {
@@ -33,41 +124,385 @@ export default function HospitalDashboard() {
     return inventory.filter(i => i.category === categoryFilter);
   }, [inventory, categoryFilter]);
 
-  // Inventory summary stats
+  // Inventory summary stats for THIS hospital
   const inventoryStats = useMemo(() => ({
     total: inventory.length,
-    low: inventory.filter(i => i.hospStockLilavati <= i.reorderLevel).length,
-    critical: inventory.filter(i => i.hospStockLilavati <= i.reorderLevel * 0.5).length,
-    ok: inventory.filter(i => i.hospStockLilavati > i.reorderLevel).length,
-  }), [inventory]);
+    low: inventory.filter(i => getStockForHospital(i, activeHosp.id) <= i.reorderLevel).length,
+    critical: inventory.filter(i => getStockForHospital(i, activeHosp.id) <= i.reorderLevel * 0.5).length,
+    ok: inventory.filter(i => getStockForHospital(i, activeHosp.id) > i.reorderLevel).length,
+  }), [inventory, activeHosp.id]);
 
   return (
     <View style={styles.container}>
-      {/* Account Banner — show logged-in hospital + first-order status */}
-      {loggedInHospital && (
-        <View style={styles.accountBanner}>
-          <FontAwesome5 name="hospital" size={14} color="#0284c7" />
-          <View style={{ flex: 1 }}>
-            <Text style={styles.accountBannerName}>{loggedInHospital.name}</Text>
-            <Text style={styles.accountBannerSub}>
-              {loggedInHospital.completedFirstOrder
-                ? '✅  Direct Ordering Unlocked — No paperwork needed'
-                : '📋  First Order: Distributor verification required (one-time)'}
-            </Text>
+      {/* 🔒 Hospital Facility Secure Session & Security Header */}
+      <View style={styles.hospitalSecureHeader}>
+        <View style={styles.hospitalSecureLeft}>
+          <View style={styles.hospitalIconCircle}>
+            <FontAwesome5 name="hospital" size={22} color="#0284c7" />
           </View>
-          {!loggedInHospital.completedFirstOrder && (
-            <View style={styles.firstOrderPill}>
-              <Text style={styles.firstOrderPillText}>1st Order</Text>
+          <View style={{ flex: 1 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+              <Text style={styles.hospitalSecureName}>{activeHosp.name}</Text>
+              <View style={styles.verifiedHospBadge}>
+                <Ionicons name="shield-checkmark" size={12} color="#047857" />
+                <Text style={styles.verifiedHospBadgeText}>Licensed MMR Facility</Text>
+              </View>
             </View>
-          )}
+
+            <Text style={styles.hospitalSecureMeta}>
+              📍 {activeHosp.area} • ID: <Text style={{ fontWeight: '800', color: '#0f172a' }}>{activeHosp.id}</Text> • Capacity: {activeHosp.beds || 350} Beds • Contact: {activeHosp.contactPerson || 'Procurement Incharge'}
+            </Text>
+
+            <View style={styles.privacyGuaranteeRow}>
+              <Ionicons name="lock-closed" size={13} color="#0284c7" />
+              <Text style={styles.privacyGuaranteeText}>
+                <Text style={{ fontWeight: '800', color: '#0369a1' }}>Confidential P2P Channel:</Text> Direct independent transactions with Mumbai stockists & factories. Your purchase orders, internal pharmacy inventory, and financial escrow are strictly isolated and invisible to other hospitals.
+              </Text>
+            </View>
+          </View>
         </View>
-      )}
+
+        <View style={styles.hospitalSecureRight}>
+          <View style={[styles.kycStatusCard, { backgroundColor: activeHosp.completedFirstOrder ? '#f0fdf4' : '#fffbeb', borderColor: activeHosp.completedFirstOrder ? '#bbf7d0' : '#fde68a' }]}>
+            <Text style={[styles.kycStatusLabel, { color: activeHosp.completedFirstOrder ? '#166534' : '#b45309' }]}>
+              SUPPLY CHAIN ONBOARDING
+            </Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 2 }}>
+              <Ionicons
+                name={activeHosp.completedFirstOrder ? "checkmark-circle" : "alert-circle"}
+                size={14}
+                color={activeHosp.completedFirstOrder ? "#16a34a" : "#d97706"}
+              />
+              <Text style={[styles.kycStatusValue, { color: activeHosp.completedFirstOrder ? '#15803d' : '#b45309' }]}>
+                {activeHosp.completedFirstOrder ? 'Direct Ordering Active' : '1-Time KYC Required'}
+              </Text>
+            </View>
+          </View>
+
+          <TouchableOpacity
+            onPress={() => logoutHospital()}
+            style={styles.switchHospitalBtn}
+          >
+            <Ionicons name="swap-horizontal" size={14} color="#475569" />
+            <Text style={styles.switchHospitalBtnText}>Switch Hospital</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
 
       {/* 1. Giant Voice Mic & 1-Tap Orders Bar */}
       <VoiceRequisitionBar />
 
       {/* 2. Living 2-Pipe Goods & Payment Flow */}
       <TwoPipeVisualizer />
+
+      {/* Order Feedback Toast Banner */}
+      {orderFeedback && (
+        <View style={styles.orderFeedbackBanner}>
+          <Ionicons name="checkmark-circle" size={18} color="#047857" />
+          <Text style={styles.orderFeedbackText}>{orderFeedback}</Text>
+        </View>
+      )}
+
+      {/* 2.5 NEAREST STORES & MANUFACTURERS (Ranked by Proximity & Live Working) */}
+      <View style={styles.nearestMeshCard}>
+        <View style={styles.nearestMeshHeader}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+            <View style={styles.radarIconCircle}>
+              <Ionicons name="navigate" size={18} color="#0284c7" />
+            </View>
+            <View>
+              <Text style={styles.nearestMeshTitle}>
+                NEAREST STORES & MANUFACTURERS FOR {activeHosp.name.toUpperCase()}
+              </Text>
+              <Text style={styles.nearestMeshSubtitle}>
+                Ranked strictly by distance from {activeHosp.area} • Direct ordering or 1-time KYC link
+              </Text>
+            </View>
+          </View>
+
+          {/* Filter Chips */}
+          <View style={styles.filterPillsRow}>
+            <TouchableOpacity
+              onPress={() => setSupplierTypeFilter('ALL')}
+              style={[styles.filterPill, supplierTypeFilter === 'ALL' && styles.filterPillActive]}
+            >
+              <Text style={[styles.filterPillText, supplierTypeFilter === 'ALL' && styles.filterPillTextActive]}>
+                All Nearby ({nearestStockists.length + nearestManufacturers.length})
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={() => setSupplierTypeFilter('STOCKIST')}
+              style={[styles.filterPill, supplierTypeFilter === 'STOCKIST' && styles.filterPillActiveStockist]}
+            >
+              <Text style={[styles.filterPillText, supplierTypeFilter === 'STOCKIST' && styles.filterPillTextActiveStockist]}>
+                Distributors / Stores ({nearestStockists.length})
+              </Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={() => setSupplierTypeFilter('MANUFACTURER')}
+              style={[styles.filterPill, supplierTypeFilter === 'MANUFACTURER' && styles.filterPillActiveMfg]}
+            >
+              <Text style={[styles.filterPillText, supplierTypeFilter === 'MANUFACTURER' && styles.filterPillTextActiveMfg]}>
+                OEM Factories ({nearestManufacturers.length})
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {/* Scrollable Ranked Nearest Suppliers List */}
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.suppliersHorizontalScroll}>
+          {/* Nearest Stockists (Stores) */}
+          {(supplierTypeFilter === 'ALL' || supplierTypeFilter === 'STOCKIST') &&
+            nearestStockists.map((stk, sIdx) => (
+              <View key={stk.id} style={styles.supplierProximityCard}>
+                <View style={styles.proximityRankRow}>
+                  <View style={styles.rankBadgeStockist}>
+                    <Text style={styles.rankBadgeText}>#{sIdx + 1} CLOSEST STORE ({stk.distanceKm} km)</Text>
+                  </View>
+                  <View style={styles.slaBadge}>
+                    <Ionicons name="time" size={10} color="#047857" />
+                    <Text style={styles.slaBadgeText}>{stk.eta}</Text>
+                  </View>
+                </View>
+
+                <Text style={styles.supplierCardName} numberOfLines={1}>{stk.name.split('(')[0]}</Text>
+                <Text style={styles.supplierCardArea}>📍 {stk.hub || stk.area} • Rating: {stk.rating || 4.9}★</Text>
+
+                {/* Live Stock & Pricing snippet */}
+                <View style={styles.stockSnippetBox}>
+                  <View style={styles.stockSnippetItem}>
+                    <Text style={styles.stockSnippetLabel}>Surgical Gloves 7.5:</Text>
+                    <Text style={styles.stockSnippetVal}>
+                      {stk.stockLevels?.['SKU-GLV-75'] !== undefined ? stk.stockLevels?.['SKU-GLV-75'] : 50} boxes @ ₹{stk.stockPrices?.['SKU-GLV-75'] || 760}
+                    </Text>
+                  </View>
+                  <View style={styles.stockSnippetItem}>
+                    <Text style={styles.stockSnippetLabel}>Dispovan 5ml Syringes:</Text>
+                    <Text style={styles.stockSnippetVal}>
+                      {stk.stockLevels?.['SKU-SYR-5ML'] !== undefined ? stk.stockLevels?.['SKU-SYR-5ML'] : 340} cartons @ ₹{stk.stockPrices?.['SKU-SYR-5ML'] || 430}
+                    </Text>
+                  </View>
+                </View>
+
+                {/* Status & Action */}
+                <View style={styles.supplierActionBottom}>
+                  {stk.isUnlocked ? (
+                    <>
+                      <View style={styles.unlockedTag}>
+                        <Ionicons name="flash" size={10} color="#047857" />
+                        <Text style={styles.unlockedTagText}>Verified • Direct Order Unlocked</Text>
+                      </View>
+                      <TouchableOpacity
+                        onPress={() => handleQuickDirectOrder(stk, false)}
+                        style={styles.directOrderBtn}
+                      >
+                        <Ionicons name="send" size={12} color="#ffffff" />
+                        <Text style={styles.directOrderBtnText}>Instant Order (50 Boxes) ➔</Text>
+                      </TouchableOpacity>
+                    </>
+                  ) : (
+                    <>
+                      <View style={styles.lockedTag}>
+                        <Ionicons name="information-circle" size={10} color="#b45309" />
+                        <Text style={styles.lockedTagText}>1-Time Hospital KYC Needed</Text>
+                      </View>
+                      <TouchableOpacity
+                        onPress={() => setOnboardingSupplier({ supplier: stk, type: 'STOCKIST' })}
+                        style={styles.onboardOrderBtn}
+                      >
+                        <Ionicons name="document-text" size={12} color="#ffffff" />
+                        <Text style={styles.onboardOrderBtnText}>1-Time Register & Order ➔</Text>
+                      </TouchableOpacity>
+                    </>
+                  )}
+                </View>
+              </View>
+            ))}
+
+          {/* Nearest Manufacturers (OEM Plants) */}
+          {(supplierTypeFilter === 'ALL' || supplierTypeFilter === 'MANUFACTURER') &&
+            nearestManufacturers.map((mfg, mIdx) => (
+              <View key={mfg.id} style={[styles.supplierProximityCard, styles.mfgCardBorder]}>
+                <View style={styles.proximityRankRow}>
+                  <View style={styles.rankBadgeMfg}>
+                    <Text style={styles.rankBadgeText}>#{mIdx + 1} OEM FACTORY ({mfg.distanceKm} km)</Text>
+                  </View>
+                  <View style={[styles.slaBadge, { backgroundColor: '#f0fdf4' }]}>
+                    <Ionicons name="train" size={10} color="#15803d" />
+                    <Text style={[styles.slaBadgeText, { color: '#15803d' }]}>{mfg.eta}</Text>
+                  </View>
+                </View>
+
+                <Text style={styles.supplierCardName} numberOfLines={1}>{mfg.brand || mfg.name} Primary Plant</Text>
+                <Text style={styles.supplierCardArea}>🏭 {mfg.area || mfg.primaryHub} • Official OEM</Text>
+
+                {/* Factory Buffer Stock snippet */}
+                <View style={[styles.stockSnippetBox, { backgroundColor: '#f0fdf4', borderColor: '#bbf7d0' }]}>
+                  <View style={styles.stockSnippetItem}>
+                    <Text style={[styles.stockSnippetLabel, { color: '#166534' }]}>Central Factory Buffer:</Text>
+                    <Text style={[styles.stockSnippetVal, { color: '#15803d' }]}>1,280,000 Units (Bulk Freight Depot)</Text>
+                  </View>
+                  <View style={styles.stockSnippetItem}>
+                    <Text style={[styles.stockSnippetLabel, { color: '#166534' }]}>Primary Plant Lines:</Text>
+                    <Text style={[styles.stockSnippetVal, { color: '#15803d' }]}>Dispovan Syringes, IV Cannulas, N95</Text>
+                  </View>
+                </View>
+
+                {/* Status & Action */}
+                <View style={styles.supplierActionBottom}>
+                  {mfg.isUnlocked ? (
+                    <>
+                      <View style={styles.unlockedTag}>
+                        <Ionicons name="flash" size={10} color="#047857" />
+                        <Text style={styles.unlockedTagText}>Direct OEM Bridge Active</Text>
+                      </View>
+                      <TouchableOpacity
+                        onPress={() => handleQuickDirectOrder(mfg, true)}
+                        style={[styles.directOrderBtn, { backgroundColor: '#15803d' }]}
+                      >
+                        <FontAwesome5 name="industry" size={12} color="#ffffff" />
+                        <Text style={styles.directOrderBtnText}>Direct Factory Order (50 Boxes) ➔</Text>
+                      </TouchableOpacity>
+                    </>
+                  ) : (
+                    <>
+                      <View style={styles.lockedTag}>
+                        <Ionicons name="information-circle" size={10} color="#b45309" />
+                        <Text style={styles.lockedTagText}>1-Time OEM Link Needed</Text>
+                      </View>
+                      <TouchableOpacity
+                        onPress={() => setOnboardingSupplier({ supplier: mfg, type: 'MANUFACTURER' })}
+                        style={[styles.onboardOrderBtn, { backgroundColor: '#059669' }]}
+                      >
+                        <Ionicons name="document-text" size={12} color="#ffffff" />
+                        <Text style={styles.onboardOrderBtnText}>1-Time Connect & Order ➔</Text>
+                      </TouchableOpacity>
+                    </>
+                  )}
+                </View>
+              </View>
+            ))}
+        </ScrollView>
+      </View>
+
+      {/* 1-TIME HOSPITAL ONBOARDING & ESSENTIAL DETAILS MODAL */}
+      {onboardingSupplier && (
+        <Modal visible={true} transparent animationType="fade">
+          <View style={styles.modalBackdrop}>
+            <View style={styles.modalDialogCard}>
+              <View style={styles.modalDialogTop}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                  <View style={styles.modalDialogIconCircle}>
+                    <FontAwesome5 name="hospital-user" size={18} color="#0284c7" />
+                  </View>
+                  <View>
+                    <Text style={styles.modalDialogTitle}>1-Time Hospital Verification & Supplier Link</Text>
+                    <Text style={styles.modalDialogSubtitle}>
+                      Connecting {activeHosp.name} ➔ {onboardingSupplier.supplier.name}
+                    </Text>
+                  </View>
+                </View>
+                <TouchableOpacity onPress={() => setOnboardingSupplier(null)} style={{ padding: 4 }}>
+                  <Ionicons name="close" size={20} color="#64748b" />
+                </TouchableOpacity>
+              </View>
+
+              <View style={styles.modalExplainerBanner}>
+                <Ionicons name="shield-checkmark" size={18} color="#0284c7" />
+                <Text style={styles.modalExplainerText}>
+                  Enter essential details once. After this 1st order verification, direct zero-click ordering will be permanently unlocked. You will never have to re-enter paperwork again.
+                </Text>
+              </View>
+
+              <ScrollView style={{ maxHeight: 340 }}>
+                <View style={styles.modalFieldGroup}>
+                  <Text style={styles.modalFieldLabel}>Hospital Registered Name</Text>
+                  <TextInput
+                    style={[styles.modalInput, styles.modalInputDisabled]}
+                    value={activeHosp.name}
+                    editable={false}
+                  />
+                </View>
+
+                <View style={styles.modalFieldGroup}>
+                  <Text style={styles.modalFieldLabel}>Hospital Area & Region</Text>
+                  <TextInput
+                    style={[styles.modalInput, styles.modalInputDisabled]}
+                    value={`${activeHosp.area} (Beds: ${activeHosp.beds || 350})`}
+                    editable={false}
+                  />
+                </View>
+
+                <View style={styles.modalFieldGroup}>
+                  <Text style={styles.modalFieldLabel}>Inward Receiving Dock & Gate</Text>
+                  <TextInput
+                    style={styles.modalInput}
+                    value={receivingDock}
+                    onChangeText={setReceivingDock}
+                    placeholder="e.g. Gate 2 - OT Emergency Bay"
+                  />
+                </View>
+
+                <View style={styles.modalFieldGroup}>
+                  <Text style={styles.modalFieldLabel}>Hospital Drug License / Health Registration No.</Text>
+                  <TextInput
+                    style={styles.modalInput}
+                    value={licenseNo}
+                    onChangeText={setLicenseNo}
+                    placeholder="e.g. MH-MUM-DL-2026-8819"
+                  />
+                </View>
+
+                <View style={{ flexDirection: 'row', gap: 10 }}>
+                  <View style={[styles.modalFieldGroup, { flex: 1 }]}>
+                    <Text style={styles.modalFieldLabel}>Head of Procurement</Text>
+                    <TextInput
+                      style={styles.modalInput}
+                      value={activeHosp.contactPerson}
+                      editable={false}
+                    />
+                  </View>
+                  <View style={[styles.modalFieldGroup, { flex: 1 }]}>
+                    <Text style={styles.modalFieldLabel}>Phone / WhatsApp</Text>
+                    <TextInput
+                      style={styles.modalInput}
+                      value={activeHosp.phone}
+                      editable={false}
+                    />
+                  </View>
+                </View>
+
+                <View style={styles.modalFieldGroup}>
+                  <Text style={styles.modalFieldLabel}>Initial Item & Quantity to Dispatch Immediately</Text>
+                  <View style={styles.modalItemConfirmRow}>
+                    <Text style={styles.modalItemNameText}>Surgical Gloves 7.5 (Box of 100)</Text>
+                    <Text style={styles.modalItemQtyText}>50 Boxes</Text>
+                  </View>
+                </View>
+              </ScrollView>
+
+              <View style={styles.modalDialogFooter}>
+                <TouchableOpacity
+                  onPress={() => setOnboardingSupplier(null)}
+                  style={styles.modalCancelBtn}
+                >
+                  <Text style={styles.modalCancelBtnText}>Cancel</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  onPress={submitOnboardingAndOrder}
+                  style={styles.modalConfirmBtn}
+                >
+                  <Ionicons name="checkmark-done" size={16} color="#ffffff" />
+                  <Text style={styles.modalConfirmBtnText}>Verify, Connect & Dispatch Order ➔</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </Modal>
+      )}
 
       {/* 3. Simple Tab Buttons (Big, readable, bilingual) */}
       <View style={styles.tabsRow}>
@@ -127,7 +562,7 @@ export default function HospitalDashboard() {
 
           <View style={styles.cardTopHeader}>
             <View>
-              <Text style={styles.sectionTitle}>Hospital Pharmacy Stock ({selectedHospital.name})</Text>
+              <Text style={styles.sectionTitle}>Hospital Pharmacy Stock ({activeHosp.name})</Text>
               <Text style={styles.sectionSub}>Green = Stock Good • Red = Low Stock (Auto-orders when low)</Text>
             </View>
           </View>
@@ -153,8 +588,9 @@ export default function HospitalDashboard() {
 
           <View style={styles.catalogGrid}>
             {filteredInventory.map((sku) => {
-              const isLow = sku.hospStockLilavati <= sku.reorderLevel;
-              const isCritical = sku.hospStockLilavati <= sku.reorderLevel * 0.5;
+              const currentStock = getStockForHospital(sku, activeHosp.id);
+              const isLow = currentStock <= sku.reorderLevel;
+              const isCritical = currentStock <= sku.reorderLevel * 0.5;
               return (
                 <View
                   key={sku.skuId}
@@ -176,7 +612,7 @@ export default function HospitalDashboard() {
                   <View style={styles.stockCountBox}>
                     <View>
                       <Text style={[styles.stockCountNumber, (isLow || isCritical) && { color: '#dc2626' }]}>
-                        {sku.hospStockLilavati}
+                        {currentStock}
                       </Text>
                       <Text style={styles.stockCountUnit}>{sku.unit}</Text>
                     </View>
@@ -221,7 +657,7 @@ export default function HospitalDashboard() {
                   <View style={styles.wardNameWrap}>
                     <FontAwesome5 name="hospital-alt" size={18} color="#0284c7" />
                     <View>
-                      <Text style={styles.wardTitle}>{ward.name}</Text>
+                      <Text style={styles.wardTitle}>{ward.name} • {activeHosp.name.split(' ')[0]}</Text>
                       <Text style={styles.wardSubtitle}>{ward.floor} • Active Beds: {ward.activeBeds}</Text>
                     </View>
                   </View>
@@ -233,7 +669,7 @@ export default function HospitalDashboard() {
                 {/* Big Action Buttons to Consume Items in Wards */}
                 <View style={styles.consumeActionsGrid}>
                   <TouchableOpacity
-                    onPress={() => consumeWardItem('SKU-GLV-75', 10, ward.name)}
+                    onPress={() => consumeWardItem('SKU-GLV-75', 10, `${ward.name} (${activeHosp.name})`)}
                     style={styles.consumeActionBtn}
                   >
                     <FontAwesome5 name="hands-wash" size={14} color="#0284c7" />
@@ -241,7 +677,7 @@ export default function HospitalDashboard() {
                   </TouchableOpacity>
 
                   <TouchableOpacity
-                    onPress={() => consumeWardItem('SKU-CAN-20G', 10, ward.name)}
+                    onPress={() => consumeWardItem('SKU-CAN-20G', 10, `${ward.name} (${activeHosp.name})`)}
                     style={styles.consumeActionBtn}
                   >
                     <FontAwesome5 name="tint" size={14} color="#0284c7" />
@@ -249,7 +685,7 @@ export default function HospitalDashboard() {
                   </TouchableOpacity>
 
                   <TouchableOpacity
-                    onPress={() => consumeWardItem('SKU-SYR-5ML', 5, ward.name)}
+                    onPress={() => consumeWardItem('SKU-SYR-5ML', 5, `${ward.name} (${activeHosp.name})`)}
                     style={styles.consumeActionBtn}
                   >
                     <FontAwesome5 name="syringe" size={14} color="#0284c7" />
@@ -269,7 +705,7 @@ export default function HospitalDashboard() {
             <View>
               <Text style={styles.sectionTitle}>My Orders & Live Delivery Tracker</Text>
               <Text style={styles.sectionSub}>
-                🔒  Private — only {loggedInHospital?.name || selectedHospital.name}'s orders are shown here
+                🔒  Private P2P Orders — only {activeHosp.name}'s purchase transactions are shown here
               </Text>
             </View>
           </View>
@@ -707,5 +1143,492 @@ const styles = StyleSheet.create({
     color: '#94a3b8',
     textAlign: 'center',
     lineHeight: 20
+  },
+  // 🔒 Hospital Facility Secure Session Header
+  hospitalSecureHeader: {
+    backgroundColor: '#ffffff',
+    borderRadius: 16,
+    padding: 16,
+    borderWidth: 1.5,
+    borderColor: '#cbd5e1',
+    marginBottom: 14,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: 16,
+    shadowColor: '#000',
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 2 }
+  },
+  hospitalSecureLeft: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 12,
+    flex: 1,
+    minWidth: 280
+  },
+  hospitalIconCircle: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    backgroundColor: '#e0f2fe',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1.5,
+    borderColor: '#bae6fd'
+  },
+  hospitalSecureName: {
+    fontSize: 16,
+    fontWeight: '900',
+    color: '#0f172a'
+  },
+  verifiedHospBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: '#ecfdf5',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: '#a7f3d0'
+  },
+  verifiedHospBadgeText: {
+    fontSize: 10.5,
+    fontWeight: '800',
+    color: '#047857'
+  },
+  hospitalSecureMeta: {
+    fontSize: 11.5,
+    color: '#64748b',
+    marginTop: 3
+  },
+  privacyGuaranteeRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 6,
+    marginTop: 8,
+    backgroundColor: '#f8fafc',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#e2e8f0'
+  },
+  privacyGuaranteeText: {
+    fontSize: 11,
+    color: '#475569',
+    lineHeight: 15,
+    flex: 1
+  },
+  hospitalSecureRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    flexWrap: 'wrap'
+  },
+  kycStatusCard: {
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 10,
+    borderWidth: 1.5
+  },
+  kycStatusLabel: {
+    fontSize: 9.5,
+    fontWeight: '900',
+    letterSpacing: 0.5
+  },
+  kycStatusValue: {
+    fontSize: 11.5,
+    fontWeight: '800'
+  },
+  switchHospitalBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: '#f1f5f9',
+    borderWidth: 1.5,
+    borderColor: '#cbd5e1',
+    paddingHorizontal: 12,
+    paddingVertical: 9,
+    borderRadius: 10
+  },
+  switchHospitalBtnText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#475569'
+  },
+  orderFeedbackBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: '#dcfce7',
+    borderWidth: 1.5,
+    borderColor: '#86efac',
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 14
+  },
+  orderFeedbackText: {
+    fontSize: 12,
+    fontWeight: '800',
+    color: '#15803d',
+    flex: 1
+  },
+  nearestMeshCard: {
+    backgroundColor: '#ffffff',
+    borderRadius: 18,
+    padding: 16,
+    marginBottom: 18,
+    borderWidth: 1.5,
+    borderColor: '#cbd5e1',
+    shadowColor: '#000',
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 }
+  },
+  nearestMeshHeader: {
+    marginBottom: 14
+  },
+  radarIconCircle: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#e0f2fe',
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  nearestMeshTitle: {
+    fontSize: 13,
+    fontWeight: '900',
+    color: '#0f172a',
+    letterSpacing: 0.5
+  },
+  nearestMeshSubtitle: {
+    fontSize: 11,
+    color: '#64748b',
+    marginTop: 2
+  },
+  filterPillsRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginTop: 10
+  },
+  filterPill: {
+    backgroundColor: '#f1f5f9',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#e2e8f0'
+  },
+  filterPillActive: {
+    backgroundColor: '#0284c7',
+    borderColor: '#0369a1'
+  },
+  filterPillActiveStockist: {
+    backgroundColor: '#d97706',
+    borderColor: '#b45309'
+  },
+  filterPillActiveMfg: {
+    backgroundColor: '#16a34a',
+    borderColor: '#15803d'
+  },
+  filterPillText: {
+    fontSize: 10.5,
+    fontWeight: '700',
+    color: '#64748b'
+  },
+  filterPillTextActive: {
+    color: '#ffffff',
+    fontWeight: '800'
+  },
+  filterPillTextActiveStockist: {
+    color: '#ffffff',
+    fontWeight: '800'
+  },
+  filterPillTextActiveMfg: {
+    color: '#ffffff',
+    fontWeight: '800'
+  },
+  suppliersHorizontalScroll: {
+    flexDirection: 'row'
+  },
+  supplierProximityCard: {
+    width: 290,
+    backgroundColor: '#f8fafc',
+    borderRadius: 14,
+    padding: 14,
+    marginRight: 12,
+    borderWidth: 1.5,
+    borderColor: '#cbd5e1'
+  },
+  mfgCardBorder: {
+    backgroundColor: '#f0fdf4',
+    borderColor: '#bbf7d0'
+  },
+  proximityRankRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8
+  },
+  rankBadgeStockist: {
+    backgroundColor: '#fef3c7',
+    borderWidth: 1,
+    borderColor: '#fde68a',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 6
+  },
+  rankBadgeMfg: {
+    backgroundColor: '#dcfce7',
+    borderWidth: 1,
+    borderColor: '#86efac',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 6
+  },
+  rankBadgeText: {
+    fontSize: 9,
+    fontWeight: '900',
+    color: '#0f172a'
+  },
+  slaBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+    backgroundColor: '#ecfdf5',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 6
+  },
+  slaBadgeText: {
+    fontSize: 9,
+    fontWeight: '800',
+    color: '#047857'
+  },
+  supplierCardName: {
+    fontSize: 13,
+    fontWeight: '800',
+    color: '#0f172a',
+    marginBottom: 2
+  },
+  supplierCardArea: {
+    fontSize: 10.5,
+    color: '#64748b',
+    marginBottom: 10
+  },
+  stockSnippetBox: {
+    backgroundColor: '#ffffff',
+    borderRadius: 8,
+    padding: 8,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    marginBottom: 10
+  },
+  stockSnippetItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginVertical: 1.5
+  },
+  stockSnippetLabel: {
+    fontSize: 10,
+    color: '#64748b'
+  },
+  stockSnippetVal: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: '#0f172a'
+  },
+  supplierActionBottom: {
+    gap: 6
+  },
+  unlockedTag: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4
+  },
+  unlockedTagText: {
+    fontSize: 9.5,
+    fontWeight: '800',
+    color: '#047857'
+  },
+  directOrderBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    backgroundColor: '#0284c7',
+    paddingVertical: 8,
+    borderRadius: 8
+  },
+  directOrderBtnText: {
+    color: '#ffffff',
+    fontSize: 11,
+    fontWeight: '800'
+  },
+  lockedTag: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4
+  },
+  lockedTagText: {
+    fontSize: 9.5,
+    fontWeight: '800',
+    color: '#b45309'
+  },
+  onboardOrderBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    backgroundColor: '#d97706',
+    paddingVertical: 8,
+    borderRadius: 8
+  },
+  onboardOrderBtnText: {
+    color: '#ffffff',
+    fontSize: 11,
+    fontWeight: '800'
+  },
+  modalBackdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(15, 23, 42, 0.65)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 16
+  },
+  modalDialogCard: {
+    backgroundColor: '#ffffff',
+    borderRadius: 18,
+    padding: 20,
+    width: '100%',
+    maxWidth: 540,
+    shadowColor: '#000',
+    shadowOpacity: 0.25,
+    shadowRadius: 20,
+    shadowOffset: { width: 0, height: 6 }
+  },
+  modalDialogTop: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12
+  },
+  modalDialogIconCircle: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#e0f2fe',
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  modalDialogTitle: {
+    fontSize: 14,
+    fontWeight: '900',
+    color: '#0f172a'
+  },
+  modalDialogSubtitle: {
+    fontSize: 11,
+    color: '#64748b',
+    marginTop: 1
+  },
+  modalExplainerBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: '#f0f9ff',
+    borderWidth: 1,
+    borderColor: '#bae6fd',
+    borderRadius: 10,
+    padding: 10,
+    marginBottom: 12
+  },
+  modalExplainerText: {
+    fontSize: 11,
+    color: '#0369a1',
+    flex: 1,
+    lineHeight: 16
+  },
+  modalFieldGroup: {
+    marginBottom: 10
+  },
+  modalFieldLabel: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#475569',
+    marginBottom: 4
+  },
+  modalInput: {
+    backgroundColor: '#f8fafc',
+    borderWidth: 1.5,
+    borderColor: '#cbd5e1',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    fontSize: 12,
+    color: '#0f172a'
+  },
+  modalInputDisabled: {
+    backgroundColor: '#f1f5f9',
+    color: '#64748b'
+  },
+  modalItemConfirmRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: '#ecfdf5',
+    borderWidth: 1,
+    borderColor: '#86efac',
+    borderRadius: 8,
+    padding: 10
+  },
+  modalItemNameText: {
+    fontSize: 12,
+    fontWeight: '800',
+    color: '#065f46'
+  },
+  modalItemQtyText: {
+    fontSize: 12,
+    fontWeight: '900',
+    color: '#047857'
+  },
+  modalDialogFooter: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    gap: 10,
+    marginTop: 14,
+    borderTopWidth: 1,
+    borderTopColor: '#e2e8f0',
+    paddingTop: 12
+  },
+  modalCancelBtn: {
+    paddingHorizontal: 14,
+    paddingVertical: 9,
+    borderRadius: 8,
+    backgroundColor: '#f1f5f9'
+  },
+  modalCancelBtnText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#64748b'
+  },
+  modalConfirmBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: '#0284c7',
+    paddingHorizontal: 16,
+    paddingVertical: 9,
+    borderRadius: 8
+  },
+  modalConfirmBtnText: {
+    fontSize: 12,
+    fontWeight: '800',
+    color: '#ffffff'
   }
 });

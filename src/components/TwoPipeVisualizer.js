@@ -10,21 +10,131 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Platform } from 'react-native';
 import { Ionicons, FontAwesome5, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useApp } from '../store/stateManager';
+import { MUMBAI_HOSPITALS } from '../data/mumbaiData.js';
 
 export default function TwoPipeVisualizer() {
-  const { orders } = useApp();
-  const [selectedOrder, setSelectedOrder] = useState(orders[0] || null);
+  const {
+    orders,
+    allStockists,
+    allManufacturers,
+    bridges,
+    currentRole,
+    loggedInHospital,
+    selectedHospital,
+    loggedInStockist,
+    selectedStockist,
+    loggedInManufacturer,
+    selectedManufacturer,
+    fastForwardDelivery,
+    createOrUpdateBridge
+  } = useApp();
+
+  const [selectedOrder, setSelectedOrder] = useState(null);
   const [inspectedStation, setInspectedStation] = useState(null);
   const [viewMode, setViewMode] = useState('REAL_MAP'); // 'REAL_MAP' | 'SCHEMATIC'
   const [highlightLine, setHighlightLine] = useState('ALL'); // 'ALL' | 'G' | 'P' | 'B' | 'R'
 
-  useEffect(() => {
-    if (orders.length > 0 && (!selectedOrder || !orders.find(o => o.orderId === selectedOrder.orderId))) {
-      setSelectedOrder(orders[0]);
-    }
-  }, [orders]);
+  // Dynamic persona entities
+  const activeHospital = (currentRole === 'HOSPITAL' && loggedInHospital)
+    ? (loggedInHospital)
+    : selectedHospital;
 
-  const activeOrder = selectedOrder || orders[0];
+  const activeStockist = (currentRole === 'STOCKIST' && loggedInStockist)
+    ? (allStockists.find(s => s.id === loggedInStockist.id) || loggedInStockist)
+    : selectedStockist;
+
+  const activeMfg = (currentRole === 'MANUFACTURER' && loggedInManufacturer)
+    ? (allManufacturers.find(m => m.id === loggedInManufacturer.id) || loggedInManufacturer)
+    : selectedManufacturer;
+
+  // Strict Data Isolation: only show orders belonging to active role/entity
+  const visibleOrders = useMemo(() => {
+    if (currentRole === 'HOSPITAL') {
+      return (orders || []).filter(o => o.hospitalId === activeHospital.id);
+    }
+    if (currentRole === 'STOCKIST') {
+      return (orders || []).filter(o => o.stockistId === activeStockist.id);
+    }
+    if (currentRole === 'MANUFACTURER') {
+      return (orders || []).filter(o => o.mfgId === activeMfg.id);
+    }
+    return orders || [];
+  }, [orders, currentRole, activeHospital.id, activeStockist.id, activeMfg.id]);
+
+  // Strict Data Isolation: only show persistent bridges belonging to active role/entity
+  const visibleBridges = useMemo(() => {
+    if (currentRole === 'HOSPITAL') {
+      return (bridges || []).filter(b => b.hospitalId === activeHospital.id);
+    }
+    if (currentRole === 'STOCKIST') {
+      return (bridges || []).filter(b => b.stockistId === activeStockist.id);
+    }
+    if (currentRole === 'MANUFACTURER') {
+      return (bridges || []).filter(b => b.mfgId === activeMfg.id);
+    }
+    return bridges || [];
+  }, [bridges, currentRole, activeHospital.id, activeStockist.id, activeMfg.id]);
+
+  useEffect(() => {
+    if (visibleOrders.length > 0) {
+      if (!selectedOrder || !visibleOrders.find(o => o.orderId === selectedOrder.orderId)) {
+        setSelectedOrder(visibleOrders[0]);
+      }
+    } else {
+      setSelectedOrder(null);
+    }
+  }, [visibleOrders]);
+
+  const activeOrder = selectedOrder || visibleOrders[0] || null;
+
+  // Dynamic role-based map center
+  const activeCenter = currentRole === 'HOSPITAL'
+    ? { lat: activeHospital.lat || 19.0515, lng: activeHospital.lng || 72.8291, zoom: 12.5 }
+    : currentRole === 'STOCKIST'
+      ? { lat: activeStockist.lat || 19.0178, lng: activeStockist.lng || 72.8478, zoom: 13 }
+      : { lat: activeMfg.lat || 19.2968, lng: activeMfg.lng || 73.0631, zoom: 11.5 };
+
+  // Dynamic authentic road waypoints for active order
+  const activeStockistObj = (activeOrder && allStockists.find(s => s.id === activeOrder.stockistId)) || {
+    lat: 19.0178, lng: 72.8478, name: activeOrder ? activeOrder.stockistName : 'Entero Healthcare'
+  };
+  const activeHospitalObj = (activeOrder && (loggedInHospital || selectedHospital)) || activeHospital;
+
+  const sLat = activeStockistObj.lat || 19.0178;
+  const sLng = activeStockistObj.lng || 72.8478;
+  const hLat = activeHospitalObj.lat || 19.0515;
+  const hLng = activeHospitalObj.lng || 72.8291;
+
+  // Multi-Hospital specific authentic Mumbai corridors
+  const orderRouteCoords = activeHospitalObj.id === 'hosp-4'
+    ? [
+        [sLat, sLng],              // Dadar West Hub
+        [19.0182, 72.8430],        // Dadar East TT Circle
+        [19.0100, 72.8420],        // Hindmata Corridor
+        [19.0060, 72.8422],        // Parel TT Flyover
+        [hLat, hLng]               // KEM Hospital Dock
+      ]
+    : activeHospitalObj.id === 'hosp-2'
+      ? [
+          [sLat, sLng],            // Dadar Hub
+          [19.0250, 72.8410],      // Cadell Road
+          [19.0300, 72.8390],      // Shivaji Park Bay
+          [hLat, hLng]             // Hinduja Hospital Dock
+        ]
+      : activeHospitalObj.id === 'hosp-3'
+        ? [
+            [sLat, sLng],          // Suburban Hub (Andheri)
+            [19.1150, 72.8420],    // SV Road Corridor
+            [19.1280, 72.8310],    // Four Bungalows
+            [hLat, hLng]           // Kokilaben Dock
+          ]
+        : [
+            [sLat, sLng],          // Dadar Hub
+            [19.0260, 72.8360],    // Mahim Causeway
+            [19.0366, 72.8172],    // Bandra-Worli Sea Link Bridge
+            [19.0480, 72.8230],    // Bandra Reclamation Dock feeder
+            [hLat, hLng]           // Lilavati Dock
+          ];
 
   // Subway Transit Stations positioned along the authentic Mumbai geographic corridor
   const STATIONS = [
@@ -211,18 +321,122 @@ export default function TwoPipeVisualizer() {
       border: 1px solid rgba(255,255,255,0.25);
     }
 
+    /* Live Animated Radar Blip for Newly Registered Suppliers */
+    .radar-blip-container {
+      position: relative;
+      width: 52px;
+      height: 52px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+    .radar-ring {
+      position: absolute;
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      border: 3px solid #10b981;
+      animation: radarPulse 1.8s ease-out infinite;
+    }
+    .radar-ring-cyan {
+      position: absolute;
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      border: 2px solid #06b6d4;
+      animation: radarPulse 1.8s ease-out 0.9s infinite;
+    }
+    .radar-center-dot {
+      width: 28px;
+      height: 28px;
+      border-radius: 14px;
+      background: #059669;
+      border: 2.5px solid #ffffff;
+      box-shadow: 0 0 16px #10b981;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      color: #ffffff;
+      font-weight: 900;
+      z-index: 10;
+    }
+    @keyframes radarPulse {
+      0% { transform: scale(0.3); opacity: 1; }
+      80% { opacity: 0.6; }
+      100% { transform: scale(2.4); opacity: 0; }
+    }
+
+    /* Dynamic Hospital Home Pin */
+    .home-pin-container {
+      position: relative;
+      width: 48px;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+    .home-pin-ring {
+      position: absolute;
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      border: 3px solid #0284c7;
+      animation: homePulse 2s ease-out infinite;
+    }
+    .home-pin-core {
+      width: 32px;
+      height: 32px;
+      border-radius: 16px;
+      background: #0284c7;
+      border: 2.5px solid #ffffff;
+      box-shadow: 0 0 18px #38bdf8;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      color: #ffffff;
+      z-index: 10;
+    }
+    @keyframes homePulse {
+      0% { transform: scale(0.4); opacity: 1; }
+      100% { transform: scale(2.2); opacity: 0; }
+    }
+
+    /* Persistent Mesh Bridge Node Marker */
+    .bridge-node-marker {
+      width: 28px;
+      height: 28px;
+      border-radius: 14px;
+      background: #06b6d4;
+      border: 2px solid #ffffff;
+      box-shadow: 0 0 12px #06b6d4;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      cursor: pointer;
+      animation: bridgeGlow 2.5s infinite alternate;
+    }
+    @keyframes bridgeGlow {
+      0% { transform: scale(0.9); box-shadow: 0 0 8px #06b6d4; }
+      100% { transform: scale(1.15); box-shadow: 0 0 20px #10b981; }
+    }
+
     /* Live Animated Vehicle Markers */
     .vehicle-marker {
       display: flex;
       align-items: center;
       justify-content: center;
-      width: 36px;
-      height: 36px;
-      border-radius: 18px;
+      width: 38px;
+      height: 38px;
+      border-radius: 19px;
       background: #10b981;
       border: 2.5px solid #fff;
-      box-shadow: 0 0 16px #10b981;
-      font-size: 18px;
+      box-shadow: 0 0 18px #10b981;
+      font-size: 20px;
       animation: pulseGreen 1.8s infinite;
     }
     .cash-marker {
@@ -263,7 +477,7 @@ export default function TwoPipeVisualizer() {
       border: 2px solid #0f172a;
       border-radius: 12px;
       padding: 12px 14px;
-      width: 275px;
+      width: 290px;
       box-shadow: 0 10px 30px rgba(0,0,0,0.25);
     }
     .legend-title {
@@ -307,6 +521,7 @@ export default function TwoPipeVisualizer() {
     .b-p { background: #f59e0b; }
     .b-b { background: #0284c7; }
     .b-r { background: #ef4444; }
+    .b-mesh { background: #06b6d4; }
 
     /* Quick Map Controls Floating Bottom Left */
     .map-controls {
@@ -378,35 +593,28 @@ export default function TwoPipeVisualizer() {
   <!-- MTA Subway Legend Box -->
   <div class="floating-legend">
     <div class="legend-title">
-      <span>🚇 MTA SUBWAY LEGEND</span>
+      <span>🚇 MTA SUBWAY & MESH</span>
       <span style="font-size: 8.5px; color: #64748b;">MUMBAI MED-GRID</span>
     </div>
     <div class="legend-row" onclick="toggleLine('G')">
       <div class="bullet b-g">G</div>
       <div>
         <div>Line G (Goods Express)</div>
-        <div style="font-size: 8.5px; color: #64748b;">Bhiwandi ➔ Dadar ➔ Lilavati OT (Live)</div>
+        <div style="font-size: 8.5px; color: #64748b;">${activeStockistObj.name.split('(')[0]} ➔ ${activeHospitalObj.name.split(' ')[0]} OT (Live)</div>
       </div>
     </div>
     <div class="legend-row" onclick="toggleLine('P')">
       <div class="bullet b-p">P</div>
       <div>
         <div>Line P (Payment Escrow)</div>
-        <div style="font-size: 8.5px; color: #64748b;">Lilavati ➔ Escrow ➔ Factory Release</div>
+        <div style="font-size: 8.5px; color: #64748b;">Hospital ➔ Smart Escrow Release</div>
       </div>
     </div>
-    <div class="legend-row" onclick="toggleLine('B')">
-      <div class="bullet b-b">B</div>
+    <div class="legend-row">
+      <div class="bullet b-mesh">🌉</div>
       <div>
-        <div>Line B (Cold-Chain Biologics)</div>
-        <div style="font-size: 8.5px; color: #64748b;">2°C - 8°C Monitored Vaccine Line</div>
-      </div>
-    </div>
-    <div class="legend-row" onclick="toggleLine('R')">
-      <div class="bullet b-r">R</div>
-      <div>
-        <div>Line R (STAT Emergency Rush)</div>
-        <div style="font-size: 8.5px; color: #64748b;">Dadar ➔ Lilavati Trauma ICU (6 Mins)</div>
+        <div>Web of Provenance (Mesh)</div>
+        <div style="font-size: 8.5px; color: #0891b2;">${bridges.length} Permanent Supply Bridges Active</div>
       </div>
     </div>
   </div>
@@ -414,32 +622,39 @@ export default function TwoPipeVisualizer() {
   <!-- Map Quick Focus Buttons -->
   <div class="map-controls">
     <button class="control-btn" onclick="focusMumbai()">📍 All Mumbai</button>
-    <button class="control-btn" onclick="focusLilavati()">🏥 Lilavati Hospital & Sea Link</button>
-    <button class="control-btn" onclick="focusDadar()">🔄 Dadar Dawa Bazar</button>
-    <button class="control-btn" onclick="focusBhiwandi()">🏭 Bhiwandi C&F Hub</button>
+    <button class="control-btn" onclick="focusHome()">🏥 ${activeHospitalObj.name.split(' ')[0]} Dock</button>
+    <button class="control-btn" onclick="focusDadar()">🚚 Dadar Hub</button>
+    <button class="control-btn" onclick="focusBhiwandi()">🏭 Bhiwandi C&F</button>
   </div>
 
   <script>
-    // 1. Initialize Map centered on Mumbai
+    // Injected Dynamic Reactive State
+    const CURRENT_ROLE = ${JSON.stringify(currentRole)};
+    const ACTIVE_CENTER = ${JSON.stringify(activeCenter)};
+    const ACTIVE_HOSPITAL = ${JSON.stringify(activeHospital)};
+    const ALL_STOCKISTS = ${JSON.stringify(allStockists)};
+    const ALL_MANUFACTURERS = ${JSON.stringify(allManufacturers)};
+    const ALL_HOSPITALS = ${JSON.stringify(MUMBAI_HOSPITALS)};
+    const BRIDGES = ${JSON.stringify(visibleBridges)};
+    const ACTIVE_ORDER = ${JSON.stringify(activeOrder)};
+    const ROUTE_COORDS = ${JSON.stringify(orderRouteCoords)};
+
+    // 1. Initialize Map centered on active dynamic role
     const map = L.map('map', {
       zoomControl: false,
       attributionControl: false
-    }).setView([19.14, 72.91], 11);
+    }).setView([ACTIVE_CENTER.lat, ACTIVE_CENTER.lng], ACTIVE_CENTER.zoom || 12);
 
-    // 2. Base Tile Layers (100% Free, Zero API Key Required, Zero Watermarks)
-    // Official OpenStreetMap Standard
+    // 2. Base Tile Layers
     const osmStreetLayer = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 19,
       attribution: '&copy; OpenStreetMap'
     }).addTo(map);
 
-    // High-Resolution Esri World Street Map (Backup Street Layer)
     const esriStreetLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
-      maxZoom: 19,
-      attribution: '&copy; Esri'
+      maxZoom: 19
     });
 
-    // Fallback if OSM is throttled by ISP
     osmStreetLayer.on('tileerror', function() {
       if (map.hasLayer(osmStreetLayer)) {
         map.removeLayer(osmStreetLayer);
@@ -447,16 +662,12 @@ export default function TwoPipeVisualizer() {
       }
     });
 
-    // Satellite Imagery Layer (Esri World Imagery)
     const satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-      maxZoom: 19,
-      attribution: '&copy; Esri'
+      maxZoom: 19
     });
 
-    // Dark Mode Layers (Esri Dark Gray Canvas - Official, Zero Watermark, No API Key)
     const darkBaseLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
-      maxZoom: 19,
-      attribution: '&copy; Esri'
+      maxZoom: 19
     });
     const darkRefLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}', {
       maxZoom: 19
@@ -484,169 +695,182 @@ export default function TwoPipeVisualizer() {
       }
     }
 
-    // 3. Real Mumbai Road Coordinates from Bhiwandi down to Lilavati & Hinduja
-    const routeCoords = [
-      [19.2968, 73.0631], // M1: Bhiwandi Central Depot
-      [19.2780, 73.0450], // Bhiwandi Toll Plaza
-      [19.2450, 73.0180], // Mankoli Naka
-      [19.2183, 72.9781], // Majiwada Junction (Thane Central)
-      [19.1820, 72.9650], // Mulund Check Naka (EEH)
-      [19.1550, 72.9350], // Bhandup
-      [19.1250, 72.9150], // JVLR East
-      [19.1260, 72.8850], // JVLR Powai / IIT
-      [19.1350, 72.8550], // JVLR / WEH Junction
-      [19.1197, 72.8464], // S4: Andheri West Depot
-      [19.0980, 72.8520], // Vile Parle / Domestic Airport
-      [19.0750, 72.8480], // Santacruz
-      [19.0550, 72.8420], // Bandra Kalanagar
-      [19.0178, 72.8478], // D2: Dadar Central Dawa Bazar Interchange
-      [19.0260, 72.8360], // Shivaji Park / Mahim Causeway
-      [19.0366, 72.8172], // Bandra-Worli Sea Link Bridge
-      [19.0519, 72.8291], // H1: Lilavati Hospital Receiving Dock (Bandra West)
-    ];
+    // 3. Render Hospital Markers & Dynamic Home Pin
+    ALL_HOSPITALS.forEach(h => {
+      const isHome = CURRENT_ROLE === 'HOSPITAL' && (h.id === ACTIVE_HOSPITAL.id || h.name === ACTIVE_HOSPITAL.name);
+      const pos = [h.lat, h.lng];
 
-    const kemBranchCoords = [
-      [19.0178, 72.8478], // Dadar Interchange
-      [19.0033, 72.8424]  // K3: KEM Hospital Parel
-    ];
-
-    const hindujaBranchCoords = [
-      [19.0519, 72.8291], // Lilavati
-      [19.0330, 72.8397]  // H2: Hinduja Hospital
-    ];
-
-    // 4. Overlaid 2-Pipe Subway Lines on the Real Map
-    // Line G: Physical Goods Express (Green)
-    const lineG_outer = L.polyline(routeCoords, {
-      color: '#064e3b',
-      weight: 9,
-      opacity: 0.5,
-      lineCap: 'round',
-      lineJoin: 'round'
-    }).addTo(map);
-
-    const lineG = L.polyline(routeCoords, {
-      color: '#10b981',
-      weight: 5.5,
-      opacity: 0.95,
-      lineCap: 'round',
-      lineJoin: 'round'
-    }).addTo(map);
-
-    // Line P: Capital & Payment Escrow Track (Gold)
-    const lineP = L.polyline(routeCoords, {
-      color: '#f59e0b',
-      weight: 4.5,
-      opacity: 0.9,
-      dashArray: '8, 6',
-      lineCap: 'round',
-      lineJoin: 'round'
-    }).addTo(map);
-
-    // Line B & R Branches
-    const lineB = L.polyline(hindujaBranchCoords, {
-      color: '#0284c7',
-      weight: 4,
-      dashArray: '6, 4'
-    }).addTo(map);
-
-    const lineR = L.polyline(kemBranchCoords, {
-      color: '#ef4444',
-      weight: 4,
-      dashArray: '5, 3'
-    }).addTo(map);
-
-    // 5. Station Markers on Real Locations with Smart Directional Layout
-    const stations = [
-      {
-        id: 'm1',
-        code: 'M1',
-        name: 'Bhiwandi C&F Terminal',
-        badgeClass: 'badge-m1',
-        align: 'right',
-        pos: [19.2968, 73.0631],
-        desc: 'HMD Dispovan & Polymed National Depots • 1,280,000 Units Factory Buffer'
-      },
-      {
-        id: 's4',
-        code: 'S4',
-        name: 'Andheri West Depot',
-        badgeClass: 'badge-s4',
-        align: 'right',
-        pos: [19.1197, 72.8464],
-        desc: 'Sagar Medical & Surgicals Depot • 24,000 Units Buffer'
-      },
-      {
-        id: 'h1',
-        code: 'H1',
-        name: 'Lilavati Hospital Dock',
-        badgeClass: 'badge-h1',
-        align: 'left', // Points LEFT into Arabian Sea space to avoid any overlap!
-        pos: [19.0519, 72.8291],
-        desc: 'Bandra West (Gate 2 Dock) • Inward Stores & Central Pharmacy'
-      },
-      {
-        id: 'h2',
-        code: 'H2',
-        name: 'Hinduja Hospital Dock',
-        badgeClass: 'badge-h2',
-        align: 'left', // Points LEFT into Mahim Bay space to avoid any overlap!
-        pos: [19.0330, 72.8397],
-        desc: 'Mahim Bay Receiving Dock • 2-8°C Cold-Chain Vault'
-      },
-      {
-        id: 'd2',
-        code: 'D2',
-        name: 'Dadar Interchange',
-        badgeClass: 'badge-d2',
-        align: 'right', // Points RIGHT into Central Mumbai space!
-        pos: [19.0178, 72.8478],
-        desc: 'Entero Healthcare Syndicate • 42,000 Units Wholesale Buffer'
-      },
-      {
-        id: 'k3',
-        code: 'K3',
-        name: 'K.E.M. Hospital Bay',
-        badgeClass: 'badge-k3',
-        align: 'right', // Points RIGHT into Parel space!
-        pos: [19.0033, 72.8424],
-        desc: 'Municipal Trauma & Emergency Medical Stores'
+      if (isHome) {
+        const homeIcon = L.divIcon({
+          html: '<div class="home-pin-container"><div class="home-pin-ring"></div><div class="home-pin-core">🏥</div></div>',
+          className: '',
+          iconSize: [48, 48],
+          iconAnchor: [24, 24]
+        });
+        const m = L.marker(pos, { icon: homeIcon, zIndexOffset: 2000 }).addTo(map);
+        m.bindPopup(
+          '<div style="font-family:sans-serif;padding:6px;">' +
+          '<div style="font-weight:900;color:#0284c7;font-size:12px;">🏥 HOME PROCUREMENT PIN</div>' +
+          '<div style="font-weight:800;font-size:13px;color:#0f172a;margin-top:2px;">' + h.name + '</div>' +
+          '<div style="font-size:11px;color:#64748b;margin:4px 0;">📍 ' + h.area + ' • Beds: ' + h.beds + '</div>' +
+          '<div style="font-size:10.5px;color:#16a34a;font-weight:bold;">✓ Direct automated requisition hub active</div>' +
+          '</div>'
+        );
+      } else {
+        const hospIcon = L.divIcon({
+          html: '<div class="mta-marker-left"><div class="mta-badge badge-h1">H</div><div class="mta-label">' + h.name.split(' ')[0] + '</div></div>',
+          className: '',
+          iconSize: [160, 32],
+          iconAnchor: [146, 16]
+        });
+        const m = L.marker(pos, { icon: hospIcon }).addTo(map);
+        m.bindPopup(
+          '<div style="font-family:sans-serif;padding:4px;">' +
+          '<div style="font-weight:900;font-size:12px;color:#0f172a;">' + h.name + '</div>' +
+          '<div style="font-size:11px;color:#64748b;">📍 ' + h.area + ' • ' + h.contactPerson + '</div>' +
+          '</div>'
+        );
       }
-    ];
+    });
 
-    stations.forEach(stn => {
-      const isLeft = stn.align === 'left';
-      const markerClass = isLeft ? 'mta-marker-left' : 'mta-marker-right';
-      const html = '<div class="' + markerClass + '">' +
-        '<div class="mta-badge ' + stn.badgeClass + '">' + stn.code + '</div>' +
-        '<div class="mta-label">' + stn.name + '</div>' +
-        '</div>';
+    // 4. Render All Stockists with Live Radar Blip for Newly Registered
+    ALL_STOCKISTS.forEach(stk => {
+      const pos = [stk.lat || 19.0178, stk.lng || 72.8478];
 
-      const icon = L.divIcon({
-        html: html,
+      if (stk.isNewBlip) {
+        // Spawn pulsating animated radar blip ping!
+        const blipIcon = L.divIcon({
+          html: '<div class="radar-blip-container"><div class="radar-ring"></div><div class="radar-ring-cyan"></div><div class="radar-center-dot">⚡</div></div>',
+          className: '',
+          iconSize: [52, 52],
+          iconAnchor: [26, 26]
+        });
+        const m = L.marker(pos, { icon: blipIcon, zIndexOffset: 3000 }).addTo(map);
+        m.bindPopup(
+          '<div style="font-family:sans-serif;padding:6px;min-width:210px;">' +
+          '<div style="font-weight:900;color:#047857;font-size:12px;">⚡ NEW LIVE GEO-REGISTERED SUPPLIER</div>' +
+          '<div style="font-weight:800;font-size:13.5px;color:#0f172a;margin-top:2px;">' + stk.name + '</div>' +
+          '<div style="font-size:11px;color:#64748b;margin:4px 0;">📍 ' + (stk.area || stk.hub) + ' • Rating: ' + (stk.rating || 5.0) + '★</div>' +
+          '<div style="background:#f0fdf4;border:1px solid #bbf7d0;padding:5px 8px;border-radius:6px;margin:4px 0;">' +
+          '<div style="font-size:11px;font-weight:800;color:#15803d;">Opening Declared Stock:</div>' +
+          '<div style="font-size:10.5px;color:#166534;">• Gloves 7.5: ' + (stk.stockLevels && stk.stockLevels["SKU-GLV-75"] !== undefined ? stk.stockLevels["SKU-GLV-75"] : 50) + ' boxes @ ₹' + (stk.stockPrices && stk.stockPrices["SKU-GLV-75"] ? stk.stockPrices["SKU-GLV-75"] : 750) + '</div>' +
+          '<div style="font-size:10.5px;color:#166534;">• Syringes 5ml: ' + (stk.stockLevels && stk.stockLevels["SKU-SYR-5ML"] !== undefined ? stk.stockLevels["SKU-SYR-5ML"] : 30) + ' cartons @ ₹' + (stk.stockPrices && stk.stockPrices["SKU-SYR-5ML"] ? stk.stockPrices["SKU-SYR-5ML"] : 420) + '</div>' +
+          '</div>' +
+          '<div style="font-size:10px;color:#0284c7;font-weight:bold;">✓ Instantly synchronized across all Mumbai hospital maps</div>' +
+          '</div>'
+        );
+      } else {
+        const stkIcon = L.divIcon({
+          html: '<div class="mta-marker-right"><div class="mta-badge badge-d2">S</div><div class="mta-label">' + stk.name.split('(')[0] + '</div></div>',
+          className: '',
+          iconSize: [180, 32],
+          iconAnchor: [14, 16]
+        });
+        const m = L.marker(pos, { icon: stkIcon }).addTo(map);
+        m.bindPopup(
+          '<div style="font-family:sans-serif;padding:4px;">' +
+          '<div style="font-weight:900;font-size:12px;color:#0f172a;">' + stk.name + '</div>' +
+          '<div style="font-size:11px;color:#64748b;">📍 ' + stk.hub + ' • SLA: ' + stk.deliverySLA + '</div>' +
+          '</div>'
+        );
+      }
+    });
+
+    // 5. Render Manufacturers
+    ALL_MANUFACTURERS.forEach(mfg => {
+      const pos = [mfg.lat || 19.2968, mfg.lng || 73.0631];
+      const mfgIcon = L.divIcon({
+        html: '<div class="mta-marker-right"><div class="mta-badge badge-m1">M</div><div class="mta-label">' + (mfg.brand || mfg.name).split('(')[0] + '</div></div>',
         className: '',
         iconSize: [180, 32],
-        iconAnchor: isLeft ? [166, 16] : [14, 16]
+        iconAnchor: [14, 16]
       });
+      L.marker(pos, { icon: mfgIcon }).addTo(map)
+        .bindPopup(
+          '<div style="font-family:sans-serif;padding:4px;">' +
+          '<div style="font-weight:900;font-size:12px;color:#0f172a;">🏭 ' + mfg.name + '</div>' +
+          '<div style="font-size:11px;color:#64748b;">Brand: ' + mfg.brand + ' • Depot: ' + (mfg.area || mfg.primaryHub) + '</div>' +
+          '</div>'
+        );
+    });
 
-      const marker = L.marker(stn.pos, { icon: icon }).addTo(map);
-      marker.bindPopup(
-        '<div style="font-family: sans-serif; padding: 4px;">' +
-        '<div style="font-weight: 900; font-size: 13px; color: #0f172a;">[' + stn.code + '] ' + stn.name + '</div>' +
-        '<div style="font-size: 11px; color: #64748b; margin: 4px 0;">' + stn.desc + '</div>' +
-        '<div style="font-size: 11px; font-weight: 800; color: #16a34a;">✓ Real-time inventory sync active</div>' +
+    // 6. Render Persistent Supply Bridges ("Web of Provenance")
+    BRIDGES.forEach(bridge => {
+      const hPos = [bridge.hospitalCoords.lat, bridge.hospitalCoords.lng];
+      const sPos = [bridge.stockistCoords.lat, bridge.stockistCoords.lng];
+
+      // Outer glowing luminous line
+      L.polyline([hPos, sPos], {
+        color: '#10b981',
+        weight: 8,
+        opacity: 0.45,
+        lineCap: 'round'
+      }).addTo(map);
+
+      // Core cyan dash track
+      L.polyline([hPos, sPos], {
+        color: '#06b6d4',
+        weight: 4.5,
+        opacity: 0.95,
+        dashArray: '8, 6',
+        lineCap: 'round'
+      }).addTo(map);
+
+      // Midpoint bridge interactive badge
+      const midLat = (hPos[0] + sPos[0]) / 2;
+      const midLng = (hPos[1] + sPos[1]) / 2;
+      const bridgeIcon = L.divIcon({
+        html: '<div class="bridge-node-marker" title="Persistent Supply Bridge">🌉</div>',
+        className: '',
+        iconSize: [28, 28],
+        iconAnchor: [14, 14]
+      });
+      const bm = L.marker([midLat, midLng], { icon: bridgeIcon }).addTo(map);
+      bm.bindPopup(
+        '<div style="font-family:sans-serif;padding:6px;min-width:230px;">' +
+        '<div style="font-weight:900;color:#0284c7;font-size:12px;">⚡ PERSISTENT SUPPLY BRIDGE</div>' +
+        '<div style="font-weight:800;font-size:13px;color:#0f172a;margin-top:2px;">' + bridge.hospitalName + ' ⟷ ' + bridge.stockistName + '</div>' +
+        '<hr style="border:none;border-top:1px solid #e2e8f0;margin:6px 0;"/>' +
+        '<div style="font-size:11px;color:#475569;">📦 Lifetime Orders: <b>' + bridge.lifetimeOrders + ' Verified</b></div>' +
+        '<div style="font-size:11px;color:#475569;">💰 Cleared Volume: <b>₹' + Number(bridge.totalValue).toLocaleString("en-IN") + '</b></div>' +
+        '<div style="font-size:11px;color:#475569;">⚡ Avg Speed: <b>' + bridge.avgTransitMins + ' mins</b></div>' +
+        '<div style="font-size:11px;color:#475569;">🔒 Smart Escrow: <b>' + bridge.activeCreditLine + '</b></div>' +
+        '<div style="margin-top:6px;background:#dbeafe;padding:4px 6px;border-radius:4px;font-size:10px;font-weight:bold;color:#1e40af;">✓ ZERO-CLICK MIC REORDERING ACTIVE</div>' +
         '</div>'
       );
     });
 
-    // 6. Live Moving Delivery Van on Line G
+    // 7. Swiggy-Style Live Delivery Tracking on Route G & P
+    const lineG_outer = L.polyline(ROUTE_COORDS, {
+      color: '#064e3b',
+      weight: 9,
+      opacity: 0.5,
+      lineCap: 'round'
+    }).addTo(map);
+
+    const lineG = L.polyline(ROUTE_COORDS, {
+      color: '#10b981',
+      weight: 5.5,
+      opacity: 0.95,
+      lineCap: 'round'
+    }).addTo(map);
+
+    const lineP = L.polyline(ROUTE_COORDS, {
+      color: '#f59e0b',
+      weight: 4.5,
+      opacity: 0.9,
+      dashArray: '8, 6',
+      lineCap: 'round'
+    }).addTo(map);
+
+    // Live Moving Delivery Vehicle on Line G
     const vanIcon = L.divIcon({
       html: '<div class="vehicle-marker">🚚</div>',
       className: '',
-      iconSize: [36, 36],
-      iconAnchor: [18, 18]
+      iconSize: [38, 38],
+      iconAnchor: [19, 19]
     });
-    const vanMarker = L.marker(routeCoords[0], { icon: vanIcon }).addTo(map);
+    const vanMarker = L.marker(ROUTE_COORDS[0], { icon: vanIcon, zIndexOffset: 2500 }).addTo(map);
 
     // Live Moving Escrow Token on Line P
     const cashIcon = L.divIcon({
@@ -655,46 +879,44 @@ export default function TwoPipeVisualizer() {
       iconSize: [32, 32],
       iconAnchor: [16, 16]
     });
-    const cashMarker = L.marker(routeCoords[routeCoords.length - 1], { icon: cashIcon }).addTo(map);
+    const cashMarker = L.marker(ROUTE_COORDS[ROUTE_COORDS.length - 1], { icon: cashIcon, zIndexOffset: 2400 }).addTo(map);
 
-    // Animation Loop
+    // Vehicle Animation Loop traversing road artery
     let vanStep = 0;
-    let cashStep = routeCoords.length - 1;
+    let cashStep = ROUTE_COORDS.length - 1;
 
     setInterval(() => {
-      // Move Van Westbound towards Lilavati
       vanStep += 0.08;
-      if (vanStep >= routeCoords.length - 1) vanStep = 0;
+      if (vanStep >= ROUTE_COORDS.length - 1) vanStep = 0;
       const idx = Math.floor(vanStep);
       const frac = vanStep - idx;
-      const p1 = routeCoords[idx];
-      const p2 = routeCoords[Math.min(idx + 1, routeCoords.length - 1)];
+      const p1 = ROUTE_COORDS[idx];
+      const p2 = ROUTE_COORDS[Math.min(idx + 1, ROUTE_COORDS.length - 1)];
       const lat = p1[0] + (p2[0] - p1[0]) * frac;
       const lng = p1[1] + (p2[1] - p1[1]) * frac;
       vanMarker.setLatLng([lat, lng]);
 
-      // Move Cash Eastbound towards Factory
       cashStep -= 0.07;
-      if (cashStep <= 0) cashStep = routeCoords.length - 1;
+      if (cashStep <= 0) cashStep = ROUTE_COORDS.length - 1;
       const cIdx = Math.floor(cashStep);
       const cFrac = cashStep - cIdx;
-      const cp1 = routeCoords[cIdx];
-      const cp2 = routeCoords[Math.min(cIdx + 1, routeCoords.length - 1)];
+      const cp1 = ROUTE_COORDS[cIdx];
+      const cp2 = ROUTE_COORDS[Math.min(cIdx + 1, ROUTE_COORDS.length - 1)];
       const cLat = cp1[0] + (cp2[0] - cp1[0]) * cFrac;
       const cLng = cp1[1] + (cp2[1] - cp1[1]) * cFrac;
       cashMarker.setLatLng([cLat, cLng]);
     }, 70);
 
-    // 7. Map Navigation Functions
+    // Navigation Focus Functions
     function focusMumbai() {
       map.fitBounds([
-        [18.98, 72.80],
+        [18.94, 72.80],
         [19.32, 73.10]
       ], { padding: [40, 40] });
     }
 
-    function focusLilavati() {
-      map.flyTo([19.0519, 72.8291], 15, { duration: 1.2 });
+    function focusHome() {
+      map.flyTo([ACTIVE_HOSPITAL.lat || 19.0515, ACTIVE_HOSPITAL.lng || 72.8291], 15, { duration: 1.2 });
     }
 
     function focusDadar() {
@@ -722,9 +944,6 @@ export default function TwoPipeVisualizer() {
         }
       }
     }
-
-    // Default view: fit full Mumbai corridor
-    focusMumbai();
   </script>
 </body>
 </html>
@@ -779,27 +998,35 @@ export default function TwoPipeVisualizer() {
             </TouchableOpacity>
           </View>
 
-          {/* Order Chips */}
+          {/* Order Chips (Private per entity) */}
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.orderChips}>
-            {orders.map((ord) => (
-              <TouchableOpacity
-                key={ord.orderId}
-                onPress={() => setSelectedOrder(ord)}
-                style={[
-                  styles.orderChip,
-                  activeOrder && activeOrder.orderId === ord.orderId && styles.orderChipActive
-                ]}
-              >
-                <Text
+            {visibleOrders.length === 0 ? (
+              <View style={{ paddingVertical: 4, paddingHorizontal: 10 }}>
+                <Text style={{ fontSize: 11, color: '#64748b', fontStyle: 'italic' }}>
+                  No active orders for {activeHospital.name.split(' ')[0]} • Tap nearest store below or use 🎤 mic to place order
+                </Text>
+              </View>
+            ) : (
+              visibleOrders.map((ord) => (
+                <TouchableOpacity
+                  key={ord.orderId}
+                  onPress={() => setSelectedOrder(ord)}
                   style={[
-                    styles.orderChipText,
-                    activeOrder && activeOrder.orderId === ord.orderId && styles.orderChipTextActive
+                    styles.orderChip,
+                    activeOrder && activeOrder.orderId === ord.orderId && styles.orderChipActive
                   ]}
                 >
-                  {ord.orderId} ({ord.deliveryStatus})
-                </Text>
-              </TouchableOpacity>
-            ))}
+                  <Text
+                    style={[
+                      styles.orderChipText,
+                      activeOrder && activeOrder.orderId === ord.orderId && styles.orderChipTextActive
+                    ]}
+                  >
+                    {ord.orderId} ({ord.deliveryStatus})
+                  </Text>
+                </TouchableOpacity>
+              ))
+            )}
           </ScrollView>
         </View>
       </View>
@@ -1002,6 +1229,45 @@ export default function TwoPipeVisualizer() {
               {activeOrder.items.map(i => `${i.qty} ${i.unit} ${i.name}`).join(', ')}
             </Text>
 
+            {/* Swiggy-Style Visual Progression Ticker */}
+            <View style={styles.tickerContainer}>
+              <View style={styles.tickerBarBackground}>
+                <View
+                  style={[
+                    styles.tickerBarFill,
+                    {
+                      width:
+                        activeOrder.deliveryStatus === 'DELIVERED'
+                          ? '100%'
+                          : activeOrder.deliveryStatus === 'ARRIVING'
+                            ? '90%'
+                            : activeOrder.deliveryStatus === 'IN_TRANSIT'
+                              ? '60%'
+                              : '25%'
+                    }
+                  ]}
+                />
+              </View>
+              <View style={styles.tickerStepsRow}>
+                <View style={styles.tickerStepItem}>
+                  <Text style={[styles.tickerStepDot, activeOrder.deliveryStatus && styles.tickerStepDotActive]}>●</Text>
+                  <Text style={[styles.tickerStepLabel, activeOrder.deliveryStatus && styles.tickerStepLabelActive]}>DISPATCHED (20%)</Text>
+                </View>
+                <View style={styles.tickerStepItem}>
+                  <Text style={[styles.tickerStepDot, ['IN_TRANSIT', 'ARRIVING', 'DELIVERED'].includes(activeOrder.deliveryStatus) && styles.tickerStepDotActive]}>●</Text>
+                  <Text style={[styles.tickerStepLabel, ['IN_TRANSIT', 'ARRIVING', 'DELIVERED'].includes(activeOrder.deliveryStatus) && styles.tickerStepLabelActive]}>IN TRANSIT (60%)</Text>
+                </View>
+                <View style={styles.tickerStepItem}>
+                  <Text style={[styles.tickerStepDot, ['ARRIVING', 'DELIVERED'].includes(activeOrder.deliveryStatus) && styles.tickerStepDotActive]}>●</Text>
+                  <Text style={[styles.tickerStepLabel, ['ARRIVING', 'DELIVERED'].includes(activeOrder.deliveryStatus) && styles.tickerStepLabelActive]}>ARRIVING (90%)</Text>
+                </View>
+                <View style={styles.tickerStepItem}>
+                  <Text style={[styles.tickerStepDot, activeOrder.deliveryStatus === 'DELIVERED' && styles.tickerStepDotActive]}>●</Text>
+                  <Text style={[styles.tickerStepLabel, activeOrder.deliveryStatus === 'DELIVERED' && styles.tickerStepLabelActive]}>DELIVERED (100%)</Text>
+                </View>
+              </View>
+            </View>
+
             <View style={styles.specRow}>
               <Text style={styles.specLabel}>Subway Express Track:</Text>
               <Text style={styles.specValueGreen}>Dadar West Hub ➔ Sea Link Corridor ➔ Lilavati Dock Gate 2</Text>
@@ -1009,12 +1275,54 @@ export default function TwoPipeVisualizer() {
 
             <View style={styles.specRow}>
               <Text style={styles.specLabel}>Live Transit Van GPS:</Text>
-              <Text style={styles.specValueGreen}>{activeOrder.currentLocation}</Text>
+              <Text style={styles.specValueGreen}>
+                {activeOrder.deliveryStatus === 'DELIVERED'
+                  ? 'Docked at Hospital Receiving Dock'
+                  : activeOrder.currentLocation || 'Entero Express • 14 mins away • On Bandra-Worli Sea Link'}
+              </Text>
             </View>
 
             <View style={styles.specRow}>
               <Text style={styles.specLabel}>Estimated Arrival (ETA):</Text>
-              <Text style={styles.specValueBold}>{activeOrder.deliveredBy}</Text>
+              <Text style={styles.specValueBold}>{activeOrder.deliveredBy || '14 Mins'}</Text>
+            </View>
+
+            {/* Test Stage Control Buttons */}
+            <View style={styles.deliveryActionRow}>
+              {activeOrder.deliveryStatus !== 'DELIVERED' ? (
+                <>
+                  <TouchableOpacity
+                    style={styles.fastForwardBtn}
+                    onPress={() => fastForwardDelivery && fastForwardDelivery(activeOrder.orderId)}
+                  >
+                    <Ionicons name="play-forward" size={14} color="#ffffff" />
+                    <Text style={styles.fastForwardBtnText}>⚡ Fast-Forward Stage</Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={styles.instantDeliverBtn}
+                    onPress={() => {
+                      if (createOrUpdateBridge) {
+                        createOrUpdateBridge(activeOrder);
+                      }
+                      if (fastForwardDelivery) {
+                        fastForwardDelivery(activeOrder.orderId);
+                        fastForwardDelivery(activeOrder.orderId);
+                        fastForwardDelivery(activeOrder.orderId);
+                      }
+                    }}
+                  >
+                    <Ionicons name="checkmark-done" size={14} color="#047857" />
+                    <Text style={styles.instantDeliverBtnText}>✨ Instant Deliver & Bridge</Text>
+                  </TouchableOpacity>
+                </>
+              ) : (
+                <View style={styles.bridgeFormedBanner}>
+                  <Text style={styles.bridgeFormedBannerText}>
+                    🌉 Persistent Supply Bridge Established • Zero-Click Mic Voice Reordering Unlocked
+                  </Text>
+                </View>
+              )}
             </View>
           </View>
 
@@ -1028,13 +1336,40 @@ export default function TwoPipeVisualizer() {
                 <Text style={styles.telemetryCardTitleGold}>LINE P: CAPITAL & PAYMENT ESCROW (Eastbound ➔)</Text>
               </View>
               <View style={styles.pillStatusGold}>
-                <Text style={styles.pillStatusGoldText}>{activeOrder.paymentStatus}</Text>
+                <Text style={styles.pillStatusGoldText}>
+                  {activeOrder.deliveryStatus === 'DELIVERED' ? 'ESCROW_RELEASED' : activeOrder.paymentStatus}
+                </Text>
               </View>
             </View>
 
             <Text style={styles.escrowTotalAmount}>
               ₹{activeOrder.totalAmount.toLocaleString('en-IN')}
             </Text>
+
+            {/* Counter-Directional Payment Escrow Pipeline Milestone */}
+            <View style={styles.escrowPipelineBox}>
+              <View style={styles.escrowMilestoneRow}>
+                <View style={[styles.escrowMilestone, styles.escrowMilestoneActive]}>
+                  <Text style={styles.escrowMilestoneText}>🔒 1. Escrow Locked</Text>
+                </View>
+                <Ionicons name="arrow-forward" size={12} color="#b45309" />
+                <View style={[
+                  styles.escrowMilestone,
+                  ['IN_TRANSIT', 'ARRIVING', 'DELIVERED'].includes(activeOrder.deliveryStatus) && styles.escrowMilestoneActive
+                ]}>
+                  <Text style={styles.escrowMilestoneText}>📦 2. Dock Verification</Text>
+                </View>
+                <Ionicons name="arrow-forward" size={12} color="#b45309" />
+                <View style={[
+                  styles.escrowMilestone,
+                  activeOrder.deliveryStatus === 'DELIVERED' && styles.escrowMilestoneSuccess
+                ]}>
+                  <Text style={styles.escrowMilestoneText}>
+                    {activeOrder.deliveryStatus === 'DELIVERED' ? '💰 3. Released to Supplier' : '⏳ 3. Release on Delivery'}
+                  </Text>
+                </View>
+              </View>
+            </View>
 
             <View style={styles.specRow}>
               <Text style={styles.specLabel}>Settlement Protocol:</Text>
@@ -1053,6 +1388,76 @@ export default function TwoPipeVisualizer() {
           </View>
         </View>
       )}
+
+      {/* 5. Persistent Distributed Mesh Bridges ("Web of Provenance") */}
+      <View style={styles.meshBridgesSection}>
+        <View style={styles.meshBridgesHeader}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+            <Text style={{ fontSize: 16 }}>🕸️</Text>
+            <View>
+              <Text style={styles.meshBridgesTitle}>PERSISTENT SUPPLY BRIDGES ("WEB OF PROVENANCE")</Text>
+              <Text style={styles.meshBridgesSubtitle}>
+                Permanent glowing supply lines on map with fast-track zero-click reordering
+              </Text>
+            </View>
+          </View>
+          <View style={styles.bridgesCountBadge}>
+            <Text style={styles.bridgesCountText}>{visibleBridges.length} Bridges Active</Text>
+          </View>
+        </View>
+
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.bridgesScroll}>
+          {visibleBridges.length === 0 ? (
+            <View style={{ padding: 14, backgroundColor: '#f8fafc', borderRadius: 12, borderWidth: 1, borderColor: '#e2e8f0', minWidth: 280 }}>
+              <Text style={{ fontSize: 12, fontWeight: '800', color: '#0369a1' }}>
+                ⚡ Private Web of Provenance: 0 Permanent Bridges
+              </Text>
+              <Text style={{ fontSize: 11, color: '#64748b', marginTop: 4, lineHeight: 15 }}>
+                Directly order from any nearest distributor or factory below to establish a permanent supply bridge for {activeHospital.name.split(' ')[0]}!
+              </Text>
+            </View>
+          ) : (
+            visibleBridges.map((bridge, bIdx) => (
+              <View key={bridge.id || bridge.bridgeId || `bridge-${bIdx}`} style={styles.bridgeCard}>
+                <View style={styles.bridgeCardTop}>
+                  <Text style={styles.bridgeNodeIcon}>🌉</Text>
+                  <View style={styles.fastTrackTag}>
+                    <Ionicons name="flash" size={10} color="#047857" />
+                    <Text style={styles.fastTrackTagText}>Fast-Track Unlocked</Text>
+                  </View>
+                </View>
+                <Text style={styles.bridgePartiesText}>
+                  {bridge.hospitalName || 'Hospital'} ⟷ {bridge.stockistName || 'Stockist'}
+                </Text>
+              <View style={styles.bridgeMetricsGrid}>
+                <View style={styles.bridgeMetric}>
+                  <Text style={styles.bridgeMetricLabel}>Orders:</Text>
+                  <Text style={styles.bridgeMetricVal}>{bridge.lifetimeOrders || 1} Verified</Text>
+                </View>
+                <View style={styles.bridgeMetric}>
+                  <Text style={styles.bridgeMetricLabel}>Cleared:</Text>
+                  <Text style={styles.bridgeMetricVal}>₹{Number(bridge.totalValue || 0).toLocaleString('en-IN')}</Text>
+                </View>
+                <View style={styles.bridgeMetric}>
+                  <Text style={styles.bridgeMetricLabel}>Avg SLA:</Text>
+                  <Text style={styles.bridgeMetricVal}>{bridge.avgTransitMins || 18} mins</Text>
+                </View>
+                <View style={styles.bridgeMetric}>
+                  <Text style={styles.bridgeMetricLabel}>Credit Terms:</Text>
+                  <Text style={styles.bridgeMetricVal}>{bridge.activeCreditLine || 'Active'}</Text>
+                </View>
+              </View>
+              <View style={styles.micReadyFooter}>
+                <Ionicons name="mic" size={12} color="#0284c7" />
+                <Text style={styles.micReadyText}>
+                  Say: "Order from {(bridge.stockistName || 'Entero').split(' ')[0]}" for 0-click dispatch
+                </Text>
+              </View>
+            </View>
+          ))
+        )}
+        </ScrollView>
+      </View>
     </View>
   );
 }
@@ -1398,5 +1803,250 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: '800',
     color: '#16a34a'
+  },
+  tickerContainer: {
+    marginVertical: 10,
+    backgroundColor: '#ffffff',
+    padding: 10,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#dcfce7'
+  },
+  tickerBarBackground: {
+    height: 6,
+    backgroundColor: '#e2e8f0',
+    borderRadius: 3,
+    overflow: 'hidden',
+    marginBottom: 8
+  },
+  tickerBarFill: {
+    height: '100%',
+    backgroundColor: '#10b981',
+    borderRadius: 3
+  },
+  tickerStepsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between'
+  },
+  tickerStepItem: {
+    alignItems: 'center'
+  },
+  tickerStepDot: {
+    fontSize: 10,
+    color: '#94a3b8'
+  },
+  tickerStepDotActive: {
+    color: '#10b981'
+  },
+  tickerStepLabel: {
+    fontSize: 8.5,
+    fontWeight: '700',
+    color: '#94a3b8',
+    marginTop: 2
+  },
+  tickerStepLabelActive: {
+    color: '#065f46',
+    fontWeight: '800'
+  },
+  deliveryActionRow: {
+    flexDirection: 'row',
+    gap: 8,
+    marginTop: 12
+  },
+  fastForwardBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    backgroundColor: '#0284c7',
+    paddingVertical: 8,
+    paddingHorizontal: 10,
+    borderRadius: 8
+  },
+  fastForwardBtnText: {
+    color: '#ffffff',
+    fontSize: 11,
+    fontWeight: '800'
+  },
+  instantDeliverBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    backgroundColor: '#dcfce7',
+    borderWidth: 1,
+    borderColor: '#86efac',
+    paddingVertical: 8,
+    paddingHorizontal: 10,
+    borderRadius: 8
+  },
+  instantDeliverBtnText: {
+    color: '#047857',
+    fontSize: 11,
+    fontWeight: '800'
+  },
+  bridgeFormedBanner: {
+    flex: 1,
+    backgroundColor: '#dbeafe',
+    borderWidth: 1.5,
+    borderColor: '#93c5fd',
+    padding: 8,
+    borderRadius: 8,
+    alignItems: 'center'
+  },
+  bridgeFormedBannerText: {
+    color: '#1e40af',
+    fontSize: 11,
+    fontWeight: '800',
+    textAlign: 'center'
+  },
+  escrowPipelineBox: {
+    backgroundColor: '#ffffff',
+    padding: 8,
+    borderRadius: 10,
+    marginVertical: 8,
+    borderWidth: 1,
+    borderColor: '#fef3c7'
+  },
+  escrowMilestoneRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between'
+  },
+  escrowMilestone: {
+    paddingHorizontal: 6,
+    paddingVertical: 4,
+    borderRadius: 6,
+    backgroundColor: '#f1f5f9'
+  },
+  escrowMilestoneActive: {
+    backgroundColor: '#fef3c7',
+    borderWidth: 1,
+    borderColor: '#fde68a'
+  },
+  escrowMilestoneSuccess: {
+    backgroundColor: '#dcfce7',
+    borderWidth: 1,
+    borderColor: '#86efac'
+  },
+  escrowMilestoneText: {
+    fontSize: 9.5,
+    fontWeight: '800',
+    color: '#78350f'
+  },
+  meshBridgesSection: {
+    padding: 16,
+    backgroundColor: '#0f172a',
+    borderTopWidth: 2,
+    borderTopColor: '#334155'
+  },
+  meshBridgesHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12
+  },
+  meshBridgesTitle: {
+    color: '#38bdf8',
+    fontSize: 12,
+    fontWeight: '900',
+    letterSpacing: 0.5
+  },
+  meshBridgesSubtitle: {
+    color: '#94a3b8',
+    fontSize: 10,
+    fontWeight: '600',
+    marginTop: 1
+  },
+  bridgesCountBadge: {
+    backgroundColor: '#1e293b',
+    borderWidth: 1,
+    borderColor: '#0284c7',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8
+  },
+  bridgesCountText: {
+    color: '#38bdf8',
+    fontSize: 10.5,
+    fontWeight: '800'
+  },
+  bridgesScroll: {
+    flexDirection: 'row'
+  },
+  bridgeCard: {
+    backgroundColor: '#1e293b',
+    borderRadius: 12,
+    padding: 12,
+    marginRight: 12,
+    width: 270,
+    borderWidth: 1.5,
+    borderColor: '#0ea5e9'
+  },
+  bridgeCardTop: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 6
+  },
+  bridgeNodeIcon: {
+    fontSize: 18
+  },
+  fastTrackTag: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: '#dcfce7',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 6
+  },
+  fastTrackTagText: {
+    color: '#047857',
+    fontSize: 9,
+    fontWeight: '800'
+  },
+  bridgePartiesText: {
+    color: '#ffffff',
+    fontSize: 12,
+    fontWeight: '800',
+    marginBottom: 8
+  },
+  bridgeMetricsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
+    marginBottom: 8
+  },
+  bridgeMetric: {
+    width: '48%',
+    backgroundColor: '#0f172a',
+    padding: 5,
+    borderRadius: 6
+  },
+  bridgeMetricLabel: {
+    color: '#64748b',
+    fontSize: 8.5,
+    fontWeight: '700'
+  },
+  bridgeMetricVal: {
+    color: '#38bdf8',
+    fontSize: 10,
+    fontWeight: '800'
+  },
+  micReadyFooter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: '#0c4a6e',
+    padding: 6,
+    borderRadius: 6
+  },
+  micReadyText: {
+    color: '#bae6fd',
+    fontSize: 9,
+    fontWeight: '700'
   }
 });

@@ -77,75 +77,118 @@ export default function HospitalAuthScreen({ onBack }) {
     return (
       <SafeAreaView style={styles.bg}>
         <StatusBar barStyle="dark-content" />
-        <View style={styles.card}>
-          {/* Back */}
-          <TouchableOpacity onPress={onBack} style={styles.backBtn}>
-            <Ionicons name="arrow-back" size={18} color="#64748b" />
-            <Text style={styles.backText}>Back to Role Selection</Text>
-          </TouchableOpacity>
+        <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={true}>
+          <View style={styles.card}>
+            {/* Back */}
+            <TouchableOpacity onPress={onBack} style={styles.backBtn}>
+              <Ionicons name="arrow-back" size={18} color="#64748b" />
+              <Text style={styles.backText}>Back to Role Selection</Text>
+            </TouchableOpacity>
 
-          {/* Header */}
-          <View style={styles.chooseHeader}>
-            <View style={styles.iconCircle}>
-              <FontAwesome5 name="hospital" size={28} color="#0284c7" />
+            {/* Header */}
+            <View style={styles.chooseHeader}>
+              <View style={styles.iconCircle}>
+                <FontAwesome5 name="hospital" size={28} color="#0284c7" />
+              </View>
+              <Text style={styles.chooseTitle}>Hospital Portal</Text>
+              <Text style={styles.chooseSub}>
+                Access requires a registered account. New hospitals must sign up first.
+              </Text>
             </View>
-            <Text style={styles.chooseTitle}>Hospital Portal</Text>
-            <Text style={styles.chooseSub}>
-              Access requires a registered account. New hospitals must sign up first.
+
+            {/* Stats bar */}
+            <View style={styles.statsBar}>
+              <View style={styles.statItem}>
+                <Text style={styles.statNum}>{registeredHospitals.length}</Text>
+                <Text style={styles.statLabel}>Registered</Text>
+              </View>
+              <View style={styles.statDivider} />
+              <View style={styles.statItem}>
+                <Text style={styles.statNum}>Mumbai</Text>
+                <Text style={styles.statLabel}>Region</Text>
+              </View>
+              <View style={styles.statDivider} />
+              <View style={styles.statItem}>
+                <Text style={styles.statNum}>4</Text>
+                <Text style={styles.statLabel}>Distributors</Text>
+              </View>
+            </View>
+
+            {/* Quick Demo 1-Click Access for Interview & Presentation */}
+            <View style={styles.demoShowcaseBox}>
+              <View style={styles.demoShowcaseHeader}>
+                <Ionicons name="flash" size={16} color="#0284c7" />
+                <Text style={styles.demoShowcaseTitle}>Demo Showcase: Registered Hospitals</Text>
+              </View>
+              <Text style={styles.demoShowcaseSubtitle}>
+                Tap any hospital below for instant 1-click login (PIN: 1234 pre-configured):
+              </Text>
+
+              <View style={styles.demoHospitalGrid}>
+                {registeredHospitals.map(h => (
+                  <View key={h.id} style={styles.demoHospitalCard}>
+                    <View style={{ flex: 1 }}>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                        <Text style={styles.demoHospitalName}>{h.name}</Text>
+                        {h.id === 'hosp-1' && (
+                          <View style={styles.primaryBadge}><Text style={styles.primaryBadgeText}>Primary</Text></View>
+                        )}
+                        {h.id === 'hosp-4' && (
+                          <View style={[styles.primaryBadge, { backgroundColor: '#fef3c7', borderColor: '#fde68a' }]}>
+                            <Text style={[styles.primaryBadgeText, { color: '#b45309' }]}>Concurrency Demo</Text>
+                          </View>
+                        )}
+                      </View>
+                      <Text style={styles.demoHospitalMeta}>
+                        📍 {h.area} • ID: <Text style={{ fontWeight: '800', color: '#0f172a' }}>{h.id}</Text> • PIN: <Text style={{ fontWeight: '800', color: '#0f172a' }}>1234</Text>
+                      </Text>
+                    </View>
+                    <TouchableOpacity
+                      onPress={() => loginHospital(h)}
+                      style={styles.demoLoginBtn}
+                    >
+                      <Ionicons name="log-in" size={14} color="#ffffff" />
+                      <Text style={styles.demoLoginBtnText}>Instant Login</Text>
+                    </TouchableOpacity>
+                  </View>
+                ))}
+              </View>
+            </View>
+
+            {/* Two big buttons */}
+            <TouchableOpacity
+              onPress={() => setMode('LOGIN')}
+              style={[styles.bigBtn, styles.bigBtnPrimary]}
+            >
+              <View style={styles.bigBtnIcon}>
+                <Ionicons name="log-in-outline" size={24} color="#0284c7" />
+              </View>
+              <View style={styles.bigBtnText}>
+                <Text style={styles.bigBtnTitle}>Returning Hospital (Manual Login)</Text>
+                <Text style={styles.bigBtnSub}>Already registered? Log in with your Hospital ID & PIN</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={20} color="#0284c7" />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={() => setMode('SIGNUP')}
+              style={[styles.bigBtn, styles.bigBtnSecondary]}
+            >
+              <View style={[styles.bigBtnIcon, { backgroundColor: '#f0fdf4' }]}>
+                <Ionicons name="add-circle-outline" size={24} color="#16a34a" />
+              </View>
+              <View style={styles.bigBtnText}>
+                <Text style={[styles.bigBtnTitle, { color: '#166534' }]}>New Hospital Registration</Text>
+                <Text style={styles.bigBtnSub}>Register your hospital to start ordering from distributors</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={20} color="#16a34a" />
+            </TouchableOpacity>
+
+            <Text style={styles.footerNote}>
+              🔒  Each hospital account is private. No other hospital can see your orders or data.
             </Text>
           </View>
-
-          {/* Stats bar */}
-          <View style={styles.statsBar}>
-            <View style={styles.statItem}>
-              <Text style={styles.statNum}>{registeredHospitals.length}</Text>
-              <Text style={styles.statLabel}>Registered</Text>
-            </View>
-            <View style={styles.statDivider} />
-            <View style={styles.statItem}>
-              <Text style={styles.statNum}>Mumbai</Text>
-              <Text style={styles.statLabel}>Region</Text>
-            </View>
-            <View style={styles.statDivider} />
-            <View style={styles.statItem}>
-              <Text style={styles.statNum}>4</Text>
-              <Text style={styles.statLabel}>Distributors</Text>
-            </View>
-          </View>
-
-          {/* Two big buttons */}
-          <TouchableOpacity
-            onPress={() => setMode('LOGIN')}
-            style={[styles.bigBtn, styles.bigBtnPrimary]}
-          >
-            <View style={styles.bigBtnIcon}>
-              <Ionicons name="log-in-outline" size={24} color="#0284c7" />
-            </View>
-            <View style={styles.bigBtnText}>
-              <Text style={styles.bigBtnTitle}>Returning Hospital</Text>
-              <Text style={styles.bigBtnSub}>Already registered? Log in with your Hospital ID & PIN</Text>
-            </View>
-            <Ionicons name="chevron-forward" size={20} color="#0284c7" />
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            onPress={() => setMode('SIGNUP')}
-            style={[styles.bigBtn, styles.bigBtnSecondary]}
-          >
-            <View style={[styles.bigBtnIcon, { backgroundColor: '#f0fdf4' }]}>
-              <Ionicons name="add-circle-outline" size={24} color="#16a34a" />
-            </View>
-            <View style={styles.bigBtnText}>
-              <Text style={[styles.bigBtnTitle, { color: '#166534' }]}>New Hospital Registration</Text>
-              <Text style={styles.bigBtnSub}>Register your hospital to start ordering from distributors</Text>
-            </View>
-            <Ionicons name="chevron-forward" size={20} color="#16a34a" />
-          </TouchableOpacity>
-
-          <Text style={styles.footerNote}>
-            🔒  Each hospital account is private. No other hospital can see your orders or data.
-          </Text>
-        </View>
+        </ScrollView>
       </SafeAreaView>
     );
   }
@@ -173,12 +216,18 @@ export default function HospitalAuthScreen({ onBack }) {
             {/* Registered hospitals quick list */}
             {registeredHospitals.length > 0 && (
               <View style={styles.quickPickBox}>
-                <Text style={styles.quickPickLabel}>Quick select your hospital:</Text>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                  <Text style={styles.quickPickLabel}>Quick select your hospital (PIN auto-fills):</Text>
+                  <Text style={{ fontSize: 10, fontWeight: '800', color: '#0284c7' }}>Demo PIN: 1234</Text>
+                </View>
                 <View style={styles.quickPickList}>
                   {registeredHospitals.map(h => (
                     <TouchableOpacity
                       key={h.id}
-                      onPress={() => setLoginHospitalId(h.id)}
+                      onPress={() => {
+                        setLoginHospitalId(h.id);
+                        setLoginPin(h.pin || '1234');
+                      }}
                       style={[
                         styles.quickPickChip,
                         loginHospitalId === h.id && styles.quickPickChipActive
@@ -187,7 +236,7 @@ export default function HospitalAuthScreen({ onBack }) {
                       <Text style={[
                         styles.quickPickChipText,
                         loginHospitalId === h.id && styles.quickPickChipTextActive
-                      ]}>{h.name}</Text>
+                      ]}>🏥 {h.name.split(' ')[0]}</Text>
                     </TouchableOpacity>
                   ))}
                 </View>
@@ -426,9 +475,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#f1f5f9',
   },
   scrollContent: {
-    justifyContent: 'center',
     alignItems: 'center',
-    padding: 16,
+    paddingVertical: 24,
+    paddingHorizontal: 16,
     flexGrow: 1,
   },
   card: {
@@ -731,4 +780,78 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 22,
   },
+  demoShowcaseBox: {
+    backgroundColor: '#f0f9ff',
+    borderWidth: 1.5,
+    borderColor: '#bae6fd',
+    borderRadius: 14,
+    padding: 14,
+    marginBottom: 16
+  },
+  demoShowcaseHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 4
+  },
+  demoShowcaseTitle: {
+    fontSize: 13,
+    fontWeight: '900',
+    color: '#0369a1'
+  },
+  demoShowcaseSubtitle: {
+    fontSize: 11,
+    color: '#475569',
+    marginBottom: 10
+  },
+  demoHospitalGrid: {
+    gap: 8
+  },
+  demoHospitalCard: {
+    backgroundColor: '#ffffff',
+    borderRadius: 10,
+    padding: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderWidth: 1,
+    borderColor: '#e2e8f0'
+  },
+  demoHospitalName: {
+    fontSize: 12.5,
+    fontWeight: '800',
+    color: '#0f172a'
+  },
+  demoHospitalMeta: {
+    fontSize: 10.5,
+    color: '#64748b',
+    marginTop: 2
+  },
+  primaryBadge: {
+    backgroundColor: '#e0f2fe',
+    borderWidth: 1,
+    borderColor: '#bae6fd',
+    borderRadius: 4,
+    paddingHorizontal: 5,
+    paddingVertical: 1
+  },
+  primaryBadgeText: {
+    fontSize: 9,
+    fontWeight: '800',
+    color: '#0284c7'
+  },
+  demoLoginBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: '#0284c7',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 8
+  },
+  demoLoginBtnText: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: '#ffffff'
+  }
 });

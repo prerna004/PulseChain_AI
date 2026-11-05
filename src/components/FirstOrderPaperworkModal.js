@@ -26,7 +26,7 @@ export default function FirstOrderPaperworkModal({ onComplete, onCancel, selecte
       'FIRST_ORDER_KYC_DONE',
       `First-order paperwork completed. Distributor: ${selectedQuote?.stockistName}`
     );
-    onComplete();
+    if (onComplete) onComplete();
   };
 
   return (

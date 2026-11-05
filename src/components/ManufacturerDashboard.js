@@ -12,7 +12,10 @@ import { MUMBAI_STOCKISTS, MEDICAL_CATALOG } from '../data/mumbaiData';
 export default function ManufacturerDashboard() {
   const {
     selectedManufacturer,
+    setSelectedManufacturer,
     loggedInManufacturer,
+    loginManufacturer,
+    allManufacturers,
     handleVoiceOrTextInput,
     addTelemetryLog,
     inventory
@@ -36,6 +39,69 @@ export default function ManufacturerDashboard() {
 
   return (
     <View style={styles.container}>
+      {/* Registered Manufacturer Switcher Bar */}
+      <View style={{
+        backgroundColor: '#ffffff',
+        borderRadius: 14,
+        padding: 12,
+        borderWidth: 1.5,
+        borderColor: '#cbd5e1',
+        marginBottom: 12
+      }}>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+            <Ionicons name="business" size={14} color="#16a34a" />
+            <Text style={{ fontSize: 11, fontWeight: '900', color: '#16a34a', letterSpacing: 0.5 }}>
+              MUMBAI REGISTERED MANUFACTURERS NETWORK
+            </Text>
+          </View>
+          <Text style={{ fontSize: 10, color: '#64748b', fontWeight: '600' }}>
+            1-Tap to Switch Manufacturer Perspective:
+          </Text>
+        </View>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexDirection: 'row' }}>
+          {(allManufacturers || []).map(mfg => {
+            const isActive = (loggedInManufacturer?.id === mfg.id) || (selectedManufacturer?.id === mfg.id);
+            return (
+              <TouchableOpacity
+                key={mfg.id}
+                onPress={() => {
+                  if (loginManufacturer) loginManufacturer(mfg);
+                  if (setSelectedManufacturer) setSelectedManufacturer(mfg);
+                }}
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 8,
+                  backgroundColor: isActive ? '#16a34a' : '#f0fdf4',
+                  borderWidth: 1.5,
+                  borderColor: isActive ? '#15803d' : '#bbf7d0',
+                  borderRadius: 10,
+                  paddingHorizontal: 12,
+                  paddingVertical: 8,
+                  marginRight: 8
+                }}
+              >
+                <FontAwesome5 name="industry" size={12} color={isActive ? '#ffffff' : '#16a34a'} />
+                <View>
+                  <Text style={{ fontSize: 11.5, fontWeight: '800', color: isActive ? '#ffffff' : '#0f172a' }}>
+                    {mfg.brand || mfg.name.split(' ')[0]}
+                  </Text>
+                  <Text style={{ fontSize: 9.5, color: isActive ? '#dcfce7' : '#166534' }}>
+                    {mfg.area || mfg.primaryHub || 'Mumbai Hub'}
+                  </Text>
+                </View>
+                {isActive && (
+                  <View style={{ width: 16, height: 16, borderRadius: 8, backgroundColor: '#ffffff', alignItems: 'center', justifyContent: 'center', marginLeft: 4 }}>
+                    <Text style={{ fontSize: 10, fontWeight: '900', color: '#16a34a' }}>✓</Text>
+                  </View>
+                )}
+              </TouchableOpacity>
+            );
+          })}
+        </ScrollView>
+      </View>
+
       <VoiceRequisitionBar />
       <TwoPipeVisualizer />
 

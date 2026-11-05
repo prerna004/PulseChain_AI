@@ -11,7 +11,10 @@ import VoiceRequisitionBar from './VoiceRequisitionBar';
 export default function StockistDashboard() {
   const {
     selectedStockist,
+    setSelectedStockist,
     loggedInStockist,
+    loginStockist,
+    allStockists,
     orders,
     handleVoiceOrTextInput,
     addTelemetryLog
@@ -28,6 +31,69 @@ export default function StockistDashboard() {
 
   return (
     <View style={styles.container}>
+      {/* Registered Stockist Switcher Bar */}
+      <View style={{
+        backgroundColor: '#ffffff',
+        borderRadius: 14,
+        padding: 12,
+        borderWidth: 1.5,
+        borderColor: '#cbd5e1',
+        marginBottom: 12
+      }}>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+            <Ionicons name="business" size={14} color="#d97706" />
+            <Text style={{ fontSize: 11, fontWeight: '900', color: '#d97706', letterSpacing: 0.5 }}>
+              MUMBAI REGISTERED DISTRIBUTORS NETWORK
+            </Text>
+          </View>
+          <Text style={{ fontSize: 10, color: '#64748b', fontWeight: '600' }}>
+            1-Tap to Switch Distributor Perspective:
+          </Text>
+        </View>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexDirection: 'row' }}>
+          {(allStockists || []).map(stk => {
+            const isActive = (loggedInStockist?.id === stk.id) || (selectedStockist?.id === stk.id);
+            return (
+              <TouchableOpacity
+                key={stk.id}
+                onPress={() => {
+                  if (loginStockist) loginStockist(stk);
+                  if (setSelectedStockist) setSelectedStockist(stk);
+                }}
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 8,
+                  backgroundColor: isActive ? '#d97706' : '#fffbeb',
+                  borderWidth: 1.5,
+                  borderColor: isActive ? '#b45309' : '#fde68a',
+                  borderRadius: 10,
+                  paddingHorizontal: 12,
+                  paddingVertical: 8,
+                  marginRight: 8
+                }}
+              >
+                <FontAwesome5 name="truck" size={12} color={isActive ? '#ffffff' : '#d97706'} />
+                <View>
+                  <Text style={{ fontSize: 11.5, fontWeight: '800', color: isActive ? '#ffffff' : '#0f172a' }}>
+                    {stk.name.split('(')[0]}
+                  </Text>
+                  <Text style={{ fontSize: 9.5, color: isActive ? '#fef3c7' : '#78350f' }}>
+                    {stk.hub || stk.area}
+                  </Text>
+                </View>
+                {isActive && (
+                  <View style={{ width: 16, height: 16, borderRadius: 8, backgroundColor: '#ffffff', alignItems: 'center', justifyContent: 'center', marginLeft: 4 }}>
+                    <Text style={{ fontSize: 10, fontWeight: '900', color: '#d97706' }}>✓</Text>
+                  </View>
+                )}
+              </TouchableOpacity>
+            );
+          })}
+        </ScrollView>
+      </View>
+
       <VoiceRequisitionBar />
       <TwoPipeVisualizer />
 

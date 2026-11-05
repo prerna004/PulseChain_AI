@@ -2,7 +2,7 @@
 // 100% Zero-Click Field Population from Speech/Text
 // Enhanced: Full entity extraction — item, qty, urgency, ward, hospital, stockist
 
-import { MEDICAL_CATALOG, MUMBAI_HOSPITALS, MUMBAI_STOCKISTS } from '../data/mumbaiData';
+import { MEDICAL_CATALOG, MUMBAI_HOSPITALS, MUMBAI_STOCKISTS } from '../data/mumbaiData.js';
 
 export class AgentEngine {
   constructor() {
@@ -97,6 +97,38 @@ export class AgentEngine {
         rawText: raw,
         confidence: 0.97,
         speechReply: 'Opening WhatsApp import. Paste your WhatsApp Business conversation and I will automatically extract and fill all order fields for you.'
+      };
+    }
+
+    // 4.5 Privileged Fast-Track Voice Reordering over Supply Bridge
+    const vendorMatches = [
+      { key: 'entero', name: 'Entero Healthcare Solutions (Central Mumbai)', id: 'stock-1' },
+      { key: 'babuline', name: 'Babuline Pharma & Surgical Distribution', id: 'stock-2' },
+      { key: 'princess', name: 'Princess Street / Dawa Bazar Wholesalers Syndicate', id: 'stock-3' },
+      { key: 'dawa bazar', name: 'Princess Street / Dawa Bazar Wholesalers Syndicate', id: 'stock-3' },
+      { key: 'sagar', name: 'Sagar Medical & Surgicals (Suburban Hub)', id: 'stock-4' },
+      { key: 'xyz', name: 'XYZ Surgical Supplies', id: 'STK-XYZ' }
+    ];
+
+    const matchedVendor = vendorMatches.find(v => lower.includes(v.key));
+    const isOrderPhrase = lower.includes('order') || lower.includes('send') || lower.includes('bhejo') ||
+                          lower.includes('chahiye') || lower.includes('reorder') || lower.includes('manga') ||
+                          lower.includes('deliver');
+
+    if (matchedVendor && isOrderPhrase) {
+      const orderEntities = this.extractOrderEntities(raw);
+      const sku = (orderEntities && orderEntities.sku) || this.matchSkuFromText(lower) || MEDICAL_CATALOG[0];
+      const quantity = (orderEntities && orderEntities.quantity) || 50;
+
+      return {
+        intent: 'FAST_TRACK_VOICE_ORDER',
+        rawText: raw,
+        confidence: 0.98,
+        vendor: matchedVendor,
+        sku,
+        quantity,
+        speechReply: `Privileged Fast-Track voice order recognized: ${quantity} ${sku.unit} of ${sku.name} from ${matchedVendor.name}. Bypassing RFQ paperwork and dispatching immediately over established Supply Bridge!`,
+        isPrivilegedFastTrack: true
       };
     }
 

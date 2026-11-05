@@ -113,14 +113,127 @@ export const MUMBAI_HOSPITALS = [
     whatsapp: '+91 98201 99344',
     creditDays: 30,
     monthlyBudget: '₹1.70 Cr'
+  },
+  {
+    id: 'hosp-9',
+    name: 'Lokmanya Tilak Municipal General Hospital (Sion Hospital)',
+    type: 'BMC Municipal Apex Trauma Centre',
+    beds: 1400,
+    area: 'Sion, Central Mumbai',
+    lat: 19.0360,
+    lng: 72.8600,
+    contactPerson: 'Dr. Ramesh Shinde (Chief Pharmacist)',
+    phone: '+91 98201 11882',
+    whatsapp: '+91 98201 11882',
+    creditDays: 60,
+    monthlyBudget: '₹3.80 Cr'
+  },
+  {
+    id: 'hosp-10',
+    name: 'Tata Memorial Centre (Cancer Apex Hospital)',
+    type: 'National Cancer Research & Treatment Hospital',
+    beds: 700,
+    area: 'Parel, Central Mumbai',
+    lat: 19.0040,
+    lng: 72.8435,
+    contactPerson: 'Mr. Alok Sengupta (Materials Lead)',
+    phone: '+91 98203 77441',
+    whatsapp: '+91 98203 77441',
+    creditDays: 45,
+    monthlyBudget: '₹4.50 Cr'
+  },
+  {
+    id: 'hosp-11',
+    name: 'Fortis Hospital Mulund',
+    type: 'Multi-Specialty Quaternary',
+    beds: 315,
+    area: 'Mulund West, Eastern Suburbs',
+    lat: 19.1670,
+    lng: 72.9370,
+    contactPerson: 'Dr. Shalini Kapoor (Director SCM)',
+    phone: '+91 98209 44112',
+    whatsapp: '+91 98209 44112',
+    creditDays: 30,
+    monthlyBudget: '₹2.20 Cr'
+  },
+  {
+    id: 'hosp-12',
+    name: 'Apollo Hospitals Navi Mumbai',
+    type: 'Tertiary Care Super Specialty',
+    beds: 500,
+    area: 'CBD Belapur / Vashi, Navi Mumbai',
+    lat: 19.0220,
+    lng: 73.0290,
+    contactPerson: 'Mr. Suresh Menon (VP Procurement)',
+    phone: '+91 98218 55990',
+    whatsapp: '+91 98218 55990',
+    creditDays: 45,
+    monthlyBudget: '₹2.80 Cr'
+  },
+  {
+    id: 'hosp-13',
+    name: 'Jupiter Hospital Thane',
+    type: 'Multi-Specialty Tertiary',
+    beds: 350,
+    area: 'Eastern Express Highway, Thane West',
+    lat: 19.2060,
+    lng: 72.9730,
+    contactPerson: 'Dr. Anand Karkera (Supply Chain Lead)',
+    phone: '+91 98206 33118',
+    whatsapp: '+91 98206 33118',
+    creditDays: 30,
+    monthlyBudget: '₹2.10 Cr'
+  },
+  {
+    id: 'hosp-14',
+    name: 'Bombay Hospital & Medical Research Centre',
+    type: 'Charitable Multi-Specialty Apex',
+    beds: 725,
+    area: 'Marine Lines, South Mumbai',
+    lat: 18.9405,
+    lng: 72.8270,
+    contactPerson: 'Mr. Prakash Singhania (Head Pharmacist)',
+    phone: '+91 98202 99001',
+    whatsapp: '+91 98202 99001',
+    creditDays: 45,
+    monthlyBudget: '₹2.90 Cr'
   }
 ];
+
+export function calculateDistanceKm(lat1, lon1, lat2, lon2) {
+  if (!lat1 || !lon1 || !lat2 || !lon2) return 5.0;
+  const R = 6371; // Earth radius in km
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return Number((R * c).toFixed(1));
+}
+
+export const MUMBAI_GEO_AREAS = {
+  'Dadar West': { lat: 19.0178, lng: 72.8478 },
+  'Dadar East': { lat: 19.0182, lng: 72.8430 },
+  'Bandra West': { lat: 19.0515, lng: 72.8291 },
+  'Bandra East / BKC': { lat: 19.0600, lng: 72.8600 },
+  'Andheri West': { lat: 19.1197, lng: 72.8464 },
+  'Kalbadevi / Dawa Bazar': { lat: 18.9446, lng: 72.8290 },
+  'Parel': { lat: 19.0024, lng: 72.8423 },
+  'Bhiwandi C&F': { lat: 19.2968, lng: 73.0631 },
+  'Vashi / Navi Mumbai': { lat: 19.0760, lng: 72.9980 },
+  'Vikhroli': { lat: 19.1105, lng: 72.9260 }
+};
 
 export const MUMBAI_STOCKISTS = [
   {
     id: 'stock-1',
     name: 'Entero Healthcare Solutions (Central Mumbai)',
     hub: 'Dadar West / Lower Parel',
+    area: 'Dadar West',
+    lat: 19.0178,
+    lng: 72.8478,
     rating: 4.9,
     distanceKm: { 'hosp-1': 4.2, 'hosp-2': 1.8, 'hosp-3': 11.5, 'hosp-4': 2.1, 'hosp-5': 9.8, 'hosp-6': 6.5, 'hosp-7': 7.2, 'hosp-8': 6.8 },
     deliverySLA: '45 mins (Express)',
@@ -129,6 +242,10 @@ export const MUMBAI_STOCKISTS = [
     authorizedBrands: ['Poly Medicure', 'HMD Dispovan', '3M Healthcare', 'BD India', 'Cipla Med'],
     creditOffered: '30-45 Days',
     warehouseStockLevel: 'High (₹4.2 Cr)',
+    stockPrices: {
+      'SKU-GLV-75': 760, 'SKU-GLV-70': 760, 'SKU-CAN-20G': 1800, 'SKU-CAN-22G': 1820,
+      'SKU-SYR-5ML': 430, 'SKU-SYR-2ML': 320, 'SKU-VAC-EDTA': 2600, 'SKU-MSK-N95': 1300
+    },
     stockLevels: {
       'SKU-GLV-75': 1200, 'SKU-GLV-70': 900, 'SKU-CAN-20G': 450, 'SKU-CAN-22G': 620,
       'SKU-SYR-5ML': 340, 'SKU-SYR-2ML': 480, 'SKU-VAC-EDTA': 800, 'SKU-MSK-N95': 650,
@@ -140,6 +257,9 @@ export const MUMBAI_STOCKISTS = [
     id: 'stock-2',
     name: 'Babuline Pharma & Surgical Distribution',
     hub: 'Dadar East (Near Railway Station)',
+    area: 'Dadar East',
+    lat: 19.0182,
+    lng: 72.8430,
     rating: 4.8,
     distanceKm: { 'hosp-1': 5.1, 'hosp-2': 2.6, 'hosp-3': 12.8, 'hosp-4': 1.4, 'hosp-5': 10.4, 'hosp-6': 7.1, 'hosp-7': 7.8, 'hosp-8': 7.4 },
     deliverySLA: '60 mins',
@@ -148,6 +268,10 @@ export const MUMBAI_STOCKISTS = [
     authorizedBrands: ['HMD Dispovan', 'Romsons', 'Cipla Critical Care', 'Ethicon J&J'],
     creditOffered: '15-30 Days',
     warehouseStockLevel: 'High (₹3.1 Cr)',
+    stockPrices: {
+      'SKU-GLV-75': 780, 'SKU-GLV-70': 780, 'SKU-CAN-20G': 1820, 'SKU-CAN-22G': 1840,
+      'SKU-SYR-5ML': 440, 'SKU-SYR-2ML': 330, 'SKU-VAC-EDTA': 2650, 'SKU-MSK-N95': 1320
+    },
     stockLevels: {
       'SKU-GLV-75': 800, 'SKU-GLV-70': 700, 'SKU-CAN-20G': 300, 'SKU-CAN-22G': 420,
       'SKU-SYR-5ML': 280, 'SKU-SYR-2ML': 360, 'SKU-VAC-EDTA': 500, 'SKU-MSK-N95': 400,
@@ -159,6 +283,9 @@ export const MUMBAI_STOCKISTS = [
     id: 'stock-3',
     name: 'Princess Street / Dawa Bazar Wholesalers Syndicate',
     hub: 'Kalbadevi / Marine Lines (Old Mumbai Hub)',
+    area: 'Kalbadevi / Dawa Bazar',
+    lat: 18.9446,
+    lng: 72.8290,
     rating: 4.7,
     distanceKm: { 'hosp-1': 14.2, 'hosp-2': 11.8, 'hosp-3': 22.1, 'hosp-4': 8.9, 'hosp-5': 19.5, 'hosp-6': 3.2, 'hosp-7': 2.1, 'hosp-8': 2.8 },
     deliverySLA: '90 mins',
@@ -167,6 +294,10 @@ export const MUMBAI_STOCKISTS = [
     authorizedBrands: ['Poly Medicure', 'HMD Dispovan', 'Ethicon J&J', 'Healthium Sutures', 'Ansell'],
     creditOffered: 'Cash / 15 Days',
     warehouseStockLevel: 'Very High (₹12 Cr)',
+    stockPrices: {
+      'SKU-GLV-75': 750, 'SKU-GLV-70': 750, 'SKU-CAN-20G': 1780, 'SKU-CAN-22G': 1790,
+      'SKU-SYR-5ML': 410, 'SKU-SYR-2ML': 310, 'SKU-VAC-EDTA': 2550, 'SKU-MSK-N95': 1280
+    },
     stockLevels: {
       'SKU-GLV-75': 3500, 'SKU-GLV-70': 2800, 'SKU-CAN-20G': 1200, 'SKU-CAN-22G': 1600,
       'SKU-SYR-5ML': 900, 'SKU-SYR-2ML': 1200, 'SKU-VAC-EDTA': 2000, 'SKU-MSK-N95': 1800,
@@ -178,6 +309,9 @@ export const MUMBAI_STOCKISTS = [
     id: 'stock-4',
     name: 'Sagar Medical & Surgicals (Suburban Hub)',
     hub: 'Andheri West (Near Link Road)',
+    area: 'Andheri West',
+    lat: 19.1197,
+    lng: 72.8464,
     rating: 4.85,
     distanceKm: { 'hosp-1': 8.5, 'hosp-2': 10.9, 'hosp-3': 1.6, 'hosp-4': 14.8, 'hosp-5': 3.2, 'hosp-6': 18.2, 'hosp-7': 16.5, 'hosp-8': 17.0 },
     deliverySLA: '30 mins (Suburban Express)',
@@ -186,6 +320,10 @@ export const MUMBAI_STOCKISTS = [
     authorizedBrands: ['Poly Medicure', 'BD India', '3M Healthcare', 'Teleflex', 'HMD Dispovan'],
     creditOffered: '30 Days',
     warehouseStockLevel: 'Medium (₹2.4 Cr)',
+    stockPrices: {
+      'SKU-GLV-75': 790, 'SKU-GLV-70': 790, 'SKU-CAN-20G': 1850, 'SKU-CAN-22G': 1860,
+      'SKU-SYR-5ML': 450, 'SKU-SYR-2ML': 340, 'SKU-VAC-EDTA': 2700, 'SKU-MSK-N95': 1340
+    },
     stockLevels: {
       'SKU-GLV-75': 600, 'SKU-GLV-70': 500, 'SKU-CAN-20G': 250, 'SKU-CAN-22G': 350,
       'SKU-SYR-5ML': 180, 'SKU-SYR-2ML': 240, 'SKU-VAC-EDTA': 400, 'SKU-MSK-N95': 500,
@@ -200,6 +338,9 @@ export const MUMBAI_MANUFACTURERS = [
     name: 'Hindustan Syringes & Medical Devices (HMD)',
     brand: 'Dispovan',
     primaryHub: 'Faridabad Plant & Bhiwandi C&F Warehouse',
+    area: 'Bhiwandi C&F',
+    lat: 19.2968,
+    lng: 73.0631,
     productLine: 'Hypodermic Syringes, Single-Use Needles, Scalp Vein Sets',
     keyRep: 'Mr. Vikram Malhotra (Zonal Sales Director - West)',
     contact: '+91 98101 22334',
@@ -212,6 +353,9 @@ export const MUMBAI_MANUFACTURERS = [
     name: 'Poly Medicure Ltd. (Polymed)',
     brand: 'Polymed',
     primaryHub: 'Plant Hub & Vashi / Thane Logistics Depot',
+    area: 'Vashi / Navi Mumbai',
+    lat: 19.0760,
+    lng: 72.9980,
     productLine: 'IV Cannulas, Central Venous Catheters, Infusion Sets, Dialysis Lines',
     keyRep: 'Ms. Deepa Singhal (VP Institutional Sales)',
     contact: '+91 98118 77665',
@@ -224,6 +368,9 @@ export const MUMBAI_MANUFACTURERS = [
     name: '3M Healthcare India',
     brand: '3M MedTech',
     primaryHub: 'Bhiwandi Super Logistics Depot',
+    area: 'Bhiwandi C&F',
+    lat: 19.2920,
+    lng: 73.0550,
     productLine: 'Tegaderm Dressings, Micropore Surgical Tapes, N95 Masks, Steri-Drapes',
     keyRep: 'Mr. Anuj Saxena (Enterprise Healthcare Lead)',
     contact: '+91 98200 44321',
@@ -236,6 +383,9 @@ export const MUMBAI_MANUFACTURERS = [
     name: 'Becton Dickinson India (BD)',
     brand: 'BD Venflon & Vacutainer',
     primaryHub: 'Bhiwandi Central Stockyard',
+    area: 'Bhiwandi C&F',
+    lat: 19.2880,
+    lng: 73.0610,
     productLine: 'BD Venflon Pro IV Cannula, Vacutainer Blood Collection Tubes, Spinal Needles',
     keyRep: 'Dr. Rajiv Merchant (Clinical Director)',
     contact: '+91 98202 88990',
@@ -248,6 +398,9 @@ export const MUMBAI_MANUFACTURERS = [
     name: 'Cipla Critical Care & Hospital Supplies',
     brand: 'Cipla Med',
     primaryHub: 'Vikhroli & Kurla Central Distribution Hub',
+    area: 'Vikhroli',
+    lat: 19.1105,
+    lng: 72.9260,
     productLine: 'Noradrenaline Vials, Propofol, Saline Infusions, Emergency Antibiotics',
     keyRep: 'Mr. Hemant Kothari (Institutional Sales Head)',
     contact: '+91 98203 11445',
@@ -260,6 +413,9 @@ export const MUMBAI_MANUFACTURERS = [
     name: 'Healthium Medtech (Sutures & Wound Care)',
     brand: 'Healthium / Sutures India',
     primaryHub: 'Thane & Navi Mumbai Distribution Centre',
+    area: 'Vashi / Navi Mumbai',
+    lat: 19.1980,
+    lng: 72.9650,
     productLine: 'Absorbable Vicryl Sutures, Silk Sutures, Wound Closure Strips, Haemostats',
     keyRep: 'Ms. Priya Iyer (Regional Sales Manager)',
     contact: '+91 98217 44332',
@@ -272,6 +428,9 @@ export const MUMBAI_MANUFACTURERS = [
     name: 'Romsons Scientific & Surgical Industries',
     brand: 'Romsons',
     primaryHub: 'Bhiwandi & Agra Plant (Logistics Western India)',
+    area: 'Bhiwandi C&F',
+    lat: 19.3010,
+    lng: 73.0520,
     productLine: 'Nebulizer Kits, Urine Bags, Catheter Sets, Oxygen Masks, Ryles Tube',
     keyRep: 'Mr. Ashok Gupta (Sr. Area Manager - Mumbai)',
     contact: '+91 98109 55678',
@@ -789,6 +948,32 @@ export const INITIAL_SUPPLY_CHAIN_ORDERS = [
     cashProgressPct: 70,
     creditAgingDays: 30,
     earlyDiscountOffer: 'Settled to distributor via Smart Contract Escrow'
+  },
+  {
+    orderId: 'ORD-MUM-8925',
+    hospitalId: 'hosp-4',
+    hospitalName: 'KEM Hospital & Seth G.S. Medical College',
+    stockistId: 'stock-1',
+    stockistName: 'Entero Healthcare Solutions',
+    mfgId: 'mfg-1',
+    mfgName: 'Hindustan Syringes (HMD)',
+    items: [
+      { skuId: 'SKU-GLV-75', name: 'Sterile Latex Surgical Gloves 7.5', qty: 50, unit: 'Boxes (5,000 pairs)', rate: 750, total: 37500 },
+      { skuId: 'SKU-SYR-5ML', name: 'HMD Dispovan 5ml Syringes', qty: 20, unit: 'Cartons (20,000 pcs)', rate: 2680, total: 53600 }
+    ],
+    totalAmount: 91100,
+    orderDate: '01 Nov 2026, 10:45 AM',
+    deliveredBy: '01 Nov 2026, 01:15 PM (Priority Emergency)',
+    deliveryStatus: 'IN_TRANSIT',
+    transitRoute: 'Dadar West Hub -> Parel Flyover Corridor -> KEM Dock Gate 3',
+    currentLocation: 'Parel TT Flyover • 8 mins away • Priority Emergency Delivery',
+    goodsProgressPct: 70,
+    temperatureC: 'Ambient Controlled (23°C)',
+    paymentStatus: 'ESCROW_LOCKED',
+    paymentDueBy: '30 Dec 2026 (60-day credit)',
+    cashProgressPct: 40,
+    creditAgingDays: 60,
+    earlyDiscountOffer: '2% instant discount if settled within 10 days (Save ₹1,822)'
   }
 ];
 

@@ -26,9 +26,10 @@ export default function UberPingModal() {
     if (activeUberPing) {
       const initialQty = activeUberPing.quantity || 100;
       setQty(initialQty);
-      // Default to best price quote if available
+      // Auto-select lowest-priced AVAILABLE quote (skip out of stock)
       if (activeUberPing.quotes && activeUberPing.quotes.length > 0) {
-        setSelectedStockistId(activeUberPing.quotes[0].stockistId);
+        const availableQuote = activeUberPing.quotes.find(q => !q.isOutOfStock) || activeUberPing.quotes[0];
+        setSelectedStockistId(availableQuote.stockistId);
       }
     }
   }, [activeUberPing]);
@@ -171,73 +172,100 @@ export default function UberPingModal() {
 
             {/* Stockist Options */}
             {quotes.map((quote) => {
-              const isSelected = selectedStockistId === quote.stockistId;
+              const isOutOfStock = Boolean(quote.isOutOfStock || quote.availableStock <= 0);
+              const isSelected = selectedStockistId === quote.stockistId && !isOutOfStock;
               const calculatedTotal = quote.quotedRate * qty;
 
               return (
                 <TouchableOpacity
                   key={quote.stockistId}
-                  onPress={() => setSelectedStockistId(quote.stockistId)}
+                  onPress={() => {
+                    if (isOutOfStock) return;
+                    setSelectedStockistId(quote.stockistId);
+                  }}
+                  disabled={isOutOfStock}
                   style={[
                     styles.quoteCard,
-                    quote.isBestPrice && styles.quoteCardBest,
-                    isSelected && styles.quoteCardSelected
+                    quote.isBestPrice && !isOutOfStock && styles.quoteCardBest,
+                    isSelected && styles.quoteCardSelected,
+                    isOutOfStock && styles.quoteCardOutOfStock
                   ]}
-                  activeOpacity={0.8}
+                  activeOpacity={isOutOfStock ? 1 : 0.8}
                 >
                   {/* Top Bar with Selection Radio & Ribbons */}
                   <View style={styles.cardTop}>
                     <View style={styles.stockistLeft}>
-                      <View style={[styles.radioCircle, isSelected && styles.radioCircleActive]}>
+                      <View style={[styles.radioCircle, isSelected && styles.radioCircleActive, isOutOfStock && styles.radioCircleDisabled]}>
                         {isSelected && <View style={styles.radioInnerDot} />}
+                        {isOutOfStock && <Ionicons name="close" size={14} color="#ef4444" />}
                       </View>
                       <View>
-                        <Text style={styles.stockistName}>{quote.stockistName}</Text>
+                        <Text style={[styles.stockistName, isOutOfStock && styles.textDisabled]}>{quote.stockistName}</Text>
                         <Text style={styles.stockistArea}>📍 {quote.hub} ({quote.distanceKm} km away)</Text>
                       </View>
                     </View>
 
                     <View style={styles.ribbonsGroup}>
-                      {quote.isBestPrice && (
-                        <View style={styles.bestRibbon}>
-                          <Text style={styles.bestRibbonText}>★ LOWEST PRICE (सबसे सस्ता)</Text>
+                      {isOutOfStock ? (
+                        <View style={styles.outOfStockRibbon}>
+                          <Text style={styles.outOfStockRibbonText}>🚫 OUT OF STOCK (Sold out to KEM)</Text>
                         </View>
-                      )}
-                      {quote.isFastest && !quote.isBestPrice && (
-                        <View style={styles.fastRibbon}>
-                          <Text style={styles.fastRibbonText}>⚡ FASTEST (25 Mins)</Text>
-                        </View>
+                      ) : (
+                        <>
+                          {quote.isBestPrice && (
+                            <View style={styles.bestRibbon}>
+                              <Text style={styles.bestRibbonText}>★ LOWEST PRICE (सबसे सस्ता)</Text>
+                            </View>
+                          )}
+                          {quote.isFastest && !quote.isBestPrice && (
+                            <View style={styles.fastRibbon}>
+                              <Text style={styles.fastRibbonText}>⚡ FASTEST (25 Mins)</Text>
+                            </View>
+                          )}
+                        </>
                       )}
                     </View>
                   </View>
 
                   {/* Pricing & Delivery Matrix */}
-                  <View style={styles.detailsRow}>
+                  <View style={[styles.detailsRow, isOutOfStock && styles.detailsRowOutOfStock]}>
                     <View style={styles.detailBox}>
                       <Text style={styles.detailLabel}>Rate per unit</Text>
-                      <Text style={styles.rateValue}>₹{quote.quotedRate}</Text>
+                      <Text style={[styles.rateValue, isOutOfStock && styles.rateValueDisabled]}>
+                        {isOutOfStock ? `₹${quote.quotedRate} (Sold Out)` : `₹${quote.quotedRate}`}
+                      </Text>
                     </View>
 
                     <View style={styles.detailBox}>
-                      <Text style={styles.detailLabel}>Delivery SLA</Text>
-                      <Text style={styles.etaValue}>{quote.etaMinutes} mins</Text>
+                      <Text style={styles.detailLabel}>Stock Available</Text>
+                      <Text style={[styles.etaValue, isOutOfStock ? styles.stockDepletedValue : { color: '#16a34a' }]}>
+                        {isOutOfStock ? '0 Available' : `${quote.availableStock} in stock`}
+                      </Text>
                     </View>
 
                     <View style={styles.detailBox}>
                       <Text style={styles.detailLabel}>Total for {qty} units</Text>
-                      <Text style={styles.totalValue}>₹{calculatedTotal.toLocaleString('en-IN')}</Text>
+                      <Text style={[styles.totalValue, isOutOfStock && styles.totalValueDisabled]}>
+                        {isOutOfStock ? 'Exhausted' : `₹${calculatedTotal.toLocaleString('en-IN')}`}
+                      </Text>
                     </View>
                   </View>
 
                   {/* Selection Indicator Banner */}
                   <View style={[styles.selectBanner, isSelected && styles.selectBannerActive]}>
                     <Ionicons
-                      name={isSelected ? "checkmark-circle" : "ellipse-outline"}
+                      name={isOutOfStock ? "alert-circle" : (isSelected ? "checkmark-circle" : "ellipse-outline")}
                       size={16}
-                      color={isSelected ? "#16a34a" : "#94a3b8"}
+                      color={isOutOfStock ? "#ef4444" : (isSelected ? "#16a34a" : "#94a3b8")}
                     />
-                    <Text style={[styles.selectBannerText, isSelected && styles.selectBannerTextActive]}>
-                      {isSelected ? "Selected for Delivery ✓" : "Tap to Select this Supplier"}
+                    <Text style={[
+                      styles.selectBannerText,
+                      isSelected && styles.selectBannerTextActive,
+                      isOutOfStock && styles.selectBannerTextOutOfStock
+                    ]}>
+                      {isOutOfStock
+                        ? "Batch Exhausted (Recently ordered by KEM Hospital) • Routed to Alternate"
+                        : (isSelected ? "Selected for Delivery ✓" : "Tap to Select this Supplier")}
                     </Text>
                   </View>
                 </TouchableOpacity>
@@ -470,6 +498,49 @@ const styles = StyleSheet.create({
     borderColor: '#0284c7',
     borderWidth: 2.5,
     backgroundColor: '#f0f9ff'
+  },
+  quoteCardOutOfStock: {
+    borderColor: '#fca5a5',
+    borderStyle: 'dashed',
+    backgroundColor: '#f8fafc',
+    opacity: 0.85
+  },
+  radioCircleDisabled: {
+    borderColor: '#fca5a5',
+    backgroundColor: '#fef2f2'
+  },
+  textDisabled: {
+    color: '#64748b'
+  },
+  outOfStockRibbon: {
+    backgroundColor: '#ef4444',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 6
+  },
+  outOfStockRibbonText: {
+    color: '#ffffff',
+    fontSize: 9,
+    fontWeight: '900'
+  },
+  detailsRowOutOfStock: {
+    backgroundColor: '#fef2f2',
+    borderColor: '#fecaca'
+  },
+  rateValueDisabled: {
+    color: '#94a3b8',
+    textDecorationLine: 'line-through'
+  },
+  stockDepletedValue: {
+    color: '#ef4444',
+    fontWeight: '900'
+  },
+  totalValueDisabled: {
+    color: '#94a3b8'
+  },
+  selectBannerTextOutOfStock: {
+    color: '#dc2626',
+    fontWeight: '700'
   },
   cardTop: {
     flexDirection: 'row',

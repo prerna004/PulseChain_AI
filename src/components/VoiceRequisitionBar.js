@@ -20,6 +20,12 @@ export default function VoiceRequisitionBar() {
   // 1-Tap everyday hospital supplies (Senior staff / OT nurse friendly)
   const QUICK_ITEMS = [
     {
+      icon: 'bolt',
+      name: '⚡ Privileged Mic: 50 Dispovan (Entero)',
+      hindi: 'फास्ट ट्रैक आर्डर',
+      prompt: 'Order 50 boxes of Dispovan syringes from Entero'
+    },
+    {
       icon: 'hands-wash',
       name: 'Surgical Gloves 7.5',
       hindi: 'दस्ताने',
