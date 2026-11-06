@@ -510,7 +510,7 @@ export default function HospitalDashboard() {
           onPress={() => setActiveTab('INVENTORY')}
           style={[styles.tabBtn, activeTab === 'INVENTORY' && styles.tabBtnActive]}
         >
-          <Ionicons name="cube" size={18} color={activeTab === 'INVENTORY' ? '#0284c7' : '#64748b'} />
+          <Ionicons name="cube" size={18} color={activeTab === 'INVENTORY' ? '#ffffff' : '#0284c7'} />
           <Text style={[styles.tabText, activeTab === 'INVENTORY' && styles.tabTextActive]}>
             1. Hospital Stock (दवाइयां और सामान)
           </Text>
@@ -520,7 +520,7 @@ export default function HospitalDashboard() {
           onPress={() => setActiveTab('WARDS')}
           style={[styles.tabBtn, activeTab === 'WARDS' && styles.tabBtnActive]}
         >
-          <Ionicons name="pulse" size={18} color={activeTab === 'WARDS' ? '#0284c7' : '#64748b'} />
+          <Ionicons name="pulse" size={18} color={activeTab === 'WARDS' ? '#ffffff' : '#0284c7'} />
           <Text style={[styles.tabText, activeTab === 'WARDS' && styles.tabTextActive]}>
             2. Ward Usage (वार्ड में इस्तेमाल)
           </Text>
@@ -530,9 +530,9 @@ export default function HospitalDashboard() {
           onPress={() => setActiveTab('ORDERS')}
           style={[styles.tabBtn, activeTab === 'ORDERS' && styles.tabBtnActive]}
         >
-          <Ionicons name="receipt" size={18} color={activeTab === 'ORDERS' ? '#0284c7' : '#64748b'} />
+          <Ionicons name="receipt" size={18} color={activeTab === 'ORDERS' ? '#ffffff' : '#0284c7'} />
           <Text style={[styles.tabText, activeTab === 'ORDERS' && styles.tabTextActive]}>
-            3. Active Orders (डिलीवरी स्टेटस)
+            3. Active Orders ({myOrders.length})
           </Text>
         </TouchableOpacity>
       </View>
@@ -772,18 +772,22 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
     backgroundColor: '#ffffff',
-    paddingHorizontal: 16,
+    paddingHorizontal: 18,
     paddingVertical: 12,
     borderRadius: 14,
     borderWidth: 1.5,
     borderColor: '#e2e8f0',
-    shadowColor: '#000',
+    shadowColor: '#0f172a',
     shadowOpacity: 0.04,
     shadowRadius: 8
   },
   tabBtnActive: {
-    backgroundColor: '#f0f9ff',
-    borderColor: '#0284c7'
+    backgroundColor: '#0284c7',
+    borderColor: '#0284c7',
+    shadowColor: '#0284c7',
+    shadowOpacity: 0.35,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 }
   },
   tabText: {
     fontSize: 13,
@@ -791,18 +795,20 @@ const styles = StyleSheet.create({
     color: '#64748b'
   },
   tabTextActive: {
-    color: '#0284c7'
+    color: '#ffffff',
+    fontWeight: '800'
   },
   whiteCard: {
     backgroundColor: '#ffffff',
-    borderRadius: 20,
-    padding: 18,
-    borderWidth: 1,
+    borderRadius: 22,
+    padding: 22,
+    borderWidth: 1.5,
     borderColor: '#e2e8f0',
     marginBottom: 20,
-    shadowColor: '#000',
-    shadowOpacity: 0.05,
-    shadowRadius: 15
+    shadowColor: '#0f172a',
+    shadowOpacity: 0.06,
+    shadowRadius: 18,
+    shadowOffset: { width: 0, height: 4 }
   },
   cardTopHeader: {
     marginBottom: 16
@@ -823,14 +829,17 @@ const styles = StyleSheet.create({
     gap: 14
   },
   skuCard: {
-    backgroundColor: '#f8fafc',
-    borderRadius: 16,
-    padding: 14,
+    backgroundColor: '#ffffff',
+    borderRadius: 18,
+    padding: 16,
     borderWidth: 1.5,
     borderColor: '#e2e8f0',
     width: '31.5%',
     minWidth: 260,
-    flexGrow: 1
+    flexGrow: 1,
+    shadowColor: '#0f172a',
+    shadowOpacity: 0.04,
+    shadowRadius: 10
   },
   skuCardLow: {
     backgroundColor: '#fef2f2',
@@ -842,16 +851,42 @@ const styles = StyleSheet.create({
     borderWidth: 2,
   },
   // Inventory stats row
-  inventoryStatsRow: { flexDirection: 'row', gap: 8, marginBottom: 14 },
-  invStatCard: { flex: 1, backgroundColor: '#f8fafc', borderRadius: 10, padding: 10, borderLeftWidth: 3, alignItems: 'center' },
-  invStatNum: { fontSize: 22, fontWeight: '900', color: '#0f172a' },
-  invStatLabel: { fontSize: 9, fontWeight: '700', color: '#64748b', textAlign: 'center', marginTop: 2 },
+  inventoryStatsRow: { flexDirection: 'row', gap: 10, marginBottom: 16 },
+  invStatCard: {
+    flex: 1,
+    backgroundColor: '#ffffff',
+    borderRadius: 14,
+    padding: 12,
+    borderLeftWidth: 4,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    shadowColor: '#0f172a',
+    shadowOpacity: 0.03,
+    shadowRadius: 6
+  },
+  invStatNum: { fontSize: 24, fontWeight: '900', color: '#0f172a' },
+  invStatLabel: { fontSize: 10, fontWeight: '700', color: '#64748b', textAlign: 'center', marginTop: 2 },
   // Category filter chips
-  categoryScroll: { marginBottom: 10 },
-  catChip: { backgroundColor: '#f1f5f9', borderRadius: 20, paddingHorizontal: 12, paddingVertical: 5, marginRight: 8, borderWidth: 1.5, borderColor: '#e2e8f0' },
-  catChipActive: { backgroundColor: '#e0f2fe', borderColor: '#0284c7' },
-  catChipText: { fontSize: 11, fontWeight: '700', color: '#64748b' },
-  catChipTextActive: { color: '#0284c7' },
+  categoryScroll: { marginBottom: 12 },
+  catChip: {
+    backgroundColor: '#f8fafc',
+    borderRadius: 20,
+    paddingHorizontal: 14,
+    paddingVertical: 7,
+    marginRight: 8,
+    borderWidth: 1.5,
+    borderColor: '#e2e8f0'
+  },
+  catChipActive: {
+    backgroundColor: '#0284c7',
+    borderColor: '#0284c7',
+    shadowColor: '#0284c7',
+    shadowOpacity: 0.25,
+    shadowRadius: 8
+  },
+  catChipText: { fontSize: 11.5, fontWeight: '700', color: '#64748b' },
+  catChipTextActive: { color: '#ffffff', fontWeight: '800' },
   filterResultCount: { fontSize: 11, color: '#94a3b8', marginBottom: 8 },
   // Critical badge
   badgeCritical: { backgroundColor: '#fef2f2' },
@@ -930,13 +965,20 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 6,
+    gap: 8,
     backgroundColor: '#0284c7',
-    paddingVertical: 10,
-    borderRadius: 10
+    paddingVertical: 11,
+    borderRadius: 12,
+    shadowColor: '#0284c7',
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 3 }
   },
   reorderBtnUrgent: {
-    backgroundColor: '#dc2626'
+    backgroundColor: '#dc2626',
+    shadowColor: '#dc2626',
+    shadowOpacity: 0.4,
+    shadowRadius: 10
   },
   reorderBtnText: {
     color: '#ffffff',
@@ -1358,13 +1400,17 @@ const styles = StyleSheet.create({
     flexDirection: 'row'
   },
   supplierProximityCard: {
-    width: 290,
-    backgroundColor: '#f8fafc',
-    borderRadius: 14,
-    padding: 14,
-    marginRight: 12,
+    width: 300,
+    backgroundColor: '#ffffff',
+    borderRadius: 16,
+    padding: 16,
+    marginRight: 14,
     borderWidth: 1.5,
-    borderColor: '#cbd5e1'
+    borderColor: '#e2e8f0',
+    shadowColor: '#0f172a',
+    shadowOpacity: 0.05,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 3 }
   },
   mfgCardBorder: {
     backgroundColor: '#f0fdf4',
@@ -1461,10 +1507,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 6,
-    backgroundColor: '#0284c7',
-    paddingVertical: 8,
-    borderRadius: 8
+    gap: 7,
+    backgroundColor: '#059669',
+    paddingVertical: 10,
+    borderRadius: 10,
+    shadowColor: '#059669',
+    shadowOpacity: 0.35,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 3 }
   },
   directOrderBtnText: {
     color: '#ffffff',

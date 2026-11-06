@@ -10,6 +10,7 @@ import {
   ScrollView,
   SafeAreaView,
   StatusBar,
+  Platform,
   useWindowDimensions
 } from 'react-native';
 import { Ionicons, FontAwesome5 } from '@expo/vector-icons';
@@ -230,6 +231,69 @@ function MainScreen() {
     <SafeAreaView style={styles.mainContainer}>
       <StatusBar barStyle="dark-content" />
 
+      {/* Global High-Aesthetic Web CSS */}
+      {Platform.OS === 'web' && (
+        <style dangerouslySetInnerHTML={{
+          __html: `
+            @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap');
+
+            * {
+              font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif !important;
+              -webkit-font-smoothing: antialiased;
+              -moz-osx-font-smoothing: grayscale;
+            }
+
+            body {
+              background-color: #f8fafc;
+            }
+
+            /* Universal Graceful Button & Tile Hover Effects */
+            button, [role="button"], [data-focusable="true"] {
+              transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.22s cubic-bezier(0.16, 1, 0.3, 1), filter 0.22s ease !important;
+              cursor: pointer !important;
+              user-select: none;
+            }
+
+            button:hover, [role="button"]:hover {
+              transform: translateY(-2px) !important;
+              filter: brightness(1.03) !important;
+              box-shadow: 0 10px 22px -4px rgba(15, 23, 42, 0.12) !important;
+            }
+
+            button:active, [role="button"]:active {
+              transform: translateY(0px) scale(0.97) !important;
+              filter: brightness(0.95) !important;
+            }
+
+            /* Custom Slim Sleek Scrollbars */
+            ::-webkit-scrollbar {
+              width: 7px;
+              height: 7px;
+            }
+            ::-webkit-scrollbar-track {
+              background: transparent;
+            }
+            ::-webkit-scrollbar-thumb {
+              background: #cbd5e1;
+              border-radius: 999px;
+            }
+            ::-webkit-scrollbar-thumb:hover {
+              background: #94a3b8;
+            }
+
+            @keyframes haloGlow {
+              0% { box-shadow: 0 0 0 0 rgba(2, 132, 199, 0.4); }
+              70% { box-shadow: 0 0 0 12px rgba(2, 132, 199, 0); }
+              100% { box-shadow: 0 0 0 0 rgba(2, 132, 199, 0); }
+            }
+
+            .halo-active {
+              animation: haloGlow 2.5s infinite;
+            }
+          `
+        }} />
+      )}
+
       {/* Navigation Bar */}
       <View style={styles.navBar}>
         <View style={styles.navLeft}>
@@ -239,7 +303,7 @@ function MainScreen() {
             </View>
             <View>
               <Text style={styles.navBrandText}>PulseChain AI</Text>
-              <Text style={styles.navSubBrand}>Mumbai Healthcare Procurement</Text>
+              <Text style={styles.navSubBrand}>MUMBAI HEALTHCARE MESH</Text>
             </View>
           </TouchableOpacity>
 
@@ -347,28 +411,121 @@ const styles = StyleSheet.create({
   footerNote: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, borderTopWidth: 1, borderTopColor: '#e2e8f0', paddingTop: 14 },
   footerText: { fontSize: 11, color: '#64748b' },
   mainContainer: { flex: 1, backgroundColor: '#f8fafc' },
-  navBar: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#ffffff', borderBottomWidth: 1, borderBottomColor: '#e2e8f0', paddingHorizontal: 18, paddingVertical: 10, flexWrap: 'wrap', gap: 10, shadowColor: '#000', shadowOpacity: 0.03, shadowRadius: 5 },
-  navLeft: { flexDirection: 'row', alignItems: 'center', gap: 18, flexWrap: 'wrap' },
-  brandRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  navLogoWrap: { width: 36, height: 36, borderRadius: 18, backgroundColor: '#e0f2fe', alignItems: 'center', justifyContent: 'center' },
-  navBrandText: { fontSize: 15, fontWeight: '900', color: '#0f172a' },
-  navSubBrand: { fontSize: 9, color: '#64748b', fontWeight: '700' },
-  roleSwitchRow: { flexDirection: 'row', backgroundColor: '#f1f5f9', borderRadius: 20, padding: 3, gap: 4 },
-  roleSwitchPill: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 16 },
-  pillActiveHospital: { backgroundColor: '#0284c7' },
-  pillActiveStockist: { backgroundColor: '#d97706' },
-  pillActiveMfg: { backgroundColor: '#16a34a' },
+  navBar: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: '#ffffff',
+    borderBottomWidth: 1.5,
+    borderBottomColor: '#e2e8f0',
+    paddingHorizontal: 22,
+    paddingVertical: 12,
+    flexWrap: 'wrap',
+    gap: 12,
+    shadowColor: '#0f172a',
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 2 }
+  },
+  navLeft: { flexDirection: 'row', alignItems: 'center', gap: 20, flexWrap: 'wrap' },
+  brandRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  navLogoWrap: {
+    width: 42,
+    height: 42,
+    borderRadius: 14,
+    backgroundColor: '#e0f2fe',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1.5,
+    borderColor: '#bae6fd',
+    shadowColor: '#0284c7',
+    shadowOpacity: 0.15,
+    shadowRadius: 8
+  },
+  navBrandText: { fontSize: 17, fontWeight: '900', color: '#0f172a', letterSpacing: -0.3 },
+  navSubBrand: { fontSize: 9.5, color: '#0284c7', fontWeight: '800', letterSpacing: 0.6 },
+  roleSwitchRow: {
+    flexDirection: 'row',
+    backgroundColor: '#f1f5f9',
+    borderRadius: 24,
+    padding: 4,
+    gap: 4,
+    borderWidth: 1,
+    borderColor: '#e2e8f0'
+  },
+  roleSwitchPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 7,
+    paddingHorizontal: 14,
+    paddingVertical: 7,
+    borderRadius: 18
+  },
+  pillActiveHospital: {
+    backgroundColor: '#0284c7',
+    shadowColor: '#0284c7',
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 2 }
+  },
+  pillActiveStockist: {
+    backgroundColor: '#d97706',
+    shadowColor: '#d97706',
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 2 }
+  },
+  pillActiveMfg: {
+    backgroundColor: '#16a34a',
+    shadowColor: '#16a34a',
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 2 }
+  },
   pillText: { fontSize: 12, fontWeight: '700', color: '#64748b' },
   pillTextActive: { color: '#ffffff' },
-  navRight: { flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap' },
-  loggedInBadge: { flexDirection: 'row', alignItems: 'center', gap: 6, borderWidth: 1, borderRadius: 10, paddingHorizontal: 10, paddingVertical: 6, maxWidth: 200 },
-  loggedInBadgeText: { fontSize: 11, fontWeight: '700', flexShrink: 1 },
-  logoutBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: '#fef2f2', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 4, borderWidth: 1, borderColor: '#fecaca' },
-  logoutBtnText: { fontSize: 10, fontWeight: '800', color: '#dc2626' },
-  quickNavBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: '#f8fafc', paddingHorizontal: 10, paddingVertical: 7, borderRadius: 10, borderWidth: 1, borderColor: '#e2e8f0' },
-  quickNavText: { fontSize: 11, fontWeight: '700', color: '#334155' },
+  navRight: { flexDirection: 'row', alignItems: 'center', gap: 10, flexWrap: 'wrap' },
+  loggedInBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    borderWidth: 1.5,
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    maxWidth: 240,
+    backgroundColor: '#ffffff'
+  },
+  loggedInBadgeText: { fontSize: 12, fontWeight: '800', flexShrink: 1 },
+  logoutBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: '#fef2f2',
+    borderRadius: 8,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderWidth: 1,
+    borderColor: '#fecaca'
+  },
+  logoutBtnText: { fontSize: 10.5, fontWeight: '800', color: '#dc2626' },
+  quickNavBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 7,
+    backgroundColor: '#ffffff',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 12,
+    borderWidth: 1.5,
+    borderColor: '#e2e8f0',
+    shadowColor: '#0f172a',
+    shadowOpacity: 0.03,
+    shadowRadius: 6
+  },
+  quickNavText: { fontSize: 11.5, fontWeight: '800', color: '#334155' },
   contentBody: { flex: 1, backgroundColor: '#f8fafc' },
   dashboardScrollView: { flex: 1 },
-  dashboardWrapper: { width: '100%', maxWidth: 1320, alignSelf: 'center', paddingHorizontal: 24, paddingVertical: 18, paddingBottom: 40 },
+  dashboardWrapper: { width: '100%', maxWidth: 1360, alignSelf: 'center', paddingHorizontal: 24, paddingVertical: 18, paddingBottom: 40 },
   dashboardWrapperMobile: { paddingHorizontal: 10, paddingVertical: 10, maxWidth: '100%' },
 });

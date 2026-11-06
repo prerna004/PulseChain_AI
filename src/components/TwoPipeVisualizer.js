@@ -1465,13 +1465,13 @@ export default function TwoPipeVisualizer() {
 const styles = StyleSheet.create({
   card: {
     backgroundColor: '#ffffff',
-    borderRadius: 20,
+    borderRadius: 22,
     marginBottom: 20,
     borderWidth: 1.5,
-    borderColor: '#cbd5e1',
-    shadowColor: '#000',
+    borderColor: '#e2e8f0',
+    shadowColor: '#0f172a',
     shadowOpacity: 0.08,
-    shadowRadius: 16,
+    shadowRadius: 18,
     shadowOffset: { width: 0, height: 4 },
     overflow: 'hidden'
   },
