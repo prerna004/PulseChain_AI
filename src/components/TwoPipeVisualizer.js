@@ -6,7 +6,7 @@
 // 3. Line G (Green): Physical Medical Goods Express Track (Moving Westbound ➔ Factory to Bedside)
 // 4. Line P (Gold): Capital & Smart Escrow Payment Track (Moving Eastbound ➔ Hospital to Factory)
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Platform } from 'react-native';
 import { Ionicons, FontAwesome5, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useApp } from '../store/stateManager';
