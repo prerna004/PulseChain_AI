@@ -33,24 +33,36 @@ function renderSvgIcon(name, size, color, secondaryColor) {
     case 'mic':
     case 'microphone':
       return (
-        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" fill={color} fillOpacity="0.15" />
-          <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
-          <line x1="12" x2="12" y1="19" y2="23" />
-          <line x1="8" x2="16" y1="23" y2="23" />
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+          <rect x="9" y="2" width="6" height="12" rx="3" fill={color} />
+          <path d="M5 10v2a7 7 0 0 0 14 0v-2" stroke={color} strokeWidth="2.4" />
+          <line x1="12" y1="19" x2="12" y2="23" stroke={color} strokeWidth="2.4" />
+          <line x1="8" y1="23" x2="16" y2="23" stroke={color} strokeWidth="2.4" />
         </svg>
       );
 
     case 'mic-listening':
       return (
-        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" fill={color} />
-          <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
-          <line x1="12" x2="12" y1="19" y2="23" />
-          <line x1="8" x2="16" y1="23" y2="23" />
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+          <rect x="9" y="2" width="6" height="12" rx="3" fill={color} />
+          <path d="M5 10v2a7 7 0 0 0 14 0v-2" stroke={color} strokeWidth="2.4" />
+          <line x1="12" y1="19" x2="12" y2="23" stroke={color} strokeWidth="2.4" />
+          <line x1="8" y1="23" x2="16" y2="23" stroke={color} strokeWidth="2.4" />
           {/* Animated soundwaves */}
-          <path d="M22 10a10 10 0 0 1 0 4" stroke={color} strokeWidth="2" strokeDasharray="2 2" />
-          <path d="M2 10a10 10 0 0 0 0 4" stroke={color} strokeWidth="2" strokeDasharray="2 2" />
+          <path d="M21 9a9 9 0 0 1 0 6" stroke={color} strokeWidth="2.4" />
+          <path d="M3 9a9 9 0 0 0 0 6" stroke={color} strokeWidth="2.4" />
+        </svg>
+      );
+
+    // 🔊 SPEAKER / AUDIO / VOICE ANNOUNCER
+    case 'speaker':
+    case 'volume':
+    case 'audio':
+      return (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+          <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" fill={color} />
+          <path d="M15.54 8.46a5 5 0 0 1 0 7.07" stroke={color} strokeWidth="2.2" />
+          <path d="M19.07 4.93a10 10 0 0 1 0 14.14" stroke={color} strokeWidth="2.2" />
         </svg>
       );
 
@@ -351,7 +363,12 @@ function renderNativeFallback(name, size, color) {
     case 'paper-plane':
     case 'send':
       return <Ionicons name="paper-plane" size={size} color={color} />;
+    case 'speaker':
+    case 'volume':
+    case 'audio':
+      return <Ionicons name="volume-high" size={size} color={color} />;
     default:
       return <Ionicons name="help-circle" size={size} color={color} />;
   }
 }
+

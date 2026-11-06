@@ -134,7 +134,7 @@ export default function VoiceRequisitionBar() {
         </View>
       </View>
 
-      {/* Or Type Simple Box */}
+      {/* Or Type / Seek Item Box */}
       <View style={styles.inputBar}>
         <TextInput
           style={styles.textInput}
@@ -145,6 +145,18 @@ export default function VoiceRequisitionBar() {
           onSubmitEditing={handleSend}
           returnKeyType="send"
         />
+        {/* Quick Mic for Seeker Input Bar */}
+        <TouchableOpacity
+          onPress={toggleMic}
+          style={[styles.seekerMicBtn, isListening && styles.seekerMicBtnListening]}
+          accessibilityLabel="Voice Input Mic"
+        >
+          <SymbolIcon
+            name={isListening ? 'mic-listening' : 'mic'}
+            size={18}
+            color={isListening ? '#dc2626' : '#059669'}
+          />
+        </TouchableOpacity>
         <TouchableOpacity
           onPress={handleSend}
           style={[styles.sendBtn, !inputVal.trim() && styles.sendBtnDisabled]}
@@ -182,14 +194,23 @@ export default function VoiceRequisitionBar() {
           lastAiMessage.type === 'SUCCESS' && styles.feedbackSuccess
         ]}>
           <View style={styles.feedbackIconWrap}>
-            <Ionicons
-              name={lastAiMessage.type === 'SUCCESS' ? 'checkmark-circle' : 'chatbubble-ellipses'}
+            <SymbolIcon
+              name={lastAiMessage.type === 'SUCCESS' ? 'check' : 'speaker'}
               size={22}
-              color={lastAiMessage.type === 'SUCCESS' ? '#16a34a' : '#0284c7'}
+              color={lastAiMessage.type === 'SUCCESS' ? '#166534' : '#0284c7'}
             />
           </View>
           <View style={{ flex: 1 }}>
-            <Text style={styles.feedbackTitle}>{lastAiMessage.title}</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 2 }}>
+              <Text style={styles.feedbackTitle}>{lastAiMessage.title}</Text>
+              <TouchableOpacity
+                onPress={() => aiEngine.speak(lastAiMessage.text)}
+                style={styles.listenSpeechBtn}
+              >
+                <SymbolIcon name="speaker" size={13} color="#0284c7" />
+                <Text style={styles.listenSpeechBtnText}>Speaker / बोलकर सुनें 🔊</Text>
+              </TouchableOpacity>
+            </View>
             <Text style={styles.feedbackText}>{lastAiMessage.text}</Text>
           </View>
         </View>
@@ -291,6 +312,37 @@ const styles = StyleSheet.create({
   sendBtnDisabled: {
     backgroundColor: '#94a3b8',
     shadowOpacity: 0
+  },
+  seekerMicBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    backgroundColor: '#ecfdf5',
+    borderWidth: 1,
+    borderColor: '#a7f3d0',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 6
+  },
+  seekerMicBtnListening: {
+    backgroundColor: '#fef2f2',
+    borderColor: '#fca5a5'
+  },
+  listenSpeechBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    backgroundColor: '#e0f2fe',
+    borderWidth: 1,
+    borderColor: '#bae6fd',
+    borderRadius: 20,
+    paddingHorizontal: 10,
+    paddingVertical: 4
+  },
+  listenSpeechBtnText: {
+    fontSize: 10.5,
+    fontWeight: '800',
+    color: '#0284c7'
   },
   quickLabel: {
     fontSize: 12.5,
