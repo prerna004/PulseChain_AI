@@ -25,6 +25,7 @@ import StockistAuthScreen from './src/components/StockistAuthScreen';
 import ManufacturerAuthScreen from './src/components/ManufacturerAuthScreen';
 import FirstOrderPaperworkModal from './src/components/FirstOrderPaperworkModal';
 import SplitScreenView from './src/components/SplitScreenView';
+import SymbolIcon from './src/components/SymbolIcon';
 
 function MainScreen() {
   const { width } = useWindowDimensions();
@@ -237,8 +238,21 @@ function MainScreen() {
           __html: `
             @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap');
 
-            * {
-              font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif !important;
+            @font-face {
+              font-family: 'Ionicons';
+              src: url('https://cdn.jsdelivr.net/npm/@expo/vector-icons@14.0.2/build/vendor/react-native-vector-icons/Fonts/Ionicons.ttf') format('truetype');
+            }
+            @font-face {
+              font-family: 'FontAwesome';
+              src: url('https://cdn.jsdelivr.net/npm/@expo/vector-icons@14.0.2/build/vendor/react-native-vector-icons/Fonts/FontAwesome.ttf') format('truetype');
+            }
+            @font-face {
+              font-family: 'FontAwesome5Free-Solid';
+              src: url('https://cdn.jsdelivr.net/npm/@expo/vector-icons@14.0.2/build/vendor/react-native-vector-icons/Fonts/FontAwesome5_Solid.ttf') format('truetype');
+            }
+
+            html, body, #root, input, textarea, select, button {
+              font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
               -webkit-font-smoothing: antialiased;
               -moz-osx-font-smoothing: grayscale;
             }
@@ -304,7 +318,7 @@ function MainScreen() {
         <View style={styles.navLeft}>
           <TouchableOpacity onPress={() => setHasChosenRole(false)} style={styles.brandRow}>
             <View style={styles.navLogoWrap}>
-              <Ionicons name="medical" size={20} color="#0284c7" />
+              <SymbolIcon name="hospital" size={20} color="#0284c7" />
             </View>
             <View>
               <Text style={styles.navBrandText}>PulseChain AI</Text>
@@ -329,7 +343,7 @@ function MainScreen() {
                 }}
                 style={[styles.roleSwitchPill, currentRole === r.role && r.style]}
               >
-                <FontAwesome5 name={r.icon} size={12} color={currentRole === r.role ? '#fff' : '#64748b'} />
+                <SymbolIcon name={r.icon} size={13} color={currentRole === r.role ? '#fff' : '#64748b'} />
                 <Text style={[styles.pillText, currentRole === r.role && styles.pillTextActive]}>{r.label}</Text>
               </TouchableOpacity>
             ))}
@@ -340,7 +354,7 @@ function MainScreen() {
           {/* Logged-in entity badge */}
           {activeEntityName && (
             <View style={[styles.loggedInBadge, { borderColor: roleColor + '40', backgroundColor: roleColor + '10' }]}>
-              <FontAwesome5 name={roleIcon} size={11} color={roleColor} />
+              <SymbolIcon name={roleIcon} size={12} color={roleColor} />
               <Text style={[styles.loggedInBadgeText, { color: roleColor }]} numberOfLines={1}>
                 {activeEntityName.split(' ').slice(0, 3).join(' ')}
               </Text>
@@ -353,19 +367,19 @@ function MainScreen() {
 
           {/* WhatsApp Import */}
           <TouchableOpacity onPress={() => setShowWhatsAppModal(true)} style={styles.quickNavBtn}>
-            <Ionicons name="logo-whatsapp" size={16} color="#16a34a" />
+            <SymbolIcon name="whatsapp" size={16} color="#16a34a" />
             {!isMobileScreen && <Text style={styles.quickNavText}>WA Import</Text>}
           </TouchableOpacity>
 
           {/* Permissions */}
           <TouchableOpacity onPress={() => setShowPermissionsModal(true)} style={styles.quickNavBtn}>
-            <Ionicons name="shield-checkmark-outline" size={16} color="#d97706" />
+            <SymbolIcon name="shield" size={16} color="#d97706" />
             {!isMobileScreen && <Text style={styles.quickNavText}>Permissions</Text>}
           </TouchableOpacity>
 
           {/* Data Lake */}
           <TouchableOpacity onPress={() => setShowDataLakeModal(true)} style={styles.quickNavBtn}>
-            <Ionicons name="server" size={16} color="#7c3aed" />
+            <SymbolIcon name="server" size={16} color="#7c3aed" />
             {!isMobileScreen && <Text style={styles.quickNavText}>Data Lake</Text>}
           </TouchableOpacity>
         </View>

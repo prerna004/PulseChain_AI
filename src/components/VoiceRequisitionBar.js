@@ -6,6 +6,7 @@ import { View, Text, TextInput, StyleSheet, TouchableOpacity, ScrollView } from 
 import { Ionicons, FontAwesome5 } from '@expo/vector-icons';
 import { useApp } from '../store/stateManager';
 import { aiEngine } from '../ai/agentEngine';
+import SymbolIcon from './SymbolIcon';
 
 export default function VoiceRequisitionBar() {
   const {
@@ -26,7 +27,7 @@ export default function VoiceRequisitionBar() {
       prompt: 'Order 50 boxes of Dispovan syringes from Entero'
     },
     {
-      icon: 'hands-wash',
+      icon: 'gloves',
       name: 'Surgical Gloves 7.5',
       hindi: 'दस्ताने',
       prompt: 'Order 100 boxes of 7.5 sterile surgical gloves for Lilavati ICU urgently'
@@ -38,19 +39,19 @@ export default function VoiceRequisitionBar() {
       prompt: 'Send 20 cartons of HMD Dispovan 5ml syringes urgently'
     },
     {
-      icon: 'tint',
+      icon: 'cannula',
       name: 'IV Cannula 20G',
       hindi: 'कैनुला',
       prompt: 'Order 50 boxes of Polymed IV cannula 20G Pink'
     },
     {
-      icon: 'head-side-mask',
+      icon: 'mask',
       name: '3M N95 Masks',
       hindi: 'मास्क',
       prompt: 'Order 50 boxes 3M N95 masks for emergency ward'
     },
     {
-      icon: 'search-dollar',
+      icon: 'radar',
       name: 'Find Best Price (Uber Ping)',
       hindi: 'सस्ता रेट ढूंढो',
       prompt: 'get me the best prices for gloves across Mumbai stockists'
@@ -114,9 +115,9 @@ export default function VoiceRequisitionBar() {
           style={[styles.bigMicButton, isListening && styles.bigMicButtonListening]}
           accessibilityLabel="Mic Button"
         >
-          <Ionicons
-            name={isListening ? 'mic' : 'mic'}
-            size={38}
+          <SymbolIcon
+            name={isListening ? 'mic-listening' : 'mic'}
+            size={36}
             color="#ffffff"
           />
         </TouchableOpacity>
@@ -163,7 +164,7 @@ export default function VoiceRequisitionBar() {
             style={styles.quickCard}
           >
             <View style={styles.quickIconBg}>
-              <FontAwesome5 name={item.icon} size={16} color="#0284c7" />
+              <SymbolIcon name={item.icon} size={18} color="#0284c7" />
             </View>
             <View>
               <Text style={styles.quickName}>{item.name}</Text>

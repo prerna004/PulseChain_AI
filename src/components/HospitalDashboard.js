@@ -8,6 +8,7 @@ import { useApp } from '../store/stateManager';
 import TwoPipeVisualizer from './TwoPipeVisualizer';
 import VoiceRequisitionBar from './VoiceRequisitionBar';
 import { CATALOG_CATEGORIES, calculateDistanceKm } from '../data/mumbaiData';
+import SymbolIcon from './SymbolIcon';
 
 export default function HospitalDashboard() {
   const {
@@ -138,7 +139,7 @@ export default function HospitalDashboard() {
       <View style={styles.hospitalSecureHeader}>
         <View style={styles.hospitalSecureLeft}>
           <View style={styles.hospitalIconCircle}>
-            <FontAwesome5 name="hospital" size={22} color="#0284c7" />
+            <SymbolIcon name="hospital" size={24} color="#0284c7" />
           </View>
           <View style={{ flex: 1 }}>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
@@ -269,7 +270,7 @@ export default function HospitalDashboard() {
 
                 <View style={styles.supplierEntityRow}>
                   <View style={styles.symbolIconBoxAmber}>
-                    <FontAwesome5 name="truck" size={13} color="#d97706" />
+                    <SymbolIcon name="truck" size={16} color="#d97706" />
                   </View>
                   <View style={{ flex: 1 }}>
                     <Text style={styles.supplierCardName} numberOfLines={1}>{stk.name.split('(')[0]}</Text>
@@ -344,7 +345,7 @@ export default function HospitalDashboard() {
 
                 <View style={styles.supplierEntityRow}>
                   <View style={styles.symbolIconBoxGreen}>
-                    <FontAwesome5 name="industry" size={13} color="#059669" />
+                    <SymbolIcon name="factory" size={16} color="#059669" />
                   </View>
                   <View style={{ flex: 1 }}>
                     <Text style={styles.supplierCardName} numberOfLines={1}>{mfg.brand || mfg.name} Primary Plant</Text>
@@ -524,7 +525,7 @@ export default function HospitalDashboard() {
           onPress={() => setActiveTab('INVENTORY')}
           style={[styles.tabBtn, activeTab === 'INVENTORY' && styles.tabBtnActive]}
         >
-          <Ionicons name="cube" size={18} color={activeTab === 'INVENTORY' ? '#ffffff' : '#0284c7'} />
+          <SymbolIcon name="box" size={18} color={activeTab === 'INVENTORY' ? '#ffffff' : '#0284c7'} />
           <Text style={[styles.tabText, activeTab === 'INVENTORY' && styles.tabTextActive]}>
             1. Hospital Stock (दवाइयां और सामान)
           </Text>
@@ -534,7 +535,7 @@ export default function HospitalDashboard() {
           onPress={() => setActiveTab('WARDS')}
           style={[styles.tabBtn, activeTab === 'WARDS' && styles.tabBtnActive]}
         >
-          <Ionicons name="pulse" size={18} color={activeTab === 'WARDS' ? '#ffffff' : '#0284c7'} />
+          <SymbolIcon name="pulse" size={18} color={activeTab === 'WARDS' ? '#ffffff' : '#0284c7'} />
           <Text style={[styles.tabText, activeTab === 'WARDS' && styles.tabTextActive]}>
             2. Ward Usage (वार्ड में इस्तेमाल)
           </Text>
@@ -544,7 +545,7 @@ export default function HospitalDashboard() {
           onPress={() => setActiveTab('ORDERS')}
           style={[styles.tabBtn, activeTab === 'ORDERS' && styles.tabBtnActive]}
         >
-          <Ionicons name="receipt" size={18} color={activeTab === 'ORDERS' ? '#ffffff' : '#0284c7'} />
+          <SymbolIcon name="receipt" size={18} color={activeTab === 'ORDERS' ? '#ffffff' : '#0284c7'} />
           <Text style={[styles.tabText, activeTab === 'ORDERS' && styles.tabTextActive]}>
             3. Active Orders ({myOrders.length})
           </Text>
@@ -618,13 +619,13 @@ export default function HospitalDashboard() {
                         (sku.category.includes('Injection') || sku.category.includes('Infusion')) ? styles.catIconBlue :
                         sku.category.includes('Critical') ? styles.catIconRed : styles.catIconGreen
                       ]}>
-                        <Ionicons
+                        <SymbolIcon
                           name={
-                            (sku.category.includes('Consumable') || sku.category.includes('Glove')) ? "hand-left" :
-                            (sku.category.includes('Injection') || sku.category.includes('Infusion')) ? "water" :
-                            sku.category.includes('Critical') ? "pulse" : "medkit"
+                            (sku.category.includes('Consumable') || sku.category.includes('Glove')) ? "gloves" :
+                            (sku.category.includes('Injection') || sku.category.includes('Infusion')) ? "cannula" :
+                            sku.category.includes('Critical') ? "mask" : "syringe"
                           }
-                          size={12}
+                          size={13}
                           color={
                             (sku.category.includes('Consumable') || sku.category.includes('Glove')) ? "#d97706" :
                             (sku.category.includes('Injection') || sku.category.includes('Infusion')) ? "#0284c7" :

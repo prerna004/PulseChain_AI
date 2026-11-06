@@ -7,6 +7,7 @@ import { Ionicons, FontAwesome5 } from '@expo/vector-icons';
 import { useApp } from '../store/stateManager';
 import TwoPipeVisualizer from './TwoPipeVisualizer';
 import VoiceRequisitionBar from './VoiceRequisitionBar';
+import SymbolIcon from './SymbolIcon';
 
 export default function StockistDashboard() {
   const {
@@ -59,7 +60,7 @@ export default function StockistDashboard() {
                 style={[styles.accountCard, isActive && styles.accountCardActive]}
               >
                 <View style={[styles.accountIconBox, isActive && styles.accountIconBoxActive]}>
-                  <FontAwesome5 name="truck" size={14} color={isActive ? '#ffffff' : '#d97706'} />
+                  <SymbolIcon name="truck" size={16} color={isActive ? '#ffffff' : '#d97706'} />
                 </View>
                 <View style={{ flex: 1 }}>
                   <Text style={[styles.accountName, isActive && styles.accountNameActive]} numberOfLines={1}>
@@ -89,7 +90,7 @@ export default function StockistDashboard() {
         <View style={styles.heroTopRow}>
           <View style={styles.heroEntityLeft}>
             <View style={styles.heroAvatarBox}>
-              <FontAwesome5 name="warehouse" size={20} color="#38bdf8" />
+              <SymbolIcon name="truck" size={24} color="#38bdf8" />
             </View>
             <View>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
@@ -191,7 +192,7 @@ export default function StockistDashboard() {
                 <View style={styles.demandCardHeader}>
                   <View style={styles.demandEntityRow}>
                     <View style={styles.symbolIconBoxBlue}>
-                      <FontAwesome5 name="hospital-alt" size={14} color="#0284c7" />
+                      <SymbolIcon name="hospital" size={16} color="#0284c7" />
                     </View>
                     <View>
                       <Text style={styles.hospTitle}>Lilavati Hospital & Research Centre</Text>
@@ -227,7 +228,7 @@ export default function StockistDashboard() {
                     onPress={() => handleVoiceOrTextInput('Quote ₹790 for gloves and ₹2450 for Dispovan to Lilavati')}
                     style={styles.sendQuoteBtn}
                   >
-                    <Ionicons name="paper-plane" size={13} color="#ffffff" />
+                    <SymbolIcon name="paper-plane" size={13} color="#ffffff" />
                     <Text style={styles.sendQuoteBtnText}>Send Quote (रेट भेजें) ➔</Text>
                   </TouchableOpacity>
                 </View>
@@ -238,7 +239,7 @@ export default function StockistDashboard() {
                 <View style={styles.demandCardHeader}>
                   <View style={styles.demandEntityRow}>
                     <View style={styles.symbolIconBoxBlue}>
-                      <FontAwesome5 name="hospital-alt" size={14} color="#0284c7" />
+                      <SymbolIcon name="hospital" size={16} color="#0284c7" />
                     </View>
                     <View>
                       <Text style={styles.hospTitle}>P.D. Hinduja Hospital</Text>
@@ -270,7 +271,7 @@ export default function StockistDashboard() {
                     onPress={() => handleVoiceOrTextInput('Quote ₹1650 for Polymed Cannula to Hinduja')}
                     style={styles.sendQuoteBtn}
                   >
-                    <Ionicons name="paper-plane" size={13} color="#ffffff" />
+                    <SymbolIcon name="paper-plane" size={13} color="#ffffff" />
                     <Text style={styles.sendQuoteBtnText}>Send Quote (रेट भेजें) ➔</Text>
                   </TouchableOpacity>
                 </View>
@@ -281,7 +282,7 @@ export default function StockistDashboard() {
                 <View style={styles.demandCardHeader}>
                   <View style={styles.demandEntityRow}>
                     <View style={styles.symbolIconBoxBlue}>
-                      <FontAwesome5 name="hospital-alt" size={14} color="#0284c7" />
+                      <SymbolIcon name="hospital" size={16} color="#0284c7" />
                     </View>
                     <View>
                       <Text style={styles.hospTitle}>KEM Hospital (Apex BMC)</Text>
@@ -313,7 +314,7 @@ export default function StockistDashboard() {
                     onPress={() => handleVoiceOrTextInput('Quote ₹1180 for 3M masks to KEM Parel')}
                     style={styles.sendQuoteBtn}
                   >
-                    <Ionicons name="paper-plane" size={13} color="#ffffff" />
+                    <SymbolIcon name="paper-plane" size={13} color="#ffffff" />
                     <Text style={styles.sendQuoteBtnText}>Send Quote (रेट भेजें) ➔</Text>
                   </TouchableOpacity>
                 </View>
@@ -328,7 +329,7 @@ export default function StockistDashboard() {
             <View style={styles.sectionHeader}>
               <View style={styles.sectionHeaderLeft}>
                 <View style={styles.symbolIconBoxGreen}>
-                  <FontAwesome5 name="industry" size={16} color="#059669" />
+                  <SymbolIcon name="factory" size={18} color="#059669" />
                 </View>
                 <View>
                   <Text style={styles.sectionTitle}>Order from Factory (फैक्ट्री से मंगवाएं)</Text>
@@ -347,7 +348,7 @@ export default function StockistDashboard() {
                 <View style={styles.factoryCardTop}>
                   <View style={styles.factoryEntityRow}>
                     <View style={styles.symbolIconBoxEmerald}>
-                      <FontAwesome5 name="boxes" size={14} color="#059669" />
+                      <SymbolIcon name="box" size={16} color="#059669" />
                     </View>
                     <View>
                       <Text style={styles.factoryName}>HMD Dispovan Syringes</Text>
@@ -369,7 +370,7 @@ export default function StockistDashboard() {
                   onPress={() => triggerUpstreamOrder('HMD Dispovan', 'Dispovan 5ml', '50 Cartons')}
                   style={styles.orderFactoryBtn}
                 >
-                  <Ionicons name="cart" size={14} color="#ffffff" />
+                  <SymbolIcon name="truck" size={15} color="#ffffff" />
                   <Text style={styles.orderFactoryBtnText}>Order 50 Cartons from Factory ➔</Text>
                 </TouchableOpacity>
               </View>
@@ -379,7 +380,7 @@ export default function StockistDashboard() {
                 <View style={styles.factoryCardTop}>
                   <View style={styles.factoryEntityRow}>
                     <View style={styles.symbolIconBoxEmerald}>
-                      <FontAwesome5 name="boxes" size={14} color="#059669" />
+                      <SymbolIcon name="box" size={16} color="#059669" />
                     </View>
                     <View>
                       <Text style={styles.factoryName}>Poly Medicure Ltd. (Polymed)</Text>
@@ -401,7 +402,7 @@ export default function StockistDashboard() {
                   onPress={() => triggerUpstreamOrder('Poly Medicure', 'IV Cannula 20G', '100 Boxes')}
                   style={styles.orderFactoryBtn}
                 >
-                  <Ionicons name="cart" size={14} color="#ffffff" />
+                  <SymbolIcon name="truck" size={15} color="#ffffff" />
                   <Text style={styles.orderFactoryBtnText}>Order 100 Boxes from Factory ➔</Text>
                 </TouchableOpacity>
               </View>
@@ -411,7 +412,7 @@ export default function StockistDashboard() {
                 <View style={styles.factoryCardTop}>
                   <View style={styles.factoryEntityRow}>
                     <View style={styles.symbolIconBoxEmerald}>
-                      <FontAwesome5 name="boxes" size={14} color="#059669" />
+                      <SymbolIcon name="box" size={16} color="#059669" />
                     </View>
                     <View>
                       <Text style={styles.factoryName}>3M Healthcare India</Text>
@@ -433,7 +434,7 @@ export default function StockistDashboard() {
                   onPress={() => triggerUpstreamOrder('3M Healthcare', '3M N95 Respirators', '50 Boxes')}
                   style={styles.orderFactoryBtn}
                 >
-                  <Ionicons name="cart" size={14} color="#ffffff" />
+                  <SymbolIcon name="truck" size={15} color="#ffffff" />
                   <Text style={styles.orderFactoryBtnText}>Order 50 Boxes from Factory ➔</Text>
                 </TouchableOpacity>
               </View>

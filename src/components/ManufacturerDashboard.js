@@ -8,6 +8,7 @@ import { useApp } from '../store/stateManager';
 import TwoPipeVisualizer from './TwoPipeVisualizer';
 import VoiceRequisitionBar from './VoiceRequisitionBar';
 import { MUMBAI_STOCKISTS, MEDICAL_CATALOG } from '../data/mumbaiData';
+import SymbolIcon from './SymbolIcon';
 
 export default function ManufacturerDashboard() {
   const {
@@ -67,7 +68,7 @@ export default function ManufacturerDashboard() {
                 style={[styles.accountCard, isActive && styles.accountCardActive]}
               >
                 <View style={[styles.accountIconBox, isActive && styles.accountIconBoxActive]}>
-                  <FontAwesome5 name="industry" size={13} color={isActive ? '#ffffff' : '#16a34a'} />
+                  <SymbolIcon name="factory" size={16} color={isActive ? '#ffffff' : '#16a34a'} />
                 </View>
                 <View style={{ flex: 1 }}>
                   <Text style={[styles.accountName, isActive && styles.accountNameActive]} numberOfLines={1}>
@@ -96,7 +97,7 @@ export default function ManufacturerDashboard() {
         <View style={styles.heroTopRow}>
           <View style={styles.heroEntityLeft}>
             <View style={styles.heroAvatarBox}>
-              <FontAwesome5 name="industry" size={20} color="#34d399" />
+              <SymbolIcon name="factory" size={24} color="#34d399" />
             </View>
             <View>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
