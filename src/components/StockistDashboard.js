@@ -1,8 +1,8 @@
-// Stockist / Distributor Command Center — v2
-// Logged-in stockist view with demand radar and factory reorder
+// Stockist / Distributor Command Center — v3 High-Aesthetic Fintech & Health SaaS Redesign
+// Inspired by modern multi-account, card-driven, subtle pastel & symbol hierarchy
 
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Platform } from 'react-native';
 import { Ionicons, FontAwesome5 } from '@expo/vector-icons';
 import { useApp } from '../store/stateManager';
 import TwoPipeVisualizer from './TwoPipeVisualizer';
@@ -31,27 +31,22 @@ export default function StockistDashboard() {
 
   return (
     <View style={styles.container}>
-      {/* Registered Stockist Switcher Bar */}
-      <View style={{
-        backgroundColor: '#ffffff',
-        borderRadius: 14,
-        padding: 12,
-        borderWidth: 1.5,
-        borderColor: '#cbd5e1',
-        marginBottom: 12
-      }}>
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-            <Ionicons name="business" size={14} color="#d97706" />
-            <Text style={{ fontSize: 11, fontWeight: '900', color: '#d97706', letterSpacing: 0.5 }}>
-              MUMBAI REGISTERED DISTRIBUTORS NETWORK
-            </Text>
+      {/* 1. CONNECTED DISTRIBUTOR ACCOUNTS BAR (Subtle Card Row) */}
+      <View style={styles.networkCard}>
+        <View style={styles.networkHeader}>
+          <View style={styles.networkTitleRow}>
+            <View style={styles.symbolIconBoxAmber}>
+              <Ionicons name="business" size={14} color="#d97706" />
+            </View>
+            <View>
+              <Text style={styles.networkTitle}>MUMBAI REGISTERED DISTRIBUTORS NETWORK</Text>
+              <Text style={styles.networkSub}>Connected Authorized Distribution Hubs across Mumbai MMR</Text>
+            </View>
           </View>
-          <Text style={{ fontSize: 10, color: '#64748b', fontWeight: '600' }}>
-            1-Tap to Switch Distributor Perspective:
-          </Text>
+          <Text style={styles.networkHint}>1-Tap to Switch Distributor Account</Text>
         </View>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexDirection: 'row' }}>
+
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.networkScroll}>
           {(allStockists || []).map(stk => {
             const isActive = (loggedInStockist?.id === stk.id) || (selectedStockist?.id === stk.id);
             return (
@@ -61,32 +56,26 @@ export default function StockistDashboard() {
                   if (loginStockist) loginStockist(stk);
                   if (setSelectedStockist) setSelectedStockist(stk);
                 }}
-                style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  gap: 8,
-                  backgroundColor: isActive ? '#d97706' : '#fffbeb',
-                  borderWidth: 1.5,
-                  borderColor: isActive ? '#b45309' : '#fde68a',
-                  borderRadius: 10,
-                  paddingHorizontal: 12,
-                  paddingVertical: 8,
-                  marginRight: 8
-                }}
+                style={[styles.accountCard, isActive && styles.accountCardActive]}
               >
-                <FontAwesome5 name="truck" size={12} color={isActive ? '#ffffff' : '#d97706'} />
-                <View>
-                  <Text style={{ fontSize: 11.5, fontWeight: '800', color: isActive ? '#ffffff' : '#0f172a' }}>
+                <View style={[styles.accountIconBox, isActive && styles.accountIconBoxActive]}>
+                  <FontAwesome5 name="truck" size={14} color={isActive ? '#ffffff' : '#d97706'} />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={[styles.accountName, isActive && styles.accountNameActive]} numberOfLines={1}>
                     {stk.name.split('(')[0]}
                   </Text>
-                  <Text style={{ fontSize: 9.5, color: isActive ? '#fef3c7' : '#78350f' }}>
-                    {stk.hub || stk.area}
+                  <Text style={[styles.accountMeta, isActive && styles.accountMetaActive]}>
+                    📍 {stk.hub || stk.area}
                   </Text>
                 </View>
-                {isActive && (
-                  <View style={{ width: 16, height: 16, borderRadius: 8, backgroundColor: '#ffffff', alignItems: 'center', justifyContent: 'center', marginLeft: 4 }}>
-                    <Text style={{ fontSize: 10, fontWeight: '900', color: '#d97706' }}>✓</Text>
+                {isActive ? (
+                  <View style={styles.activeCheckPill}>
+                    <Ionicons name="checkmark" size={10} color="#ffffff" />
+                    <Text style={styles.activeCheckText}>Active</Text>
                   </View>
+                ) : (
+                  <View style={styles.inactiveDot} />
                 )}
               </TouchableOpacity>
             );
@@ -94,122 +83,238 @@ export default function StockistDashboard() {
         </ScrollView>
       </View>
 
+      {/* 2. EXECUTIVE DISTRIBUTOR HERO CARD (Subtle Slate/Cobalt Gradient Card) */}
+      <View style={styles.heroGradientCard}>
+        {/* Background glow circle effect */}
+        <View style={styles.heroTopRow}>
+          <View style={styles.heroEntityLeft}>
+            <View style={styles.heroAvatarBox}>
+              <FontAwesome5 name="warehouse" size={20} color="#38bdf8" />
+            </View>
+            <View>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                <Text style={styles.heroTitle}>{activeStockist.name}</Text>
+                <View style={styles.heroVerifiedBadge}>
+                  <Ionicons name="shield-checkmark" size={12} color="#34d399" />
+                  <Text style={styles.heroVerifiedText}>MMR Authorized CFA</Text>
+                </View>
+              </View>
+              <Text style={styles.heroSub}>
+                📍 Central Hub: <Text style={{ color: '#ffffff', fontWeight: '700' }}>{activeStockist.hub}</Text> • Authorized Brands: {(activeStockist.authorizedBrands || ['HMD Dispovan', 'Polymed', '3M', 'Cipla']).join(', ')}
+              </Text>
+            </View>
+          </View>
+
+          <TouchableOpacity
+            onPress={() => handleVoiceOrTextInput('show me which hospitals need our products')}
+            style={styles.heroActionBtn}
+          >
+            <Ionicons name="radar" size={16} color="#ffffff" />
+            <Text style={styles.heroActionBtnText}>Scan Hospital Demand (अस्पतालों की मांग)</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Hero Metrics Row (Fintech/Health Style) */}
+        <View style={styles.heroMetricsGrid}>
+          <View style={styles.heroMetricItem}>
+            <View style={styles.metricLabelRow}>
+              <Text style={styles.heroMetricLabel}>ACTIVE DEMAND PIPELINE</Text>
+              <Ionicons name="trending-up" size={13} color="#34d399" />
+            </View>
+            <Text style={styles.heroMetricValue}>₹2,54,700</Text>
+            <Text style={styles.heroMetricSub}>3 Hospital wards requesting quotes</Text>
+          </View>
+
+          <View style={styles.heroMetricDivider} />
+
+          <View style={styles.heroMetricItem}>
+            <View style={styles.metricLabelRow}>
+              <Text style={styles.heroMetricLabel}>NETWORK COVERAGE</Text>
+              <Ionicons name="business" size={13} color="#38bdf8" />
+            </View>
+            <Text style={styles.heroMetricValue}>8 Hospitals</Text>
+            <Text style={styles.heroMetricSub}>Connected via private P2P channel</Text>
+          </View>
+
+          <View style={styles.heroMetricDivider} />
+
+          <View style={styles.heroMetricItem}>
+            <View style={styles.metricLabelRow}>
+              <Text style={styles.heroMetricLabel}>DISPATCH SLA SPEED</Text>
+              <Ionicons name="time" size={13} color="#fbbf24" />
+            </View>
+            <Text style={styles.heroMetricValue}>18 Mins</Text>
+            <Text style={styles.heroMetricSub}>Avg delivery turnaround time</Text>
+          </View>
+
+          <View style={styles.heroMetricDivider} />
+
+          <View style={styles.heroMetricItem}>
+            <View style={styles.metricLabelRow}>
+              <Text style={styles.heroMetricLabel}>FACTORY DIRECT BRIDGE</Text>
+              <Ionicons name="checkmark-circle" size={13} color="#a78bfa" />
+            </View>
+            <Text style={styles.heroMetricValue}>Bhiwandi CFA</Text>
+            <Text style={styles.heroMetricSub}>Instant upstream manufacturer restocking</Text>
+          </View>
+        </View>
+      </View>
+
+      {/* 3. VOICE REQUISITION BAR & LIVING 2-PIPE MAP */}
       <VoiceRequisitionBar />
       <TwoPipeVisualizer />
 
-      {/* Logged-in Stockist Banner */}
-      {loggedInStockist && (
-        <View style={styles.authBanner}>
-          <View style={styles.authBannerIconWrap}>
-            <FontAwesome5 name="truck" size={14} color="#d97706" />
-          </View>
-          <View style={{ flex: 1 }}>
-            <Text style={styles.authBannerName}>{loggedInStockist.name}</Text>
-            <Text style={styles.authBannerSub}>{loggedInStockist.ownerName} | 📍 {loggedInStockist.hub}</Text>
-          </View>
-          <View style={styles.verifiedBadge}>
-            <Ionicons name="checkmark-circle" size={12} color="#d97706" />
-            <Text style={[styles.verifiedText, { color: '#92400e' }]}>Verified</Text>
-          </View>
-        </View>
-      )}
-
-      {/* Store Banner */}
-      <View style={styles.storeBanner}>
-        <View style={styles.bannerLeft}>
-          <View style={styles.storeAvatar}>
-            <FontAwesome5 name="store" size={20} color="#d97706" />
-          </View>
-          <View>
-            <Text style={styles.storeTitle}>{activeStockist.name}</Text>
-            <Text style={styles.storeSub}>
-              📍 Hub: {activeStockist.hub} • Brands: {(activeStockist.authorizedBrands || []).join(', ')}
-            </Text>
-          </View>
-        </View>
-
-        <TouchableOpacity
-          onPress={() => handleVoiceOrTextInput('show me which hospitals need our products')}
-          style={styles.scanDemandBtn}
-        >
-          <Ionicons name="radar" size={18} color="#ffffff" />
-          <Text style={styles.scanDemandBtnText}>Scan Hospital Demand (अस्पतालों की मांग)</Text>
-        </TouchableOpacity>
-      </View>
-
+      {/* 4. MAIN ACTION GRID (Hospitals Needing Supplies & Restock From Factory) */}
       <View style={styles.gridRow}>
         {/* Left Column: Which Hospitals Need Our Products */}
         <View style={styles.colHalf}>
-          <View style={styles.whiteCard}>
-            <View style={styles.cardHeader}>
-              <View style={styles.titleWrap}>
-                <Ionicons name="flame" size={20} color="#dc2626" />
-                <Text style={styles.cardTitle}>Hospitals Needing Supplies (आर्डर की मांग)</Text>
+          <View style={styles.sectionCard}>
+            <View style={styles.sectionHeader}>
+              <View style={styles.sectionHeaderLeft}>
+                <View style={styles.symbolIconBoxRed}>
+                  <Ionicons name="flame" size={18} color="#e11d48" />
+                </View>
+                <View>
+                  <Text style={styles.sectionTitle}>Hospitals Needing Supplies (आर्डर की मांग)</Text>
+                  <Text style={styles.sectionSubtitle}>Live spot requisitions waiting for distributor quote</Text>
+                </View>
               </View>
-              <View style={styles.urgentBadge}>
-                <Text style={styles.urgentBadgeText}>3 LIVE ORDERS</Text>
+              <View style={styles.urgentCounterBadge}>
+                <View style={styles.redPulseDot} />
+                <Text style={styles.urgentCounterText}>3 LIVE ORDERS</Text>
               </View>
             </View>
 
-            <Text style={styles.cardDesc}>
-              Mumbai hospital wards requesting spot quotes right now:
-            </Text>
-
             <View style={styles.demandCardsList}>
-              {/* Demand 1 */}
-              <View style={styles.demandBox}>
-                <View style={styles.demandTopRow}>
-                  <Text style={styles.hospTitle}>Lilavati Hospital & Research Centre</Text>
-                  <Text style={styles.hospDist}>4.2 km (Bandra)</Text>
+              {/* Demand 1: Lilavati */}
+              <View style={styles.demandCardItem}>
+                <View style={styles.demandCardHeader}>
+                  <View style={styles.demandEntityRow}>
+                    <View style={styles.symbolIconBoxBlue}>
+                      <FontAwesome5 name="hospital-alt" size={14} color="#0284c7" />
+                    </View>
+                    <View>
+                      <Text style={styles.hospTitle}>Lilavati Hospital & Research Centre</Text>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 2 }}>
+                        <Ionicons name="location-sharp" size={11} color="#64748b" />
+                        <Text style={styles.hospDist}>4.2 km • Bandra West</Text>
+                        <Text style={styles.dotSeparator}>•</Text>
+                        <View style={styles.badgeUrgentOT}>
+                          <Text style={styles.badgeUrgentOTText}>Emergency OT Restock</Text>
+                        </View>
+                      </View>
+                    </View>
+                  </View>
                 </View>
-                <Text style={styles.demandItems}>• Urgent: 60 Boxes Sterile Latex Gloves 7.5</Text>
-                <Text style={styles.demandItems}>• Urgent: 15 Cartons Dispovan 5ml Syringes</Text>
+
+                <View style={styles.demandItemsList}>
+                  <View style={styles.demandItemPill}>
+                    <Ionicons name="cube-outline" size={12} color="#0284c7" />
+                    <Text style={styles.demandItemPillText}>60 Boxes Sterile Latex Gloves 7.5</Text>
+                  </View>
+                  <View style={styles.demandItemPill}>
+                    <Ionicons name="cube-outline" size={12} color="#0284c7" />
+                    <Text style={styles.demandItemPillText}>15 Cartons Dispovan 5ml Syringes</Text>
+                  </View>
+                </View>
 
                 <View style={styles.demandFooter}>
-                  <Text style={styles.demandValue}>Bill: ₹91,200</Text>
+                  <View>
+                    <Text style={styles.billLabel}>ESTIMATED BILL VALUE</Text>
+                    <Text style={styles.demandValue}>₹91,200</Text>
+                  </View>
                   <TouchableOpacity
                     onPress={() => handleVoiceOrTextInput('Quote ₹790 for gloves and ₹2450 for Dispovan to Lilavati')}
                     style={styles.sendQuoteBtn}
                   >
-                    <Text style={styles.sendQuoteBtnText}>Send Quote (रेट भेजें)</Text>
+                    <Ionicons name="paper-plane" size={13} color="#ffffff" />
+                    <Text style={styles.sendQuoteBtnText}>Send Quote (रेट भेजें) ➔</Text>
                   </TouchableOpacity>
                 </View>
               </View>
 
-              {/* Demand 2 */}
-              <View style={styles.demandBox}>
-                <View style={styles.demandTopRow}>
-                  <Text style={styles.hospTitle}>P.D. Hinduja Hospital</Text>
-                  <Text style={styles.hospDist}>1.8 km (Mahim)</Text>
+              {/* Demand 2: P.D. Hinduja */}
+              <View style={styles.demandCardItem}>
+                <View style={styles.demandCardHeader}>
+                  <View style={styles.demandEntityRow}>
+                    <View style={styles.symbolIconBoxBlue}>
+                      <FontAwesome5 name="hospital-alt" size={14} color="#0284c7" />
+                    </View>
+                    <View>
+                      <Text style={styles.hospTitle}>P.D. Hinduja Hospital</Text>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 2 }}>
+                        <Ionicons name="location-sharp" size={11} color="#64748b" />
+                        <Text style={styles.hospDist}>1.8 km • Mahim Central</Text>
+                        <Text style={styles.dotSeparator}>•</Text>
+                        <View style={styles.badgeStandardOT}>
+                          <Text style={styles.badgeStandardOTText}>Standard Ward Ward replenishment</Text>
+                        </View>
+                      </View>
+                    </View>
+                  </View>
                 </View>
-                <Text style={styles.demandItems}>• Standard: 25 Boxes Polymed IV Cannula 20G</Text>
+
+                <View style={styles.demandItemsList}>
+                  <View style={styles.demandItemPill}>
+                    <Ionicons name="cube-outline" size={12} color="#0284c7" />
+                    <Text style={styles.demandItemPillText}>25 Boxes Polymed IV Cannula 20G</Text>
+                  </View>
+                </View>
 
                 <View style={styles.demandFooter}>
-                  <Text style={styles.demandValue}>Bill: ₹45,500</Text>
+                  <View>
+                    <Text style={styles.billLabel}>ESTIMATED BILL VALUE</Text>
+                    <Text style={styles.demandValue}>₹45,500</Text>
+                  </View>
                   <TouchableOpacity
                     onPress={() => handleVoiceOrTextInput('Quote ₹1650 for Polymed Cannula to Hinduja')}
                     style={styles.sendQuoteBtn}
                   >
-                    <Text style={styles.sendQuoteBtnText}>Send Quote (रेट भेजें)</Text>
+                    <Ionicons name="paper-plane" size={13} color="#ffffff" />
+                    <Text style={styles.sendQuoteBtnText}>Send Quote (रेट भेजें) ➔</Text>
                   </TouchableOpacity>
                 </View>
               </View>
 
-              {/* Demand 3 */}
-              <View style={styles.demandBox}>
-                <View style={styles.demandTopRow}>
-                  <Text style={styles.hospTitle}>KEM Hospital (Apex BMC)</Text>
-                  <Text style={styles.hospDist}>2.1 km (Parel)</Text>
+              {/* Demand 3: KEM Hospital */}
+              <View style={styles.demandCardItem}>
+                <View style={styles.demandCardHeader}>
+                  <View style={styles.demandEntityRow}>
+                    <View style={styles.symbolIconBoxBlue}>
+                      <FontAwesome5 name="hospital-alt" size={14} color="#0284c7" />
+                    </View>
+                    <View>
+                      <Text style={styles.hospTitle}>KEM Hospital (Apex BMC)</Text>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 2 }}>
+                        <Ionicons name="location-sharp" size={11} color="#64748b" />
+                        <Text style={styles.hospDist}>2.1 km • Parel</Text>
+                        <Text style={styles.dotSeparator}>•</Text>
+                        <View style={styles.badgeUrgentOT}>
+                          <Text style={styles.badgeUrgentOTText}>Critical PPE Shortage</Text>
+                        </View>
+                      </View>
+                    </View>
+                  </View>
                 </View>
-                <Text style={styles.demandItems}>• 100 Boxes 3M N95 Respirators</Text>
+
+                <View style={styles.demandItemsList}>
+                  <View style={styles.demandItemPill}>
+                    <Ionicons name="cube-outline" size={12} color="#0284c7" />
+                    <Text style={styles.demandItemPillText}>100 Boxes 3M N95 Respirators</Text>
+                  </View>
+                </View>
 
                 <View style={styles.demandFooter}>
-                  <Text style={styles.demandValue}>Bill: ₹1,18,000</Text>
+                  <View>
+                    <Text style={styles.billLabel}>ESTIMATED BILL VALUE</Text>
+                    <Text style={styles.demandValue}>₹1,18,000</Text>
+                  </View>
                   <TouchableOpacity
                     onPress={() => handleVoiceOrTextInput('Quote ₹1180 for 3M masks to KEM Parel')}
                     style={styles.sendQuoteBtn}
                   >
-                    <Text style={styles.sendQuoteBtnText}>Send Quote (रेट भेजें)</Text>
+                    <Ionicons name="paper-plane" size={13} color="#ffffff" />
+                    <Text style={styles.sendQuoteBtnText}>Send Quote (रेट भेजें) ➔</Text>
                   </TouchableOpacity>
                 </View>
               </View>
@@ -219,45 +324,117 @@ export default function StockistDashboard() {
 
         {/* Right Column: Reorder from Factory */}
         <View style={styles.colHalf}>
-          <View style={styles.whiteCard}>
-            <View style={styles.cardHeader}>
-              <View style={styles.titleWrap}>
-                <FontAwesome5 name="industry" size={18} color="#16a34a" />
-                <Text style={styles.cardTitle}>Order from Factory (फैक्ट्री से मंगवाएं)</Text>
+          <View style={styles.sectionCard}>
+            <View style={styles.sectionHeader}>
+              <View style={styles.sectionHeaderLeft}>
+                <View style={styles.symbolIconBoxGreen}>
+                  <FontAwesome5 name="industry" size={16} color="#059669" />
+                </View>
+                <View>
+                  <Text style={styles.sectionTitle}>Order from Factory (फैक्ट्री से मंगवाएं)</Text>
+                  <Text style={styles.sectionSubtitle}>Bulk OEM restock via Bhiwandi C&F central depot</Text>
+                </View>
               </View>
-              <Text style={styles.hubTag}>Bhiwandi CFA Hub</Text>
+              <View style={styles.factoryHubTag}>
+                <Ionicons name="location" size={11} color="#059669" />
+                <Text style={styles.factoryHubTagText}>Bhiwandi CFA Hub</Text>
+              </View>
             </View>
 
-            <Text style={styles.cardDesc}>
-              Bulk restock from manufacturers to prevent warehouse stockouts:
-            </Text>
-
             <View style={styles.factoryList}>
-              <View style={styles.factoryCard}>
-                <View style={styles.factoryTop}>
-                  <Text style={styles.factoryName}>HMD Dispovan Syringes</Text>
-                  <Text style={styles.factoryLead}>2 Days Lead Time</Text>
+              {/* Factory 1: HMD */}
+              <View style={styles.factoryCardItem}>
+                <View style={styles.factoryCardTop}>
+                  <View style={styles.factoryEntityRow}>
+                    <View style={styles.symbolIconBoxEmerald}>
+                      <FontAwesome5 name="boxes" size={14} color="#059669" />
+                    </View>
+                    <View>
+                      <Text style={styles.factoryName}>HMD Dispovan Syringes</Text>
+                      <Text style={styles.factorySub}>Primary OEM • Faridabad & Bhiwandi Depot</Text>
+                    </View>
+                  </View>
+                  <View style={styles.leadTimeBadge}>
+                    <Ionicons name="flash" size={11} color="#d97706" />
+                    <Text style={styles.leadTimeBadgeText}>2 Days Lead Time</Text>
+                  </View>
                 </View>
-                <Text style={styles.factoryDesc}>Dispovan 2ml & 5ml Syringes (₹2,100 / carton)</Text>
+
+                <View style={styles.factoryRatesBox}>
+                  <Text style={styles.factoryRatesLabel}>WHOLESALE CFA RATE:</Text>
+                  <Text style={styles.factoryRatesVal}>Dispovan 2ml & 5ml Syringes @ ₹2,100 / carton</Text>
+                </View>
+
                 <TouchableOpacity
                   onPress={() => triggerUpstreamOrder('HMD Dispovan', 'Dispovan 5ml', '50 Cartons')}
                   style={styles.orderFactoryBtn}
                 >
-                  <Text style={styles.orderFactoryBtnText}>Order 50 Cartons from Factory</Text>
+                  <Ionicons name="cart" size={14} color="#ffffff" />
+                  <Text style={styles.orderFactoryBtnText}>Order 50 Cartons from Factory ➔</Text>
                 </TouchableOpacity>
               </View>
 
-              <View style={styles.factoryCard}>
-                <View style={styles.factoryTop}>
-                  <Text style={styles.factoryName}>Poly Medicure Ltd. (Polymed)</Text>
-                  <Text style={styles.factoryLead}>3 Days Lead Time</Text>
+              {/* Factory 2: Poly Medicure */}
+              <View style={styles.factoryCardItem}>
+                <View style={styles.factoryCardTop}>
+                  <View style={styles.factoryEntityRow}>
+                    <View style={styles.symbolIconBoxEmerald}>
+                      <FontAwesome5 name="boxes" size={14} color="#059669" />
+                    </View>
+                    <View>
+                      <Text style={styles.factoryName}>Poly Medicure Ltd. (Polymed)</Text>
+                      <Text style={styles.factorySub}>Infusion & Vascular OEM • Mumbai Depot</Text>
+                    </View>
+                  </View>
+                  <View style={styles.leadTimeBadge}>
+                    <Ionicons name="flash" size={11} color="#d97706" />
+                    <Text style={styles.leadTimeBadgeText}>3 Days Lead Time</Text>
+                  </View>
                 </View>
-                <Text style={styles.factoryDesc}>Polymed IV Cannulas 20G & 22G (₹1,400 / box)</Text>
+
+                <View style={styles.factoryRatesBox}>
+                  <Text style={styles.factoryRatesLabel}>WHOLESALE CFA RATE:</Text>
+                  <Text style={styles.factoryRatesVal}>Polymed IV Cannulas 20G & 22G @ ₹1,400 / box</Text>
+                </View>
+
                 <TouchableOpacity
                   onPress={() => triggerUpstreamOrder('Poly Medicure', 'IV Cannula 20G', '100 Boxes')}
                   style={styles.orderFactoryBtn}
                 >
-                  <Text style={styles.orderFactoryBtnText}>Order 100 Boxes from Factory</Text>
+                  <Ionicons name="cart" size={14} color="#ffffff" />
+                  <Text style={styles.orderFactoryBtnText}>Order 100 Boxes from Factory ➔</Text>
+                </TouchableOpacity>
+              </View>
+
+              {/* Factory 3: 3M India */}
+              <View style={styles.factoryCardItem}>
+                <View style={styles.factoryCardTop}>
+                  <View style={styles.factoryEntityRow}>
+                    <View style={styles.symbolIconBoxEmerald}>
+                      <FontAwesome5 name="boxes" size={14} color="#059669" />
+                    </View>
+                    <View>
+                      <Text style={styles.factoryName}>3M Healthcare India</Text>
+                      <Text style={styles.factorySub}>Respiratory & Sterilization OEM</Text>
+                    </View>
+                  </View>
+                  <View style={styles.leadTimeBadge}>
+                    <Ionicons name="flash" size={11} color="#d97706" />
+                    <Text style={styles.leadTimeBadgeText}>1 Day Lead Time</Text>
+                  </View>
+                </View>
+
+                <View style={styles.factoryRatesBox}>
+                  <Text style={styles.factoryRatesLabel}>WHOLESALE CFA RATE:</Text>
+                  <Text style={styles.factoryRatesVal}>3M N95 Respirators (Box of 20) @ ₹890 / box</Text>
+                </View>
+
+                <TouchableOpacity
+                  onPress={() => triggerUpstreamOrder('3M Healthcare', '3M N95 Respirators', '50 Boxes')}
+                  style={styles.orderFactoryBtn}
+                >
+                  <Ionicons name="cart" size={14} color="#ffffff" />
+                  <Text style={styles.orderFactoryBtnText}>Order 50 Boxes from Factory ➔</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -270,217 +447,582 @@ export default function StockistDashboard() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  authBanner: { flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: '#fffbeb', borderRadius: 14, borderWidth: 1.5, borderColor: '#fde68a', padding: 12, marginBottom: 14 },
-  authBannerIconWrap: { width: 32, height: 32, borderRadius: 16, backgroundColor: '#fef3c7', alignItems: 'center', justifyContent: 'center' },
-  authBannerName: { fontSize: 13, fontWeight: '800', color: '#0f172a' },
-  authBannerSub: { fontSize: 11, color: '#d97706', marginTop: 1 },
-  verifiedBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: '#fef3c7', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 4 },
-  verifiedText: { fontSize: 10, fontWeight: '800', color: '#92400e' },
-  storeBanner: {
+
+  // 1. CONNECTED DISTRIBUTOR ACCOUNTS BAR
+  networkCard: {
+    backgroundColor: '#ffffff',
+    borderRadius: 20,
+    padding: 16,
+    borderWidth: 1.5,
+    borderColor: '#e2e8f0',
+    marginBottom: 16,
+    shadowColor: '#0f172a',
+    shadowOpacity: 0.04,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 3 }
+  },
+  networkHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: '#ffffff',
-    borderRadius: 18,
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
-    padding: 16,
-    marginBottom: 16,
+    marginBottom: 12,
     flexWrap: 'wrap',
-    gap: 12,
-    shadowColor: '#000',
-    shadowOpacity: 0.04,
-    shadowRadius: 10
+    gap: 8
   },
-  bannerLeft: {
+  networkTitleRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12
+    gap: 10
   },
-  storeAvatar: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+  networkTitle: {
+    fontSize: 12,
+    fontWeight: '800',
+    color: '#0f172a',
+    letterSpacing: 0.4
+  },
+  networkSub: {
+    fontSize: 11,
+    color: '#64748b',
+    marginTop: 1
+  },
+  networkHint: {
+    fontSize: 10.5,
+    color: '#94a3b8',
+    fontWeight: '600'
+  },
+  networkScroll: {
+    flexDirection: 'row'
+  },
+  accountCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    backgroundColor: '#f8fafc',
+    borderWidth: 1.5,
+    borderColor: '#e2e8f0',
+    borderRadius: 14,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    marginRight: 10,
+    minWidth: 220
+  },
+  accountCardActive: {
+    backgroundColor: '#fffbeb',
+    borderColor: '#f59e0b',
+    shadowColor: '#f59e0b',
+    shadowOpacity: 0.2,
+    shadowRadius: 8
+  },
+  accountIconBox: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
     backgroundColor: '#fef3c7',
     alignItems: 'center',
     justifyContent: 'center'
   },
-  storeTitle: {
-    fontSize: 15,
-    fontWeight: '800',
+  accountIconBoxActive: {
+    backgroundColor: '#d97706'
+  },
+  accountName: {
+    fontSize: 12.5,
+    fontWeight: '700',
     color: '#0f172a'
   },
-  storeSub: {
-    fontSize: 12,
-    color: '#64748b',
-    marginTop: 2
+  accountNameActive: {
+    fontWeight: '800',
+    color: '#92400e'
   },
-  scanDemandBtn: {
+  accountMeta: {
+    fontSize: 10.5,
+    color: '#64748b',
+    marginTop: 1
+  },
+  accountMetaActive: {
+    color: '#b45309'
+  },
+  activeCheckPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+    backgroundColor: '#d97706',
+    borderRadius: 20,
+    paddingHorizontal: 7,
+    paddingVertical: 3
+  },
+  activeCheckText: {
+    fontSize: 9.5,
+    fontWeight: '800',
+    color: '#ffffff'
+  },
+  inactiveDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#cbd5e1'
+  },
+
+  // 2. EXECUTIVE DISTRIBUTOR HERO GRADIENT CARD
+  heroGradientCard: {
+    backgroundColor: '#0f172a',
+    borderRadius: 24,
+    padding: 24,
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: '#1e293b',
+    shadowColor: '#0284c7',
+    shadowOpacity: 0.18,
+    shadowRadius: 20,
+    shadowOffset: { width: 0, height: 6 }
+  },
+  heroTopRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 22,
+    flexWrap: 'wrap',
+    gap: 16
+  },
+  heroEntityLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 14,
+    flex: 1,
+    minWidth: 280
+  },
+  heroAvatarBox: {
+    width: 48,
+    height: 48,
+    borderRadius: 14,
+    backgroundColor: 'rgba(56, 189, 248, 0.15)',
+    borderWidth: 1.5,
+    borderColor: 'rgba(56, 189, 248, 0.4)',
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  heroTitle: {
+    fontSize: 18,
+    fontWeight: '800',
+    color: '#ffffff'
+  },
+  heroVerifiedBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: 'rgba(52, 211, 153, 0.15)',
+    borderWidth: 1,
+    borderColor: 'rgba(52, 211, 153, 0.35)',
+    borderRadius: 20,
+    paddingHorizontal: 8,
+    paddingVertical: 3
+  },
+  heroVerifiedText: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#34d399'
+  },
+  heroSub: {
+    fontSize: 12,
+    color: '#94a3b8',
+    marginTop: 4
+  },
+  heroActionBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    backgroundColor: '#d97706',
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    borderRadius: 10
+    backgroundColor: '#0284c7',
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 11,
+    shadowColor: '#0284c7',
+    shadowOpacity: 0.4,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 3 }
   },
-  scanDemandBtnText: {
+  heroActionBtnText: {
     color: '#ffffff',
-    fontSize: 12,
+    fontSize: 12.5,
     fontWeight: '800'
   },
+  heroMetricsGrid: {
+    flexDirection: 'row',
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderRadius: 16,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
+    flexWrap: 'wrap',
+    gap: 12
+  },
+  heroMetricItem: {
+    flex: 1,
+    minWidth: 140
+  },
+  metricLabelRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 4
+  },
+  heroMetricLabel: {
+    fontSize: 9.5,
+    fontWeight: '800',
+    color: '#94a3b8',
+    letterSpacing: 0.6
+  },
+  heroMetricValue: {
+    fontSize: 22,
+    fontWeight: '900',
+    color: '#ffffff'
+  },
+  heroMetricSub: {
+    fontSize: 10.5,
+    color: '#64748b',
+    marginTop: 3
+  },
+  heroMetricDivider: {
+    width: 1,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    marginVertical: 4
+  },
+
+  // 4. MAIN ACTION GRID
   gridRow: {
     flexDirection: 'row',
-    gap: 16,
-    flexWrap: 'wrap'
+    gap: 18,
+    flexWrap: 'wrap',
+    marginTop: 4
   },
   colHalf: {
     flex: 1,
-    minWidth: 320
+    minWidth: 340
   },
-  whiteCard: {
+  sectionCard: {
     backgroundColor: '#ffffff',
-    borderRadius: 20,
-    padding: 18,
-    borderWidth: 1,
+    borderRadius: 22,
+    padding: 22,
+    borderWidth: 1.5,
     borderColor: '#e2e8f0',
-    shadowColor: '#000',
-    shadowOpacity: 0.04,
-    shadowRadius: 10
+    shadowColor: '#0f172a',
+    shadowOpacity: 0.05,
+    shadowRadius: 16,
+    shadowOffset: { width: 0, height: 4 }
   },
-  cardHeader: {
+  sectionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 6
+    marginBottom: 16,
+    flexWrap: 'wrap',
+    gap: 10
   },
-  titleWrap: {
+  sectionHeaderLeft: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8
+    gap: 12
   },
-  cardTitle: {
+  sectionTitle: {
     fontSize: 15,
     fontWeight: '800',
     color: '#0f172a'
   },
-  urgentBadge: {
-    backgroundColor: '#fee2e2',
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 6
-  },
-  urgentBadgeText: {
-    color: '#dc2626',
-    fontSize: 10,
-    fontWeight: '800'
-  },
-  hubTag: {
-    color: '#16a34a',
-    fontSize: 11,
-    fontWeight: '800'
-  },
-  cardDesc: {
-    fontSize: 12,
+  sectionSubtitle: {
+    fontSize: 11.5,
     color: '#64748b',
-    marginBottom: 14
+    marginTop: 2
   },
+  urgentCounterBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: '#fef2f2',
+    borderWidth: 1,
+    borderColor: '#fecaca',
+    borderRadius: 20,
+    paddingHorizontal: 10,
+    paddingVertical: 5
+  },
+  redPulseDot: {
+    width: 7,
+    height: 7,
+    borderRadius: 4,
+    backgroundColor: '#dc2626'
+  },
+  urgentCounterText: {
+    fontSize: 10.5,
+    fontWeight: '800',
+    color: '#dc2626',
+    letterSpacing: 0.3
+  },
+  factoryHubTag: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: '#f0fdf4',
+    borderWidth: 1,
+    borderColor: '#bbf7d0',
+    borderRadius: 20,
+    paddingHorizontal: 10,
+    paddingVertical: 5
+  },
+  factoryHubTagText: {
+    fontSize: 10.5,
+    fontWeight: '800',
+    color: '#059669'
+  },
+
+  // SUBTLE SYMBOL BOXES (Inspired by image)
+  symbolIconBoxAmber: {
+    width: 32,
+    height: 32,
+    borderRadius: 10,
+    backgroundColor: '#fef3c7',
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  symbolIconBoxBlue: {
+    width: 38,
+    height: 38,
+    borderRadius: 12,
+    backgroundColor: '#eff6ff',
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  symbolIconBoxRed: {
+    width: 38,
+    height: 38,
+    borderRadius: 12,
+    backgroundColor: '#fef2f2',
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  symbolIconBoxGreen: {
+    width: 38,
+    height: 38,
+    borderRadius: 12,
+    backgroundColor: '#f0fdf4',
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  symbolIconBoxEmerald: {
+    width: 38,
+    height: 38,
+    borderRadius: 12,
+    backgroundColor: '#ecfdf5',
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+
+  // DEMAND CARDS
   demandCardsList: {
-    gap: 12
+    gap: 14
   },
-  demandBox: {
-    backgroundColor: '#f8fafc',
-    borderRadius: 14,
+  demandCardItem: {
+    backgroundColor: '#ffffff',
+    borderRadius: 16,
     borderWidth: 1.5,
     borderColor: '#e2e8f0',
-    padding: 14
+    padding: 16,
+    shadowColor: '#0f172a',
+    shadowOpacity: 0.03,
+    shadowRadius: 8
   },
-  demandTopRow: {
+  demandCardHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 6
+    marginBottom: 10
+  },
+  demandEntityRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    flex: 1
   },
   hospTitle: {
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: '800',
     color: '#0f172a'
   },
   hospDist: {
     fontSize: 11,
-    color: '#0284c7',
+    color: '#64748b',
+    fontWeight: '600'
+  },
+  dotSeparator: {
+    color: '#cbd5e1',
+    fontSize: 10
+  },
+  badgeUrgentOT: {
+    backgroundColor: '#fef2f2',
+    borderRadius: 6,
+    paddingHorizontal: 6,
+    paddingVertical: 2
+  },
+  badgeUrgentOTText: {
+    color: '#dc2626',
+    fontSize: 9.5,
+    fontWeight: '800'
+  },
+  badgeStandardOT: {
+    backgroundColor: '#f1f5f9',
+    borderRadius: 6,
+    paddingHorizontal: 6,
+    paddingVertical: 2
+  },
+  badgeStandardOTText: {
+    color: '#475569',
+    fontSize: 9.5,
     fontWeight: '700'
   },
-  demandItems: {
+  demandItemsList: {
+    gap: 6,
+    marginBottom: 14
+  },
+  demandItemPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: '#f8fafc',
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderWidth: 1,
+    borderColor: '#f1f5f9'
+  },
+  demandItemPillText: {
     fontSize: 12,
-    color: '#475569',
-    lineHeight: 18
+    color: '#334155',
+    fontWeight: '600'
   },
   demandFooter: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     borderTopWidth: 1,
-    borderTopColor: '#e2e8f0',
-    paddingTop: 10,
-    marginTop: 8
+    borderTopColor: '#f1f5f9',
+    paddingTop: 12,
+    marginTop: 4
+  },
+  billLabel: {
+    fontSize: 9,
+    fontWeight: '800',
+    color: '#94a3b8',
+    letterSpacing: 0.5
   },
   demandValue: {
-    fontSize: 14,
+    fontSize: 17,
     fontWeight: '900',
-    color: '#16a34a'
+    color: '#059669',
+    marginTop: 1
   },
   sendQuoteBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
     backgroundColor: '#0284c7',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 8
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 12,
+    shadowColor: '#0284c7',
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 3 }
   },
   sendQuoteBtnText: {
     color: '#ffffff',
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: '800'
   },
+
+  // FACTORY RESTOCK CARDS
   factoryList: {
-    gap: 12
+    gap: 14
   },
-  factoryCard: {
-    backgroundColor: '#f8fafc',
-    borderRadius: 14,
+  factoryCardItem: {
+    backgroundColor: '#ffffff',
+    borderRadius: 16,
     borderWidth: 1.5,
     borderColor: '#e2e8f0',
-    padding: 14
+    padding: 16,
+    shadowColor: '#0f172a',
+    shadowOpacity: 0.03,
+    shadowRadius: 8
   },
-  factoryTop: {
+  factoryCardTop: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 4
+    marginBottom: 10
+  },
+  factoryEntityRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    flex: 1
   },
   factoryName: {
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: '800',
     color: '#0f172a'
   },
-  factoryLead: {
-    fontSize: 11,
-    color: '#d97706',
-    fontWeight: '700'
-  },
-  factoryDesc: {
-    fontSize: 12,
+  factorySub: {
+    fontSize: 10.5,
     color: '#64748b',
-    marginBottom: 10
+    marginTop: 2
+  },
+  leadTimeBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: '#fffbeb',
+    borderWidth: 1,
+    borderColor: '#fde68a',
+    borderRadius: 20,
+    paddingHorizontal: 8,
+    paddingVertical: 4
+  },
+  leadTimeBadgeText: {
+    fontSize: 10,
+    color: '#d97706',
+    fontWeight: '800'
+  },
+  factoryRatesBox: {
+    backgroundColor: '#f8fafc',
+    borderRadius: 10,
+    padding: 10,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: '#f1f5f9'
+  },
+  factoryRatesLabel: {
+    fontSize: 9,
+    fontWeight: '800',
+    color: '#94a3b8',
+    letterSpacing: 0.5
+  },
+  factoryRatesVal: {
+    fontSize: 12,
+    color: '#334155',
+    fontWeight: '700',
+    marginTop: 2
   },
   orderFactoryBtn: {
-    backgroundColor: '#16a34a',
-    paddingVertical: 8,
-    borderRadius: 8,
-    alignItems: 'center'
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    backgroundColor: '#059669',
+    paddingVertical: 11,
+    borderRadius: 12,
+    shadowColor: '#059669',
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 3 }
   },
   orderFactoryBtnText: {
     color: '#ffffff',
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: '800'
   }
 });

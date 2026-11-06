@@ -244,7 +244,7 @@ function MainScreen() {
             }
 
             body {
-              background-color: #f8fafc;
+              background-color: #f6f8fc;
             }
 
             /* Universal Graceful Button & Tile Hover Effects */
@@ -256,13 +256,18 @@ function MainScreen() {
 
             button:hover, [role="button"]:hover {
               transform: translateY(-2px) !important;
-              filter: brightness(1.03) !important;
+              filter: brightness(1.02) !important;
               box-shadow: 0 10px 22px -4px rgba(15, 23, 42, 0.12) !important;
             }
 
             button:active, [role="button"]:active {
               transform: translateY(0px) scale(0.97) !important;
-              filter: brightness(0.95) !important;
+              filter: brightness(0.96) !important;
+            }
+
+            /* Subtle floating card shadow enhancements */
+            .elevated-card {
+              box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.05), 0 2px 6px -1px rgba(15, 23, 42, 0.03) !important;
             }
 
             /* Custom Slim Sleek Scrollbars */

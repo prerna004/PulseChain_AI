@@ -39,27 +39,22 @@ export default function ManufacturerDashboard() {
 
   return (
     <View style={styles.container}>
-      {/* Registered Manufacturer Switcher Bar */}
-      <View style={{
-        backgroundColor: '#ffffff',
-        borderRadius: 14,
-        padding: 12,
-        borderWidth: 1.5,
-        borderColor: '#cbd5e1',
-        marginBottom: 12
-      }}>
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-            <Ionicons name="business" size={14} color="#16a34a" />
-            <Text style={{ fontSize: 11, fontWeight: '900', color: '#16a34a', letterSpacing: 0.5 }}>
-              MUMBAI REGISTERED MANUFACTURERS NETWORK
-            </Text>
+      {/* 1. CONNECTED MANUFACTURER ACCOUNTS BAR (Subtle Card Row) */}
+      <View style={styles.networkCard}>
+        <View style={styles.networkHeader}>
+          <View style={styles.networkTitleRow}>
+            <View style={styles.symbolIconBoxGreen}>
+              <Ionicons name="business" size={14} color="#16a34a" />
+            </View>
+            <View>
+              <Text style={styles.networkTitle}>MUMBAI REGISTERED MANUFACTURERS NETWORK</Text>
+              <Text style={styles.networkSub}>Connected Official OEM Production Plants & Primary Hubs</Text>
+            </View>
           </View>
-          <Text style={{ fontSize: 10, color: '#64748b', fontWeight: '600' }}>
-            1-Tap to Switch Manufacturer Perspective:
-          </Text>
+          <Text style={styles.networkHint}>1-Tap to Switch Manufacturer Account</Text>
         </View>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexDirection: 'row' }}>
+
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.networkScroll}>
           {(allManufacturers || []).map(mfg => {
             const isActive = (loggedInManufacturer?.id === mfg.id) || (selectedManufacturer?.id === mfg.id);
             return (
@@ -69,32 +64,26 @@ export default function ManufacturerDashboard() {
                   if (loginManufacturer) loginManufacturer(mfg);
                   if (setSelectedManufacturer) setSelectedManufacturer(mfg);
                 }}
-                style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  gap: 8,
-                  backgroundColor: isActive ? '#16a34a' : '#f0fdf4',
-                  borderWidth: 1.5,
-                  borderColor: isActive ? '#15803d' : '#bbf7d0',
-                  borderRadius: 10,
-                  paddingHorizontal: 12,
-                  paddingVertical: 8,
-                  marginRight: 8
-                }}
+                style={[styles.accountCard, isActive && styles.accountCardActive]}
               >
-                <FontAwesome5 name="industry" size={12} color={isActive ? '#ffffff' : '#16a34a'} />
-                <View>
-                  <Text style={{ fontSize: 11.5, fontWeight: '800', color: isActive ? '#ffffff' : '#0f172a' }}>
+                <View style={[styles.accountIconBox, isActive && styles.accountIconBoxActive]}>
+                  <FontAwesome5 name="industry" size={13} color={isActive ? '#ffffff' : '#16a34a'} />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={[styles.accountName, isActive && styles.accountNameActive]} numberOfLines={1}>
                     {mfg.brand || mfg.name.split(' ')[0]}
                   </Text>
-                  <Text style={{ fontSize: 9.5, color: isActive ? '#dcfce7' : '#166534' }}>
-                    {mfg.area || mfg.primaryHub || 'Mumbai Hub'}
+                  <Text style={[styles.accountMeta, isActive && styles.accountMetaActive]}>
+                    🏭 {mfg.area || mfg.primaryHub || 'Mumbai Depot'}
                   </Text>
                 </View>
-                {isActive && (
-                  <View style={{ width: 16, height: 16, borderRadius: 8, backgroundColor: '#ffffff', alignItems: 'center', justifyContent: 'center', marginLeft: 4 }}>
-                    <Text style={{ fontSize: 10, fontWeight: '900', color: '#16a34a' }}>✓</Text>
+                {isActive ? (
+                  <View style={styles.activeCheckPill}>
+                    <Ionicons name="checkmark" size={10} color="#ffffff" />
+                    <Text style={styles.activeCheckText}>Active</Text>
                   </View>
+                ) : (
+                  <View style={styles.inactiveDot} />
                 )}
               </TouchableOpacity>
             );
@@ -102,47 +91,84 @@ export default function ManufacturerDashboard() {
         </ScrollView>
       </View>
 
+      {/* 2. EXECUTIVE OEM PRODUCTION HERO CARD */}
+      <View style={styles.heroGradientCard}>
+        <View style={styles.heroTopRow}>
+          <View style={styles.heroEntityLeft}>
+            <View style={styles.heroAvatarBox}>
+              <FontAwesome5 name="industry" size={20} color="#34d399" />
+            </View>
+            <View>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                <Text style={styles.heroTitle}>{activeMfg.name || activeMfg.companyName} ({activeMfg.brand})</Text>
+                <View style={styles.heroVerifiedBadge}>
+                  <Ionicons name="shield-checkmark" size={12} color="#34d399" />
+                  <Text style={styles.heroVerifiedText}>Certified OEM Plant</Text>
+                </View>
+              </View>
+              <Text style={styles.heroSub}>
+                🏭 Production Hub: <Text style={{ color: '#ffffff', fontWeight: '700' }}>{activeMfg.primaryHub || 'Mumbai Hub'}</Text> • Key Representative: {activeMfg.keyRep || activeMfg.repName || 'Official OEM Desk'}
+              </Text>
+            </View>
+          </View>
+
+          <TouchableOpacity
+            onPress={() => handleVoiceOrTextInput('Show current stockist inventory across Mumbai for our brand')}
+            style={styles.heroActionBtn}
+          >
+            <Ionicons name="stats-chart" size={16} color="#ffffff" />
+            <Text style={styles.heroActionBtnText}>Check Distributor Stocks (स्टॉक चेक करें)</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Hero Metrics Row */}
+        <View style={styles.heroMetricsGrid}>
+          <View style={styles.heroMetricItem}>
+            <View style={styles.metricLabelRow}>
+              <Text style={styles.heroMetricLabel}>MUMBAI BUFFER STOCK</Text>
+              <Ionicons name="cube" size={13} color="#34d399" />
+            </View>
+            <Text style={styles.heroMetricValue}>1,280,000</Text>
+            <Text style={styles.heroMetricSub}>Units ready across central CFA depots</Text>
+          </View>
+
+          <View style={styles.heroMetricDivider} />
+
+          <View style={styles.heroMetricItem}>
+            <View style={styles.metricLabelRow}>
+              <Text style={styles.heroMetricLabel}>AUTHORIZED STOCKISTS</Text>
+              <Ionicons name="business" size={13} color="#38bdf8" />
+            </View>
+            <Text style={styles.heroMetricValue}>4 Hubs</Text>
+            <Text style={styles.heroMetricSub}>Direct delivery partners in MMR</Text>
+          </View>
+
+          <View style={styles.heroMetricDivider} />
+
+          <View style={styles.heroMetricItem}>
+            <View style={styles.metricLabelRow}>
+              <Text style={styles.heroMetricLabel}>RESTOCK LEAD TIME</Text>
+              <Ionicons name="flash" size={13} color="#fbbf24" />
+            </View>
+            <Text style={styles.heroMetricValue}>2 Days</Text>
+            <Text style={styles.heroMetricSub}>Bhiwandi to Hospital turnaround</Text>
+          </View>
+
+          <View style={styles.heroMetricDivider} />
+
+          <View style={styles.heroMetricItem}>
+            <View style={styles.metricLabelRow}>
+              <Text style={styles.heroMetricLabel}>FINANCIAL ESCROW</Text>
+              <Ionicons name="shield-checkmark" size={13} color="#a78bfa" />
+            </View>
+            <Text style={styles.heroMetricValue}>100% P2P</Text>
+            <Text style={styles.heroMetricSub}>Bank escrow verified</Text>
+          </View>
+        </View>
+      </View>
+
       <VoiceRequisitionBar />
       <TwoPipeVisualizer />
-
-      {/* Logged-in Manufacturer Banner */}
-      {loggedInManufacturer && (
-        <View style={styles.authBanner}>
-          <View style={styles.authBannerIconWrap}>
-            <FontAwesome5 name="industry" size={14} color="#16a34a" />
-          </View>
-          <View style={{ flex: 1 }}>
-            <Text style={styles.authBannerName}>{loggedInManufacturer.name} — {loggedInManufacturer.brand}</Text>
-            <Text style={styles.authBannerSub}>{loggedInManufacturer.repName} | {loggedInManufacturer.title}</Text>
-          </View>
-          <View style={styles.verifiedBadge}>
-            <Ionicons name="checkmark-circle" size={12} color="#16a34a" />
-            <Text style={styles.verifiedText}>Verified Mfg</Text>
-          </View>
-        </View>
-      )}
-
-      {/* Factory Banner */}
-      <View style={styles.factoryBanner}>
-        <View style={styles.bannerLeft}>
-          <View style={styles.factoryIcon}>
-            <FontAwesome5 name="industry" size={20} color="#16a34a" />
-          </View>
-          <View>
-            <Text style={styles.factoryTitle}>{activeMfg.name || activeMfg.companyName} ({activeMfg.brand})</Text>
-            <Text style={styles.factorySub}>
-              🏭 {activeMfg.primaryHub || 'Mumbai Hub'} • {activeMfg.keyRep || activeMfg.repName}
-            </Text>
-          </View>
-        </View>
-        <TouchableOpacity
-          onPress={() => handleVoiceOrTextInput('Show current stockist inventory across Mumbai for our brand')}
-          style={styles.queryBtn}
-        >
-          <Ionicons name="stats-chart" size={16} color="#ffffff" />
-          <Text style={styles.queryBtnText}>Check Distributor Stocks</Text>
-        </TouchableOpacity>
-      </View>
 
       {/* My Brand SKUs — Stockist Coverage */}
       {mySkus.length > 0 && (
@@ -331,6 +357,252 @@ export default function ManufacturerDashboard() {
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
+
+  // CONNECTED MANUFACTURER ACCOUNTS BAR
+  networkCard: {
+    backgroundColor: '#ffffff',
+    borderRadius: 20,
+    padding: 16,
+    borderWidth: 1.5,
+    borderColor: '#e2e8f0',
+    marginBottom: 16,
+    shadowColor: '#0f172a',
+    shadowOpacity: 0.04,
+    shadowRadius: 12,
+    shadowOffset: { width: 0, height: 3 }
+  },
+  networkHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+    flexWrap: 'wrap',
+    gap: 8
+  },
+  networkTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10
+  },
+  networkTitle: {
+    fontSize: 12,
+    fontWeight: '800',
+    color: '#0f172a',
+    letterSpacing: 0.4
+  },
+  networkSub: {
+    fontSize: 11,
+    color: '#64748b',
+    marginTop: 1
+  },
+  networkHint: {
+    fontSize: 10.5,
+    color: '#94a3b8',
+    fontWeight: '600'
+  },
+  networkScroll: {
+    flexDirection: 'row'
+  },
+  accountCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    backgroundColor: '#f8fafc',
+    borderWidth: 1.5,
+    borderColor: '#e2e8f0',
+    borderRadius: 14,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    marginRight: 10,
+    minWidth: 220
+  },
+  accountCardActive: {
+    backgroundColor: '#f0fdf4',
+    borderColor: '#16a34a',
+    shadowColor: '#16a34a',
+    shadowOpacity: 0.2,
+    shadowRadius: 8
+  },
+  accountIconBox: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    backgroundColor: '#ecfdf5',
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  accountIconBoxActive: {
+    backgroundColor: '#16a34a'
+  },
+  accountName: {
+    fontSize: 12.5,
+    fontWeight: '700',
+    color: '#0f172a'
+  },
+  accountNameActive: {
+    fontWeight: '800',
+    color: '#15803d'
+  },
+  accountMeta: {
+    fontSize: 10.5,
+    color: '#64748b',
+    marginTop: 1
+  },
+  accountMetaActive: {
+    color: '#166534'
+  },
+  activeCheckPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+    backgroundColor: '#16a34a',
+    borderRadius: 20,
+    paddingHorizontal: 7,
+    paddingVertical: 3
+  },
+  activeCheckText: {
+    fontSize: 9.5,
+    fontWeight: '800',
+    color: '#ffffff'
+  },
+  inactiveDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#cbd5e1'
+  },
+  symbolIconBoxGreen: {
+    width: 32,
+    height: 32,
+    borderRadius: 10,
+    backgroundColor: '#ecfdf5',
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+
+  // EXECUTIVE OEM PRODUCTION HERO CARD
+  heroGradientCard: {
+    backgroundColor: '#064e3b',
+    borderRadius: 24,
+    padding: 24,
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: '#047857',
+    shadowColor: '#059669',
+    shadowOpacity: 0.2,
+    shadowRadius: 20,
+    shadowOffset: { width: 0, height: 6 }
+  },
+  heroTopRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 22,
+    flexWrap: 'wrap',
+    gap: 16
+  },
+  heroEntityLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 14,
+    flex: 1,
+    minWidth: 280
+  },
+  heroAvatarBox: {
+    width: 48,
+    height: 48,
+    borderRadius: 14,
+    backgroundColor: 'rgba(52, 211, 153, 0.15)',
+    borderWidth: 1.5,
+    borderColor: 'rgba(52, 211, 153, 0.4)',
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  heroTitle: {
+    fontSize: 18,
+    fontWeight: '800',
+    color: '#ffffff'
+  },
+  heroVerifiedBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: 'rgba(52, 211, 153, 0.2)',
+    borderWidth: 1,
+    borderColor: 'rgba(52, 211, 153, 0.4)',
+    borderRadius: 20,
+    paddingHorizontal: 8,
+    paddingVertical: 3
+  },
+  heroVerifiedText: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#34d399'
+  },
+  heroSub: {
+    fontSize: 12,
+    color: '#a7f3d0',
+    marginTop: 4
+  },
+  heroActionBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: '#10b981',
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 11,
+    shadowColor: '#10b981',
+    shadowOpacity: 0.4,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 3 }
+  },
+  heroActionBtnText: {
+    color: '#ffffff',
+    fontSize: 12.5,
+    fontWeight: '800'
+  },
+  heroMetricsGrid: {
+    flexDirection: 'row',
+    backgroundColor: 'rgba(255, 255, 255, 0.07)',
+    borderRadius: 16,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+    flexWrap: 'wrap',
+    gap: 12
+  },
+  heroMetricItem: {
+    flex: 1,
+    minWidth: 140
+  },
+  metricLabelRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 4
+  },
+  heroMetricLabel: {
+    fontSize: 9.5,
+    fontWeight: '800',
+    color: '#a7f3d0',
+    letterSpacing: 0.6
+  },
+  heroMetricValue: {
+    fontSize: 22,
+    fontWeight: '900',
+    color: '#ffffff'
+  },
+  heroMetricSub: {
+    fontSize: 10.5,
+    color: '#6ee7b7',
+    marginTop: 3
+  },
+  heroMetricDivider: {
+    width: 1,
+    backgroundColor: 'rgba(255, 255, 255, 0.12)',
+    marginVertical: 4
+  },
   authBanner: { flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: '#f0fdf4', borderRadius: 14, borderWidth: 1.5, borderColor: '#bbf7d0', padding: 12, marginBottom: 14 },
   authBannerIconWrap: { width: 32, height: 32, borderRadius: 16, backgroundColor: '#dcfce7', alignItems: 'center', justifyContent: 'center' },
   authBannerName: { fontSize: 13, fontWeight: '800', color: '#0f172a' },

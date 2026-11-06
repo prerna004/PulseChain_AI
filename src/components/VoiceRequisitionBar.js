@@ -60,19 +60,33 @@ export default function VoiceRequisitionBar() {
   const toggleMic = () => {
     if (isListening) {
       setIsListening(false);
-      if (aiEngine.speechRecognition) aiEngine.speechRecognition.stop();
+      try {
+        if (aiEngine.speechRecognition) aiEngine.speechRecognition.stop();
+      } catch (e) {
+        console.warn('Speech stop error:', e);
+      }
     } else {
       setIsListening(true);
       setInputVal('');
       if (aiEngine.speechRecognition) {
-        aiEngine.speechRecognition.start();
-        aiEngine.speechRecognition.onresult = (event) => {
-          const spoken = event.results[0][0].transcript;
-          setInputVal(spoken);
-          setIsListening(false);
-          handleVoiceOrTextInput(spoken);
-        };
-        aiEngine.speechRecognition.onerror = () => setIsListening(false);
+        try {
+          aiEngine.speechRecognition.onresult = (event) => {
+            const spoken = event.results[0][0].transcript;
+            setInputVal(spoken);
+            setIsListening(false);
+            handleVoiceOrTextInput(spoken);
+          };
+          aiEngine.speechRecognition.onerror = () => setIsListening(false);
+          aiEngine.speechRecognition.start();
+        } catch (e) {
+          console.warn('Speech start error, using simulation fallback:', e);
+          setTimeout(() => {
+            const testSpoken = 'Order 100 boxes of 7.5 surgical gloves urgently';
+            setInputVal(testSpoken);
+            setIsListening(false);
+            handleVoiceOrTextInput(testSpoken);
+          }, 1200);
+        }
       } else {
         // Fallback simulation for browsers blocking mic
         setTimeout(() => {

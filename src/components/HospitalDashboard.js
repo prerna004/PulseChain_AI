@@ -267,8 +267,15 @@ export default function HospitalDashboard() {
                   </View>
                 </View>
 
-                <Text style={styles.supplierCardName} numberOfLines={1}>{stk.name.split('(')[0]}</Text>
-                <Text style={styles.supplierCardArea}>📍 {stk.hub || stk.area} • Rating: {stk.rating || 4.9}★</Text>
+                <View style={styles.supplierEntityRow}>
+                  <View style={styles.symbolIconBoxAmber}>
+                    <FontAwesome5 name="truck" size={13} color="#d97706" />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.supplierCardName} numberOfLines={1}>{stk.name.split('(')[0]}</Text>
+                    <Text style={styles.supplierCardArea}>📍 {stk.hub || stk.area} • {stk.rating || 4.9}★</Text>
+                  </View>
+                </View>
 
                 {/* Live Stock & Pricing snippet */}
                 <View style={styles.stockSnippetBox}>
@@ -335,8 +342,15 @@ export default function HospitalDashboard() {
                   </View>
                 </View>
 
-                <Text style={styles.supplierCardName} numberOfLines={1}>{mfg.brand || mfg.name} Primary Plant</Text>
-                <Text style={styles.supplierCardArea}>🏭 {mfg.area || mfg.primaryHub} • Official OEM</Text>
+                <View style={styles.supplierEntityRow}>
+                  <View style={styles.symbolIconBoxGreen}>
+                    <FontAwesome5 name="industry" size={13} color="#059669" />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.supplierCardName} numberOfLines={1}>{mfg.brand || mfg.name} Primary Plant</Text>
+                    <Text style={styles.supplierCardArea}>🏭 {mfg.area || mfg.primaryHub} • Official OEM</Text>
+                  </View>
+                </View>
 
                 {/* Factory Buffer Stock snippet */}
                 <View style={[styles.stockSnippetBox, { backgroundColor: '#f0fdf4', borderColor: '#bbf7d0' }]}>
@@ -597,7 +611,29 @@ export default function HospitalDashboard() {
                   style={[styles.skuCard, isLow && styles.skuCardLow, isCritical && styles.skuCardCritical]}
                 >
                   <View style={styles.skuTopRow}>
-                    <Text style={styles.skuCategory}>{sku.category}</Text>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                      <View style={[
+                        styles.skuCategoryIconBox,
+                        (sku.category.includes('Consumable') || sku.category.includes('Glove')) ? styles.catIconAmber :
+                        (sku.category.includes('Injection') || sku.category.includes('Infusion')) ? styles.catIconBlue :
+                        sku.category.includes('Critical') ? styles.catIconRed : styles.catIconGreen
+                      ]}>
+                        <Ionicons
+                          name={
+                            (sku.category.includes('Consumable') || sku.category.includes('Glove')) ? "hand-left" :
+                            (sku.category.includes('Injection') || sku.category.includes('Infusion')) ? "water" :
+                            sku.category.includes('Critical') ? "pulse" : "medkit"
+                          }
+                          size={12}
+                          color={
+                            (sku.category.includes('Consumable') || sku.category.includes('Glove')) ? "#d97706" :
+                            (sku.category.includes('Injection') || sku.category.includes('Infusion')) ? "#0284c7" :
+                            sku.category.includes('Critical') ? "#e11d48" : "#059669"
+                          }
+                        />
+                      </View>
+                      <Text style={styles.skuCategory}>{sku.category}</Text>
+                    </View>
                     <View style={[styles.statusBadge, isCritical ? styles.badgeCritical : isLow ? styles.badgeLow : styles.badgeOk]}>
                       <Text style={[styles.statusBadgeText, isCritical ? styles.badgeTextCritical : isLow ? styles.badgeTextLow : styles.badgeTextOk]}>
                         {isCritical ? '🔴 CRITICAL' : isLow ? '⚠️ LOW STOCK' : '✓ IN STOCK'}
@@ -896,6 +932,47 @@ const styles = StyleSheet.create({
   stockReorderLabel: { fontSize: 9, color: '#94a3b8', fontWeight: '700' },
   stockReorderValue: { fontSize: 16, fontWeight: '900', color: '#d97706' },
   stockRateLabel: { fontSize: 10, color: '#64748b', marginTop: 2 },
+  skuCategoryIconBox: {
+    width: 24,
+    height: 24,
+    borderRadius: 7,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  catIconAmber: {
+    backgroundColor: '#fef3c7',
+  },
+  catIconBlue: {
+    backgroundColor: '#eff6ff',
+  },
+  catIconRed: {
+    backgroundColor: '#fef2f2',
+  },
+  catIconGreen: {
+    backgroundColor: '#ecfdf5',
+  },
+  supplierEntityRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    marginVertical: 6,
+  },
+  symbolIconBoxAmber: {
+    width: 32,
+    height: 32,
+    borderRadius: 10,
+    backgroundColor: '#fef3c7',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  symbolIconBoxGreen: {
+    width: 32,
+    height: 32,
+    borderRadius: 10,
+    backgroundColor: '#ecfdf5',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   skuTopRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
