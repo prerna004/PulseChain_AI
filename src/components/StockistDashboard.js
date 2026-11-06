@@ -110,7 +110,7 @@ export default function StockistDashboard() {
             onPress={() => handleVoiceOrTextInput('show me which hospitals need our products')}
             style={styles.heroActionBtn}
           >
-            <Ionicons name="radar" size={16} color="#ffffff" />
+            <SymbolIcon name="radar" size={16} color="#ffffff" />
             <Text style={styles.heroActionBtnText}>Scan Hospital Demand (अस्पतालों की मांग)</Text>
           </TouchableOpacity>
         </View>

@@ -26,6 +26,7 @@ import ManufacturerAuthScreen from './src/components/ManufacturerAuthScreen';
 import FirstOrderPaperworkModal from './src/components/FirstOrderPaperworkModal';
 import SplitScreenView from './src/components/SplitScreenView';
 import SymbolIcon from './src/components/SymbolIcon';
+import LandingScreen from './src/components/LandingScreen';
 
 function MainScreen() {
   const { width } = useWindowDimensions();
@@ -98,106 +99,24 @@ function MainScreen() {
     }
   }
 
-  // ── OPENING ROLE SELECTION SCREEN ────────────────────────────────────────────
+  // ── OPENING ROLE SELECTION SCREEN (HIGH-AESTHETIC LANDING PAGE) ───────────────
   if (!hasChosenRole) {
     return (
-      <SafeAreaView style={styles.splashBg}>
-        <StatusBar barStyle="dark-content" />
-        <ScrollView contentContainerStyle={styles.splashScrollContent}>
-          <View style={styles.splashCard}>
-            {/* Logo Header */}
-            <View style={styles.splashHeader}>
-              <View style={styles.appIconWrap}>
-                <Ionicons name="medical" size={32} color="#0284c7" />
-              </View>
-              <View>
-                <Text style={styles.appName}>PulseChain AI</Text>
-                <Text style={styles.appSubtitle}>Mumbai Hospital Supply Chain • बोलकर आर्डर करें</Text>
-              </View>
-            </View>
-
-            <View style={styles.divider} />
-
-            <Text style={styles.chooseTitle}>Who are you? (आप कौन हैं?)</Text>
-            <Text style={styles.chooseSub}>
-              Select your role below. No forms to fill — just speak or tap.
-            </Text>
-
-            {/* 3 Role Cards */}
-            <View style={styles.rolesRow}>
-              {/* Hospital */}
-              <TouchableOpacity
-                onPress={() => {
-                  setCurrentRole('HOSPITAL');
-                  setShowHospitalAuth(true);
-                }}
-                style={styles.roleCard}
-              >
-                <View style={[styles.roleIconCircle, { backgroundColor: '#e0f2fe' }]}>
-                  <FontAwesome5 name="hospital" size={28} color="#0284c7" />
-                </View>
-                <Text style={styles.roleTitle}>1. Hospital</Text>
-                <Text style={styles.roleHindi}>अस्पताल / नर्सिंग होम</Text>
-                <Text style={styles.roleDesc}>
-                  For Doctors, Ward Sisters, and Hospital Storekeepers (Lilavati, Hinduja, KEM)
-                </Text>
-                <View style={styles.enterBtn}>
-                  <Text style={styles.enterBtnText}>Login / Register Hospital ➤</Text>
-                </View>
-              </TouchableOpacity>
-
-              {/* Stockist */}
-              <TouchableOpacity
-                onPress={() => {
-                  setCurrentRole('STOCKIST');
-                  setShowStockistAuth(true);
-                }}
-                style={styles.roleCard}
-              >
-                <View style={[styles.roleIconCircle, { backgroundColor: '#fef3c7' }]}>
-                  <FontAwesome5 name="truck" size={28} color="#d97706" />
-                </View>
-                <Text style={styles.roleTitle}>2. Stockist / Dealer</Text>
-                <Text style={styles.roleHindi}>सप्लायर / होलसेलर</Text>
-                <Text style={styles.roleDesc}>
-                  For Medical Wholesalers in Dadar, Princess Street & Dawa Bazar
-                </Text>
-                <View style={[styles.enterBtn, { backgroundColor: '#d97706' }]}>
-                  <Text style={styles.enterBtnText}>Login / Register Stockist ➔</Text>
-                </View>
-              </TouchableOpacity>
-
-              {/* Manufacturer */}
-              <TouchableOpacity
-                onPress={() => {
-                  setCurrentRole('MANUFACTURER');
-                  setShowManufacturerAuth(true);
-                }}
-                style={styles.roleCard}
-              >
-                <View style={[styles.roleIconCircle, { backgroundColor: '#dcfce7' }]}>
-                  <FontAwesome5 name="industry" size={28} color="#16a34a" />
-                </View>
-                <Text style={styles.roleTitle}>3. Manufacturer</Text>
-                <Text style={styles.roleHindi}>फैक्ट्री / निर्माता</Text>
-                <Text style={styles.roleDesc}>
-                  For MedTech Companies (HMD Dispovan, Polymed, 3M, Cipla)
-                </Text>
-                <View style={[styles.enterBtn, { backgroundColor: '#16a34a' }]}>
-                  <Text style={styles.enterBtnText}>Login / Register Company ➔</Text>
-                </View>
-              </TouchableOpacity>
-            </View>
-
-            <View style={styles.footerNote}>
-              <Ionicons name="sparkles" size={14} color="#0284c7" />
-              <Text style={styles.footerText}>
-                100% Voice Operated • Never Ask for Filling Form Fields • Auto WhatsApp Import
-              </Text>
-            </View>
-          </View>
-        </ScrollView>
-      </SafeAreaView>
+      <LandingScreen
+        onSelectRole={(role) => {
+          setCurrentRole(role);
+          if (role === 'HOSPITAL') {
+            if (!loggedInHospital) setShowHospitalAuth(true);
+            else setHasChosenRole(true);
+          } else if (role === 'STOCKIST') {
+            if (!loggedInStockist) setShowStockistAuth(true);
+            else setHasChosenRole(true);
+          } else if (role === 'MANUFACTURER') {
+            if (!loggedInManufacturer) setShowManufacturerAuth(true);
+            else setHasChosenRole(true);
+          }
+        }}
+      />
     );
   }
 
@@ -400,11 +319,55 @@ function MainScreen() {
   );
 }
 
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+  componentDidCatch(error, errorInfo) {
+    console.error("PulseChain ErrorBoundary caught an error:", error, errorInfo);
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <SafeAreaView style={{ flex: 1, backgroundColor: '#f8fafc', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
+          <View style={{ maxWidth: 460, width: '100%', backgroundColor: '#ffffff', borderRadius: 20, padding: 24, borderWidth: 1, borderColor: '#e2e8f0', shadowColor: '#000', shadowOpacity: 0.08, shadowRadius: 20, alignItems: 'center' }}>
+            <View style={{ width: 56, height: 56, borderRadius: 28, backgroundColor: '#fee2e2', alignItems: 'center', justifyContent: 'center', marginBottom: 14 }}>
+              <SymbolIcon name="hospital" size={28} color="#ef4444" />
+            </View>
+            <Text style={{ fontSize: 18, fontWeight: '800', color: '#0f172a', marginBottom: 6, textAlign: 'center' }}>
+              PulseChain Auto-Recovered
+            </Text>
+            <Text style={{ fontSize: 13, color: '#64748b', textAlign: 'center', marginBottom: 18, lineHeight: 18 }}>
+              {this.state.error ? String(this.state.error.message || this.state.error) : 'System encountered a temporary issue. Tap to refresh.'}
+            </Text>
+            <TouchableOpacity
+              onPress={() => {
+                this.setState({ hasError: false, error: null });
+                if (typeof window !== 'undefined') window.location.reload();
+              }}
+              style={{ backgroundColor: '#0284c7', paddingVertical: 10, paddingHorizontal: 22, borderRadius: 10 }}
+            >
+              <Text style={{ color: '#ffffff', fontWeight: '800', fontSize: 13 }}>Reload PulseChain ➔</Text>
+            </TouchableOpacity>
+          </View>
+        </SafeAreaView>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 export default function App() {
   return (
-    <AppProvider>
-      <MainScreen />
-    </AppProvider>
+    <ErrorBoundary>
+      <AppProvider>
+        <MainScreen />
+      </AppProvider>
+    </ErrorBoundary>
   );
 }
 

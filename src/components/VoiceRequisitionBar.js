@@ -162,7 +162,7 @@ export default function VoiceRequisitionBar() {
           style={[styles.sendBtn, !inputVal.trim() && styles.sendBtnDisabled]}
           disabled={!inputVal.trim()}
         >
-          <Ionicons name="arrow-up" size={20} color="#ffffff" />
+          <SymbolIcon name="send" size={16} color="#ffffff" />
         </TouchableOpacity>
       </View>
 
