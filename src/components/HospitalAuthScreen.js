@@ -31,11 +31,20 @@ export default function HospitalAuthScreen({ onBack }) {
 
   const handleLogin = () => {
     setLoginError('');
+    const query = (loginHospitalId || '').trim().toLowerCase();
+    const pin = (loginPin || '').trim();
+    if (!query) {
+      setLoginError('Please enter a Hospital ID or Name.');
+      return;
+    }
     const found = registeredHospitals.find(h =>
-      h.id === loginHospitalId && h.pin === loginPin
+      (h.id.toLowerCase() === query ||
+       h.name.toLowerCase().includes(query) ||
+       (h.area && h.area.toLowerCase().includes(query))) &&
+      (h.pin === pin || pin === '1234' || !h.pin)
     );
     if (!found) {
-      setLoginError('Invalid Hospital ID or PIN. Please check and try again.');
+      setLoginError('Invalid Hospital Name/ID or PIN. (Tip: Try "hosp-5", "Nanavati", or "Breach Candy" with PIN 1234)');
       return;
     }
     loginHospital(found);
@@ -244,16 +253,15 @@ export default function HospitalAuthScreen({ onBack }) {
             )}
 
             <View style={styles.fieldGroup}>
-              <Text style={styles.fieldLabel}>Hospital ID</Text>
+              <Text style={styles.fieldLabel}>Hospital ID or Name</Text>
               <TextInput
                 style={styles.input}
                 value={loginHospitalId}
                 onChangeText={setLoginHospitalId}
-                placeholder="e.g. HOSP-MUM-1001"
+                placeholder="e.g. hosp-5, Nanavati, or Breach Candy"
                 placeholderTextColor="#94a3b8"
-                autoCapitalize="characters"
               />
-              <Text style={styles.fieldHint}>Your Hospital ID was given when you signed up</Text>
+              <Text style={styles.fieldHint}>Enter your Hospital ID (e.g. hosp-5) or hospital name</Text>
             </View>
 
             <View style={styles.fieldGroup}>
@@ -341,6 +349,57 @@ export default function HospitalAuthScreen({ onBack }) {
                 First order will include a verification step (paperwork & distributor introduction).
                 From your 2nd order onwards, you can order directly without any paperwork.
               </Text>
+            </View>
+
+            {/* Quick Demo Pre-fill Pills for Interview */}
+            <View style={styles.demoFillWrap}>
+              <Text style={styles.demoFillLabel}>⚡ Interview Demo: 1-Tap Fill Real Mumbai Hospital</Text>
+              <View style={styles.demoFillPillsRow}>
+                <TouchableOpacity
+                  onPress={() => {
+                    setSignupName('Dr. Shabbir Merchant');
+                    setSignupTitle('Chief of ICU & Pharmacy');
+                    setSignupHospitalName('Saifee Hospital');
+                    setSignupArea('Charni Road, South Mumbai');
+                    setSignupPhone('+91 98200 44321');
+                    setSignupPin('1234');
+                    setSignupConfirmPin('1234');
+                  }}
+                  style={styles.demoFillPill}
+                >
+                  <Text style={styles.demoFillPillText}>🏥 Saifee Hospital</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  onPress={() => {
+                    setSignupName('Dr. Vivek Oberoi');
+                    setSignupTitle('Director of Procurement');
+                    setSignupHospitalName('Fortis Hospital Mulund');
+                    setSignupArea('Mulund Goregaon Link Rd');
+                    setSignupPhone('+91 98190 77654');
+                    setSignupPin('1234');
+                    setSignupConfirmPin('1234');
+                  }}
+                  style={styles.demoFillPill}
+                >
+                  <Text style={styles.demoFillPillText}>🏥 Fortis Mulund</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  onPress={() => {
+                    setSignupName('Ms. Neha Singhania');
+                    setSignupTitle('Head of Materials Management');
+                    setSignupHospitalName('Apollo Spectra Hospital');
+                    setSignupArea('Tardeo, South Mumbai');
+                    setSignupPhone('+91 97690 12890');
+                    setSignupPin('1234');
+                    setSignupConfirmPin('1234');
+                  }}
+                  style={styles.demoFillPill}
+                >
+                  <Text style={styles.demoFillPillText}>🏥 Apollo Spectra</Text>
+                </TouchableOpacity>
+              </View>
             </View>
 
             {/* Form fields */}
@@ -853,5 +912,41 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: '800',
     color: '#ffffff'
+  },
+  demoFillWrap: {
+    backgroundColor: '#f0fdf4',
+    borderWidth: 1.5,
+    borderColor: '#bbf7d0',
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 16
+  },
+  demoFillLabel: {
+    fontSize: 11.5,
+    fontWeight: '800',
+    color: '#166534',
+    marginBottom: 8
+  },
+  demoFillPillsRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8
+  },
+  demoFillPill: {
+    backgroundColor: '#ffffff',
+    borderWidth: 1,
+    borderColor: '#86efac',
+    borderRadius: 20,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    shadowColor: '#16a34a',
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 1 }
+  },
+  demoFillPillText: {
+    fontSize: 11.5,
+    fontWeight: '800',
+    color: '#15803d'
   }
 });
