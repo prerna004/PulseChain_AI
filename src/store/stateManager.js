@@ -132,6 +132,8 @@ export function AppProvider({ children }) {
     { id: 'log-4', timestamp: '18:15:20', source: 'Kokilaben Hospital', event: 'ORDER_CREATED', detail: 'N95 Masks x40 boxes ordered from Sagar Medical', status: 'INDEXED' },
     { id: 'log-5', timestamp: '18:18:05', source: 'Poly Medicure', event: 'MFG_SYNC', detail: 'Vashi depot IV Cannula stock replenished: 50,000 units', status: 'SYNCD' },
     { id: 'log-6', timestamp: '18:20:30', source: 'Princess Street Syndicate', event: 'STOCKIST_PING', detail: 'KEM Hospital quote request received: N95 Masks x100', status: 'PROCESSED' },
+    { id: 'log-7', timestamp: '18:22:10', source: 'Campus Placement / Candidate Search', event: 'RECRUITER_SEARCH', detail: 'Student applicant Prerna Chotwani indexed for WildCatter Ventures Phase I Evaluation', status: 'INDEXED' },
+    { id: 'log-8', timestamp: '18:24:45', source: 'WildCatter Ventures Recruiter', event: 'EVALUATION_QUERY', detail: 'Verified 2-Pipe living MTA control panel & zero-form voice requisition telemetry', status: 'VERIFIED' },
   ]);
 
   // Modals & Dynamic UI

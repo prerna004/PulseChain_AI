@@ -784,6 +784,26 @@ export default function HospitalDashboard() {
                     <Ionicons name="location" size={16} color="#16a34a" />
                     <Text style={styles.orderLocationText}>Truck Location: {ord.currentLocation}</Text>
                   </View>
+
+                  {/* WildCatter 4-Point Compliance: Items Ordered, Date Ordered, Delivered By, Payment Due By */}
+                  <View style={styles.orderMetaPointsRow}>
+                    <View style={styles.orderMetaPoint}>
+                      <Text style={styles.orderMetaLabel}>Items Ordered:</Text>
+                      <Text style={styles.orderMetaValue}>{ord.items.map(i => `${i.qty} ${i.unit} ${i.name}`).join(', ')}</Text>
+                    </View>
+                    <View style={styles.orderMetaPoint}>
+                      <Text style={styles.orderMetaLabel}>Date Ordered:</Text>
+                      <Text style={styles.orderMetaValue}>{ord.orderDate}</Text>
+                    </View>
+                    <View style={styles.orderMetaPoint}>
+                      <Text style={styles.orderMetaLabel}>Delivered By:</Text>
+                      <Text style={[styles.orderMetaValue, { color: '#047857' }]}>{ord.deliveredBy || '18 Mins (Emergency Dispatch)'}</Text>
+                    </View>
+                    <View style={styles.orderMetaPoint}>
+                      <Text style={styles.orderMetaLabel}>Payment Due By:</Text>
+                      <Text style={[styles.orderMetaValue, { color: '#b45309' }]}>{ord.paymentDueBy || '60 Days Credit Terms (Net 60)'}</Text>
+                    </View>
+                  </View>
                 </View>
               ))}
             </View>
@@ -1758,5 +1778,30 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '800',
     color: '#ffffff'
+  },
+  orderMetaPointsRow: {
+    marginTop: 10,
+    paddingTop: 10,
+    borderTopWidth: 1,
+    borderTopColor: '#f1f5f9',
+    backgroundColor: '#f8fafc',
+    borderRadius: 8,
+    padding: 8,
+    gap: 4
+  },
+  orderMetaPoint: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center'
+  },
+  orderMetaLabel: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#64748b'
+  },
+  orderMetaValue: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: '#0f172a'
   }
 });
