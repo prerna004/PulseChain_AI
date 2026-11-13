@@ -1,4 +1,4 @@
-// ManufacturerAuthScreen — Login & Registration for MedTech Companies
+// ManufacturerAuthScreen : Login & Registration for MedTech Companies
 // For factory owners and sales managers (Dispovan, Polymed, 3M, Cipla)
 
 import React, { useState } from 'react';
@@ -26,7 +26,7 @@ export default function ManufacturerAuthScreen({ onBack }) {
   const [signupTitle, setSignupTitle] = useState('');
   const [signupCompany, setSignupCompany] = useState('');
   const [signupBrand, setSignupBrand] = useState('');
-  const [signupArea, setSignupArea] = useState('Bhiwandi C&F');
+  const [signupArea] = useState('Bhiwandi C&F');
   const [signupPhone, setSignupPhone] = useState('');
   const [signupPin, setSignupPin] = useState('');
   const [signupPin2, setSignupPin2] = useState('');
@@ -99,7 +99,7 @@ export default function ManufacturerAuthScreen({ onBack }) {
             </View>
             <View>
               <Text style={styles.cardTitle}>Manufacturer Portal</Text>
-              <Text style={styles.cardSub}>MedTech Companies — Bhiwandi, Thane, Navi Mumbai</Text>
+              <Text style={styles.cardSub}>MedTech Companies : Bhiwandi, Thane, Navi Mumbai</Text>
             </View>
           </View>
 
@@ -113,13 +113,13 @@ export default function ManufacturerAuthScreen({ onBack }) {
 
           <TouchableOpacity onPress={() => setMode('SIGNUP')} style={[styles.choiceBtn, { backgroundColor: '#ffffff', borderWidth: 2, borderColor: '#16a34a' }]}>
             <FontAwesome5 name="plus-square" size={18} color="#16a34a" />
-            <Text style={[styles.choiceBtnText, { color: '#16a34a' }]}>New Company — Register Here</Text>
+            <Text style={[styles.choiceBtnText, { color: '#16a34a' }]}>New Company : Register Here</Text>
           </TouchableOpacity>
 
           <View style={styles.demoNote}>
             <Ionicons name="information-circle-outline" size={14} color="#0284c7" />
             <Text style={styles.demoNoteText}>
-              Demo: Try "Hindustan Syringes & Medical Devices (HMD)" / PIN: 1234
+              Demo: Try &quot;Hindustan Syringes &amp; Medical Devices (HMD)&quot; / PIN: 1234
             </Text>
           </View>
         </View>
@@ -160,7 +160,7 @@ export default function ManufacturerAuthScreen({ onBack }) {
             {loading ? <ActivityIndicator color="#fff" /> : <><Ionicons name="log-in" size={18} color="#fff" /><Text style={styles.primaryBtnText}>Login</Text></>}
           </TouchableOpacity>
           <TouchableOpacity onPress={() => { setMode('SIGNUP'); setErrorMsg(''); }} style={styles.linkBtn}>
-            <Text style={[styles.linkBtnText, { color: '#16a34a' }]}>New company? Register here →</Text>
+            <Text style={[styles.linkBtnText, { color: '#16a34a' }]}>New company? Register here</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -211,7 +211,7 @@ export default function ManufacturerAuthScreen({ onBack }) {
           {loading ? <ActivityIndicator color="#fff" /> : <><Ionicons name="checkmark-circle" size={18} color="#fff" /><Text style={styles.primaryBtnText}>Register & Enter Portal</Text></>}
         </TouchableOpacity>
         <TouchableOpacity onPress={() => { setMode('LOGIN'); setErrorMsg(''); }} style={styles.linkBtn}>
-          <Text style={[styles.linkBtnText, { color: '#16a34a' }]}>Already registered? Login →</Text>
+          <Text style={[styles.linkBtnText, { color: '#16a34a' }]}>Already registered? Login</Text>
         </TouchableOpacity>
       </View>
     </ScrollView>

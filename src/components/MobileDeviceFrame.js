@@ -3,7 +3,7 @@
 
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput } from 'react-native';
-import { Ionicons, FontAwesome5 } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
 import { useApp } from '../store/stateManager';
 import { aiEngine } from '../ai/agentEngine';
 
@@ -11,15 +11,33 @@ export default function MobileDeviceFrame({ isStandalone = false }) {
   const {
     currentRole,
     selectedHospital,
+    loggedInHospital,
+    selectedStockist,
+    loggedInStockist,
+    selectedManufacturer,
+    loggedInManufacturer,
     orders,
     consumeWardItem,
     handleVoiceOrTextInput,
     isListening,
-    setIsListening
+    setIsListening,
+    isDarkMode
   } = useApp();
 
   const [mobileInput, setMobileInput] = useState('');
   const [activeTab, setActiveTab] = useState('REQUISITION'); // 'REQUISITION' | 'CHAT' | 'TRACK'
+
+  const activeEntityName = currentRole === 'HOSPITAL'
+    ? (loggedInHospital?.name || selectedHospital?.name || 'Lilavati Hospital')
+    : currentRole === 'STOCKIST'
+      ? (loggedInStockist?.name || selectedStockist?.name || 'Entero Healthcare Solutions')
+      : (loggedInManufacturer?.name || selectedManufacturer?.name || 'HMD Dispovan Plant');
+
+  const activeEntitySub = currentRole === 'HOSPITAL'
+    ? 'OT Stores & ICU Supply Portal'
+    : currentRole === 'STOCKIST'
+      ? 'Distributor Field & Dispatch Terminal'
+      : 'OEM Production & CFA Oversight Terminal';
 
   const activeOrder = orders[0];
 
@@ -38,7 +56,11 @@ export default function MobileDeviceFrame({ isStandalone = false }) {
         };
       } else {
         setTimeout(() => {
-          const testSpoken = 'Order 100 boxes of 7.5 surgical gloves urgently';
+          const testSpoken = currentRole === 'HOSPITAL'
+            ? 'Order 100 boxes of 7.5 surgical gloves urgently'
+            : currentRole === 'STOCKIST'
+              ? 'show me which hospitals need our products'
+              : 'Show inventory of stockists/distributors across Mumbai';
           setIsListening(false);
           handleVoiceOrTextInput(testSpoken);
         }, 1200);
@@ -53,25 +75,25 @@ export default function MobileDeviceFrame({ isStandalone = false }) {
   };
 
   const content = (
-    <View style={styles.phoneScreen}>
+    <View style={[styles.phoneScreen, isDarkMode && { backgroundColor: '#090d16' }]}>
       {/* iOS Status Bar */}
       <View style={styles.statusBar}>
-        <Text style={styles.statusTime}>18:15</Text>
+        <Text style={[styles.statusTime, isDarkMode && { color: '#f8fafc' }]}>18:15</Text>
         <View style={styles.dynamicIsland}>
           <View style={styles.islandDot} />
         </View>
         <View style={styles.statusIcons}>
-          <Ionicons name="cellular" size={12} color="#0f172a" />
-          <Ionicons name="wifi" size={12} color="#0f172a" />
-          <Ionicons name="battery-full" size={14} color="#0f172a" />
+          <Ionicons name="cellular" size={12} color={isDarkMode ? '#f8fafc' : '#0f172a'} />
+          <Ionicons name="wifi" size={12} color={isDarkMode ? '#f8fafc' : '#0f172a'} />
+          <Ionicons name="battery-full" size={14} color={isDarkMode ? '#f8fafc' : '#0f172a'} />
         </View>
       </View>
 
       {/* App Top Bar */}
-      <View style={styles.appTopBar}>
+      <View style={[styles.appTopBar, isDarkMode && { backgroundColor: '#0b1120', borderBottomColor: '#1e293b' }]}>
         <View style={styles.appTitleWrap}>
           <Ionicons name="medical" size={18} color="#0284c7" />
-          <Text style={styles.appTitle}>PulseChain Mobile</Text>
+          <Text style={[styles.appTitle, isDarkMode && { color: '#f8fafc' }]}>PulseChain Mobile</Text>
         </View>
         <View style={styles.roleBadgeMobile}>
           <Text style={styles.roleBadgeTextMobile}>{currentRole}</Text>
@@ -79,103 +101,190 @@ export default function MobileDeviceFrame({ isStandalone = false }) {
       </View>
 
       {/* Sync Status Banner */}
-      <View style={styles.syncBanner}>
+      <View style={[styles.syncBanner, isDarkMode && { backgroundColor: '#0f172a', borderBottomColor: '#1e293b' }]}>
         <View style={styles.syncDot} />
-        <Text style={styles.syncText}>SYNCED WITH DESKTOP SCREEN (0.02s)</Text>
+        <Text style={[styles.syncText, isDarkMode && { color: '#94a3b8' }]}>SYNCED WITH DESKTOP SCREEN (0.02s)</Text>
       </View>
 
       {/* Mobile Tab Selector */}
-      <View style={styles.mobileTabs}>
+      <View style={[styles.mobileTabs, isDarkMode && { backgroundColor: '#0b1120', borderBottomColor: '#1e293b' }]}>
         <TouchableOpacity
           onPress={() => setActiveTab('REQUISITION')}
-          style={[styles.mTab, activeTab === 'REQUISITION' && styles.mTabActive]}
+          style={[styles.mTab, activeTab === 'REQUISITION' && styles.mTabActive, isDarkMode && activeTab !== 'REQUISITION' && { backgroundColor: '#131d31' }]}
         >
-          <Ionicons name="mic" size={16} color={activeTab === 'REQUISITION' ? '#0284c7' : '#64748b'} />
-          <Text style={[styles.mTabText, activeTab === 'REQUISITION' && styles.mTabTextActive]}>Voice Order</Text>
+          <Ionicons name="mic" size={16} color={activeTab === 'REQUISITION' ? '#0284c7' : (isDarkMode ? '#94a3b8' : '#64748b')} />
+          <Text style={[styles.mTabText, activeTab === 'REQUISITION' && styles.mTabTextActive, isDarkMode && activeTab !== 'REQUISITION' && { color: '#94a3b8' }]}>Voice Order</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
           onPress={() => setActiveTab('TRACK')}
-          style={[styles.mTab, activeTab === 'TRACK' && styles.mTabActive]}
+          style={[styles.mTab, activeTab === 'TRACK' && styles.mTabActive, isDarkMode && activeTab !== 'TRACK' && { backgroundColor: '#131d31' }]}
         >
-          <Ionicons name="navigate" size={16} color={activeTab === 'TRACK' ? '#0284c7' : '#64748b'} />
-          <Text style={[styles.mTabText, activeTab === 'TRACK' && styles.mTabTextActive]}>Track</Text>
+          <Ionicons name="navigate" size={16} color={activeTab === 'TRACK' ? '#0284c7' : (isDarkMode ? '#94a3b8' : '#64748b')} />
+          <Text style={[styles.mTabText, activeTab === 'TRACK' && styles.mTabTextActive, isDarkMode && activeTab !== 'TRACK' && { color: '#94a3b8' }]}>Track</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
           onPress={() => setActiveTab('CHAT')}
-          style={[styles.mTab, activeTab === 'CHAT' && styles.mTabActive]}
+          style={[styles.mTab, activeTab === 'CHAT' && styles.mTabActive, isDarkMode && activeTab !== 'CHAT' && { backgroundColor: '#131d31' }]}
         >
-          <Ionicons name="logo-whatsapp" size={16} color={activeTab === 'CHAT' ? '#16a34a' : '#64748b'} />
-          <Text style={[styles.mTabText, activeTab === 'CHAT' && styles.mTabTextActive]}>WhatsApp</Text>
+          <Ionicons name="logo-whatsapp" size={16} color={activeTab === 'CHAT' ? '#16a34a' : (isDarkMode ? '#94a3b8' : '#64748b')} />
+          <Text style={[styles.mTabText, activeTab === 'CHAT' && styles.mTabTextActive, isDarkMode && activeTab !== 'CHAT' && { color: '#94a3b8' }]}>WhatsApp</Text>
         </TouchableOpacity>
       </View>
 
-      {/* Tab 1: Voice Requisition (Senior Staff Friendly) */}
+      {/* Tab 1: Voice Requisition / Role Command (Senior Staff Friendly) */}
       {activeTab === 'REQUISITION' && (
         <ScrollView style={styles.mobileBody} showsVerticalScrollIndicator={false}>
-          {/* Hospital Name Box */}
-          <View style={styles.entityCardMobile}>
-            <Text style={styles.entityNameMobile}>{selectedHospital.name}</Text>
-            <Text style={styles.entitySubMobile}>OT Stores & ICU Supply Portal</Text>
+          {/* Entity Name Box */}
+          <View style={[styles.entityCardMobile, isDarkMode && { backgroundColor: '#111928', borderColor: '#1e293b' }]}>
+            <Text style={[styles.entityNameMobile, isDarkMode && { color: '#f8fafc' }]}>{activeEntityName}</Text>
+            <Text style={[styles.entitySubMobile, isDarkMode && { color: '#38bdf8' }]}>{activeEntitySub}</Text>
           </View>
 
-          {/* Big Green Mic Centerpiece */}
-          <View style={styles.voiceHeroBox}>
+          {/* Big Role Mic Centerpiece */}
+          <View style={[styles.voiceHeroBox, isDarkMode && { backgroundColor: '#111928', borderColor: '#1e293b' }]}>
             <TouchableOpacity
               onPress={handleMobileVoice}
-              style={[styles.bigMicBtn, isListening && styles.bigMicBtnListening]}
+              style={[
+                styles.bigMicBtn,
+                currentRole === 'STOCKIST' ? { backgroundColor: '#d97706' } : currentRole === 'MANUFACTURER' ? { backgroundColor: '#16a34a' } : { backgroundColor: '#0284c7' },
+                isListening && styles.bigMicBtnListening
+              ]}
             >
-              <Ionicons name={isListening ? 'mic' : 'mic'} size={36} color="#ffffff" />
+              <Ionicons name="mic" size={36} color="#ffffff" />
             </TouchableOpacity>
-            <Text style={styles.voiceHeroText}>
-              {isListening ? 'Listening... बोलिए' : 'Tap & Speak to Order (बोलें)'}
+            <Text style={[styles.voiceHeroText, isDarkMode && { color: '#f8fafc' }]}>
+              {isListening
+                ? 'Listening... बोलिए'
+                : currentRole === 'HOSPITAL'
+                  ? 'Tap & Speak to Order (बोलें)'
+                  : currentRole === 'STOCKIST'
+                    ? 'Distributor Command Mic (बोलें)'
+                    : 'OEM Oversight Mic (बोलें)'}
             </Text>
-            <Text style={styles.voiceHeroSub}>No form filling • Say item and quantity</Text>
+            <Text style={[styles.voiceHeroSub, isDarkMode && { color: '#94a3b8' }]}>
+              {currentRole === 'HOSPITAL'
+                ? 'No form filling • Say item and quantity'
+                : currentRole === 'STOCKIST'
+                  ? 'Say: "Which hospitals need our products?" or quote prices'
+                  : 'Say: "Show inventory of stockists" or dispatch orders'}
+            </Text>
           </View>
 
-          {/* Quick Ward Consumption Tap */}
-          <Text style={styles.quickSectionTitle}>Used in Ward? (वार्ड में इस्तेमाल किया?):</Text>
-          <View style={styles.quickConsumeRow}>
-            <TouchableOpacity
-              onPress={() => consumeWardItem('SKU-GLV-75', 10, 'OT 1')}
-              style={styles.quickConsumeChip}
-            >
-              <Text style={styles.quickConsumeText}>-10 Gloves</Text>
-            </TouchableOpacity>
+          {/* Role Specific Actions */}
+          {currentRole === 'HOSPITAL' && (
+            <>
+              {/* Quick Ward Consumption Tap */}
+              <Text style={[styles.quickSectionTitle, isDarkMode && { color: '#94a3b8' }]}>Used in Ward? (वार्ड में इस्तेमाल किया?):</Text>
+              <View style={styles.quickConsumeRow}>
+                <TouchableOpacity
+                  onPress={() => consumeWardItem('SKU-GLV-75', 10, 'OT 1')}
+                  style={[styles.quickConsumeChip, isDarkMode && { backgroundColor: '#1e293b', borderColor: '#334155' }]}
+                >
+                  <Text style={[styles.quickConsumeText, isDarkMode && { color: '#f8fafc' }]}>-10 Gloves</Text>
+                </TouchableOpacity>
 
-            <TouchableOpacity
-              onPress={() => consumeWardItem('SKU-CAN-20G', 10, 'ICU Ward')}
-              style={styles.quickConsumeChip}
-            >
-              <Text style={styles.quickConsumeText}>-10 Cannulas</Text>
-            </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => consumeWardItem('SKU-CAN-20G', 10, 'ICU Ward')}
+                  style={[styles.quickConsumeChip, isDarkMode && { backgroundColor: '#1e293b', borderColor: '#334155' }]}
+                >
+                  <Text style={[styles.quickConsumeText, isDarkMode && { color: '#f8fafc' }]}>-10 Cannulas</Text>
+                </TouchableOpacity>
 
-            <TouchableOpacity
-              onPress={() => consumeWardItem('SKU-SYR-5ML', 5, 'Emergency')}
-              style={styles.quickConsumeChip}
-            >
-              <Text style={styles.quickConsumeText}>-5 Syringes</Text>
-            </TouchableOpacity>
-          </View>
+                <TouchableOpacity
+                  onPress={() => consumeWardItem('SKU-SYR-5ML', 5, 'Emergency')}
+                  style={[styles.quickConsumeChip, isDarkMode && { backgroundColor: '#1e293b', borderColor: '#334155' }]}
+                >
+                  <Text style={[styles.quickConsumeText, isDarkMode && { color: '#f8fafc' }]}>-5 Syringes</Text>
+                </TouchableOpacity>
+              </View>
 
-          {/* 1-Tap Presets */}
-          <Text style={styles.quickSectionTitle}>1-Tap Quick Voice Orders:</Text>
-          <TouchableOpacity
-            onPress={() => handleVoiceOrTextInput('Order 100 boxes of 7.5 sterile surgical gloves for Lilavati ICU urgently')}
-            style={styles.mobilePresetCard}
-          >
-            <Ionicons name="flash" size={16} color="#d97706" />
-            <Text style={styles.mobilePresetText}>"Order 100 boxes 7.5 gloves urgently"</Text>
-          </TouchableOpacity>
+              {/* 1-Tap Presets */}
+              <Text style={[styles.quickSectionTitle, isDarkMode && { color: '#94a3b8' }]}>1-Tap Quick Voice Orders:</Text>
+              <TouchableOpacity
+                onPress={() => handleVoiceOrTextInput('Order 100 boxes of 7.5 sterile surgical gloves for Lilavati ICU urgently')}
+                style={[styles.mobilePresetCard, isDarkMode && { backgroundColor: '#111928', borderColor: '#1e293b' }]}
+              >
+                <Ionicons name="flash" size={16} color="#d97706" />
+                <Text style={[styles.mobilePresetText, isDarkMode && { color: '#f8fafc' }]}>&quot;Order 100 boxes 7.5 gloves urgently&quot;</Text>
+              </TouchableOpacity>
 
-          <TouchableOpacity
-            onPress={() => handleVoiceOrTextInput('get me the best prices for gloves across Mumbai stockists')}
-            style={styles.mobilePresetCard}
-          >
-            <Ionicons name="radio" size={16} color="#0284c7" />
-            <Text style={styles.mobilePresetText}>"Find Best Price for Gloves" (Uber Ping)</Text>
-          </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => handleVoiceOrTextInput('get me the best prices for gloves across Mumbai stockists')}
+                style={[styles.mobilePresetCard, isDarkMode && { backgroundColor: '#111928', borderColor: '#1e293b' }]}
+              >
+                <Ionicons name="radio" size={16} color="#0284c7" />
+                <Text style={[styles.mobilePresetText, isDarkMode && { color: '#f8fafc' }]}>&quot;Find Best Price for Gloves&quot; (Uber Ping)</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={() => handleVoiceOrTextInput('show me the inventory that we need to order tomorrow')}
+                style={[styles.mobilePresetCard, isDarkMode && { backgroundColor: '#111928', borderColor: '#1e293b' }]}
+              >
+                <Ionicons name="calendar-outline" size={16} color="#16a34a" />
+                <Text style={[styles.mobilePresetText, isDarkMode && { color: '#f8fafc' }]}>&quot;Show inventory to order tomorrow&quot;</Text>
+              </TouchableOpacity>
+            </>
+          )}
+
+          {currentRole === 'STOCKIST' && (
+            <>
+              <Text style={styles.quickSectionTitle}>Distributor Command Actions:</Text>
+              <TouchableOpacity
+                onPress={() => handleVoiceOrTextInput('show me which hospitals need our products')}
+                style={[styles.mobilePresetCard, { borderColor: '#fde68a', backgroundColor: '#fffbeb' }]}
+              >
+                <Ionicons name="radar" size={16} color="#d97706" />
+                <Text style={[styles.mobilePresetText, { color: '#92400e' }]}>&quot;Show me which hospitals need our products&quot;</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={() => handleVoiceOrTextInput('Quote ₹790 for gloves and ₹2450 for Dispovan to Lilavati Hospital')}
+                style={[styles.mobilePresetCard, { borderColor: '#fde68a', backgroundColor: '#fffbeb' }]}
+              >
+                <Ionicons name="send" size={16} color="#d97706" />
+                <Text style={[styles.mobilePresetText, { color: '#92400e' }]}>&quot;Quote ₹790 for gloves to Lilavati&quot;</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={() => handleVoiceOrTextInput('Reorder 10,000 units from Bhiwandi CFA factory depot')}
+                style={[styles.mobilePresetCard, { borderColor: '#fed7aa', backgroundColor: '#fff7ed' }]}
+              >
+                <Ionicons name="cube" size={16} color="#c2410c" />
+                <Text style={[styles.mobilePresetText, { color: '#9a3412' }]}>&quot;Restock 10k from Bhiwandi Factory CFA&quot;</Text>
+              </TouchableOpacity>
+            </>
+          )}
+
+          {currentRole === 'MANUFACTURER' && (
+            <>
+              <Text style={styles.quickSectionTitle}>OEM Production & Oversight:</Text>
+              <TouchableOpacity
+                onPress={() => handleVoiceOrTextInput('Show inventory of stockists/distributors across Mumbai')}
+                style={[styles.mobilePresetCard, { borderColor: '#bbf7d0', backgroundColor: '#f0fdf4' }]}
+              >
+                <Ionicons name="analytics" size={16} color="#16a34a" />
+                <Text style={[styles.mobilePresetText, { color: '#166534' }]}>&quot;Show inventory of stockists/distributors&quot;</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={() => handleVoiceOrTextInput('Which stockists are low on stock in Mumbai?')}
+                style={[styles.mobilePresetCard, { borderColor: '#bbf7d0', backgroundColor: '#f0fdf4' }]}
+              >
+                <Ionicons name="alert-circle" size={16} color="#16a34a" />
+                <Text style={[styles.mobilePresetText, { color: '#166534' }]}>&quot;Check low stock distributors in Mumbai&quot;</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={() => handleVoiceOrTextInput('Dispatch 50,000 units of Dispovan via Bhiwandi C&F depot to Entero Healthcare Dadar')}
+                style={[styles.mobilePresetCard, { borderColor: '#bbf7d0', backgroundColor: '#f0fdf4' }]}
+              >
+                <Ionicons name="airplane" size={16} color="#16a34a" />
+                <Text style={[styles.mobilePresetText, { color: '#166534' }]}>&quot;Dispatch 50k to Entero Dadar via Bhiwandi&quot;</Text>
+              </TouchableOpacity>
+            </>
+          )}
         </ScrollView>
       )}
 
@@ -183,30 +292,30 @@ export default function MobileDeviceFrame({ isStandalone = false }) {
       {activeTab === 'TRACK' && (
         <ScrollView style={styles.mobileBody} showsVerticalScrollIndicator={false}>
           {activeOrder ? (
-            <View style={styles.trackingCardMobile}>
+            <View style={[styles.trackingCardMobile, isDarkMode && { backgroundColor: '#111928', borderColor: '#1e293b' }]}>
               <View style={styles.trackTop}>
-                <Text style={styles.trackId}>{activeOrder.orderId}</Text>
+                <Text style={[styles.trackId, isDarkMode && { color: '#f8fafc' }]}>{activeOrder.orderId}</Text>
                 <View style={styles.trackBadge}>
                   <Text style={styles.trackBadgeText}>{activeOrder.deliveryStatus}</Text>
                 </View>
               </View>
 
-              <Text style={styles.trackItems}>
+              <Text style={[styles.trackItems, isDarkMode && { color: '#94a3b8' }]}>
                 {activeOrder.items.map(i => `${i.qty} ${i.unit} ${i.name}`).join(', ')}
               </Text>
 
               {/* Goods Mini */}
-              <View style={styles.pipeMiniGoods}>
-                <Text style={styles.pipeMiniTitle}>🚚 GOODS STATUS:</Text>
-                <Text style={styles.pipeMiniDetail}>{activeOrder.currentLocation}</Text>
-                <Text style={styles.pipeMiniSub}>Delivery: {activeOrder.deliveredBy}</Text>
+              <View style={[styles.pipeMiniGoods, isDarkMode && { backgroundColor: '#052e16', borderColor: '#14532d' }]}>
+                <Text style={styles.pipeMiniTitle}>GOODS STATUS:</Text>
+                <Text style={[styles.pipeMiniDetail, isDarkMode && { color: '#86efac' }]}>{activeOrder.currentLocation}</Text>
+                <Text style={[styles.pipeMiniSub, isDarkMode && { color: '#a7f3d0' }]}>Delivery: {activeOrder.deliveredBy}</Text>
               </View>
 
               {/* Payment Mini */}
-              <View style={styles.pipeMiniPayment}>
-                <Text style={styles.pipeMiniTitlePayment}>💵 PAYMENT STATUS:</Text>
-                <Text style={styles.pipeMiniDetail}>₹{activeOrder.totalAmount.toLocaleString('en-IN')}</Text>
-                <Text style={styles.pipeMiniSub}>Due: {activeOrder.paymentDueBy}</Text>
+              <View style={[styles.pipeMiniPayment, isDarkMode && { backgroundColor: '#3b1c06', borderColor: '#78350f' }]}>
+                <Text style={styles.pipeMiniTitlePayment}>PAYMENT STATUS:</Text>
+                <Text style={[styles.pipeMiniDetail, isDarkMode && { color: '#fde047' }]}>₹{activeOrder.totalAmount.toLocaleString('en-IN')}</Text>
+                <Text style={[styles.pipeMiniSub, isDarkMode && { color: '#fed7aa' }]}>Due: {activeOrder.paymentDueBy}</Text>
               </View>
             </View>
           ) : (
@@ -217,35 +326,35 @@ export default function MobileDeviceFrame({ isStandalone = false }) {
 
       {/* Tab 3: WhatsApp Simulator */}
       {activeTab === 'CHAT' && (
-        <View style={styles.chatContainer}>
+        <View style={[styles.chatContainer, isDarkMode && { backgroundColor: '#090d16' }]}>
           <ScrollView style={styles.chatMessages} showsVerticalScrollIndicator={false}>
-            <View style={styles.bubbleIncoming}>
+            <View style={[styles.bubbleIncoming, isDarkMode && { backgroundColor: '#111928', borderColor: '#1e293b' }]}>
               <Text style={styles.bubbleSender}>Entero Healthcare (Dadar Stockist)</Text>
-              <Text style={styles.bubbleText}>
+              <Text style={[styles.bubbleText, isDarkMode && { color: '#f8fafc' }]}>
                 Namaste Doctor. We have received your requisition for 60 boxes 7.5 gloves. Dispatched via WEH.
               </Text>
               <Text style={styles.bubbleTime}>18:12</Text>
             </View>
 
-            <View style={styles.bubbleOutgoing}>
+            <View style={[styles.bubbleOutgoing, isDarkMode && { backgroundColor: '#064e3b' }]}>
               <Text style={styles.bubbleText}>
                 Please ensure cold-chain packing for Noradrenaline ampoules as well.
               </Text>
               <Text style={styles.bubbleTime}>18:14</Text>
             </View>
 
-            <View style={styles.bubbleIncoming}>
+            <View style={[styles.bubbleIncoming, isDarkMode && { backgroundColor: '#111928', borderColor: '#1e293b' }]}>
               <Text style={styles.bubbleSender}>PulseChain AI Bot</Text>
-              <Text style={styles.bubbleText}>
-                ✓ Requisition ORD-MUM-8921 verified. Payment locked in Escrow.
+              <Text style={[styles.bubbleText, isDarkMode && { color: '#f8fafc' }]}>
+                Requisition ORD-MUM-8921 verified. Payment locked in Escrow.
               </Text>
               <Text style={styles.bubbleTime}>18:15</Text>
             </View>
           </ScrollView>
 
-          <View style={styles.chatInputRow}>
+          <View style={[styles.chatInputRow, isDarkMode && { backgroundColor: '#0b1120', borderTopColor: '#1e293b' }]}>
             <TextInput
-              style={styles.chatInput}
+              style={[styles.chatInput, isDarkMode && { backgroundColor: '#0f172a', borderColor: '#334155', color: '#f8fafc' }]}
               placeholder="Type message or order..."
               placeholderTextColor="#94a3b8"
               value={mobileInput}

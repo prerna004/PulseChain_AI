@@ -1,4 +1,4 @@
-// Mumbai Healthcare & MedTech Supply Chain Master Dataset — EXPANDED v2
+// Mumbai Healthcare & MedTech Supply Chain Master Dataset : EXPANDED v2
 // Full catalog: Disposables, Equipment, Pharma, Surgical + expanded hospital/stockist/mfg data
 
 export const MUMBAI_HOSPITALS = [
@@ -667,7 +667,7 @@ export const MEDICAL_CATALOG = [
   },
   {
     skuId: 'SKU-INF-HAB',
-    name: 'Hand Rub Disinfectant — Sterillium (500ml)',
+    name: 'Hand Rub Disinfectant - Sterillium (500ml)',
     category: 'Infection Prevention',
     brand: 'Bode Chemie / HUF India',
     unit: 'Carton of 12 bottles',
@@ -982,8 +982,8 @@ export const HOSPITAL_WARDS = [
   { id: 'ward-ot-2', name: 'Operation Theatre 2 (Orthopedics)', floor: '3rd Floor - OT Wing', activeBeds: 1, status: 'IN_SURGERY' },
   { id: 'ward-icu-a', name: 'Intensive Care Unit (Medical ICU)', floor: '4th Floor - Tower B', activeBeds: 18, status: 'HIGH_OCCUPANCY' },
   { id: 'ward-emg', name: 'Emergency & Trauma Bay', floor: 'Ground Floor', activeBeds: 12, status: 'CRITICAL_TRIAGE' },
-  { id: 'ward-gen-m', name: 'General Ward — Male', floor: '5th Floor', activeBeds: 28, status: 'NORMAL' },
-  { id: 'ward-gen-f', name: 'General Ward — Female', floor: '6th Floor', activeBeds: 24, status: 'NORMAL' },
+  { id: 'ward-gen-m', name: 'General Ward - Male', floor: '5th Floor', activeBeds: 28, status: 'NORMAL' },
+  { id: 'ward-gen-f', name: 'General Ward - Female', floor: '6th Floor', activeBeds: 24, status: 'NORMAL' },
   { id: 'ward-pvt', name: 'Private & Semi-Private Rooms', floor: '7th Floor', activeBeds: 16, status: 'NORMAL' }
 ];
 

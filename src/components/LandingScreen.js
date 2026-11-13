@@ -1,8 +1,8 @@
-// PulseChain AI — High-Aesthetic Award-Winning Landing Page & Persona Selection Screen
+// PulseChain AI : High-Aesthetic Award-Winning Landing Page & Persona Selection Screen
 // Inspired by modern MedTech & Fintech platforms (Linear, Stripe, Apple Health)
 // 100% Responsive, Glassmorphic, Bilingual (Hindi & English), Guaranteed Vector SVGs
 
-import React, { useState } from 'react';
+import React from 'react';
 import {
   View,
   Text,
@@ -11,20 +11,17 @@ import {
   ScrollView,
   SafeAreaView,
   StatusBar,
-  useWindowDimensions,
-  Platform
+  useWindowDimensions
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 import { useApp } from '../store/stateManager';
 import SymbolIcon from './SymbolIcon';
+import AmbientBackground from './AmbientBackground';
 
 export default function LandingScreen({ onSelectRole }) {
   const { width } = useWindowDimensions();
   const isMobile = width < 860;
-  const isTablet = width >= 860 && width < 1120;
 
-  const { handleVoiceOrTextInput, isListening, setIsListening } = useApp();
-  const [demoInput, setDemoInput] = useState('');
+  const { handleVoiceOrTextInput } = useApp();
 
   const handleQuickDemoVoice = (spokenText, targetRole) => {
     if (onSelectRole) {
@@ -40,10 +37,7 @@ export default function LandingScreen({ onSelectRole }) {
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" />
-
-      {/* Background Decorative Ambient Radial Glows */}
-      <View style={styles.ambientTopGlow} pointerEvents="none" />
-      <View style={styles.ambientBottomGlow} pointerEvents="none" />
+      <AmbientBackground />
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         {/* 1. FLOATING GLASSMORPHIC HEADER */}
@@ -79,7 +73,7 @@ export default function LandingScreen({ onSelectRole }) {
           </Text>
 
           <Text style={styles.heroBilingual}>
-            अस्पताल, स्टॉकिस्ट और दवा फैक्ट्री के लिए मुंबई का पहला डायरेक्ट P2P नेटवर्क। बिना किसी फॉर्म या कागजी झंझट के — सिर्फ बोलकर आर्डर करें।
+            अस्पताल, स्टॉकिस्ट और दवा फैक्ट्री के लिए मुंबई का पहला डायरेक्ट P2P नेटवर्क। बिना किसी फॉर्म या कागजी झंझट के, सिर्फ बोलकर आर्डर करें।
           </Text>
 
           <Text style={styles.heroDescription}>
@@ -104,7 +98,7 @@ export default function LandingScreen({ onSelectRole }) {
                   </View>
                 </View>
                 <Text style={styles.voiceTryPrompt}>
-                  "Order 50 boxes of Dispovan syringes urgently for Lilavati ICU"
+                  &quot;Order 50 boxes of Dispovan syringes urgently for Lilavati ICU&quot;
                 </Text>
               </View>
             </View>
@@ -113,7 +107,7 @@ export default function LandingScreen({ onSelectRole }) {
               onPress={() => handleQuickDemoVoice('Order 50 boxes of Dispovan syringes urgently for Lilavati ICU', 'HOSPITAL')}
               style={styles.voiceTryActionBtn}
             >
-              <Text style={styles.voiceTryActionBtnText}>Speak & Order ➔</Text>
+              <Text style={styles.voiceTryActionBtnText}>Speak & Order</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -178,7 +172,7 @@ export default function LandingScreen({ onSelectRole }) {
               onPress={() => onSelectRole('HOSPITAL')}
               style={[styles.enterRoleBtn, styles.enterRoleBtnHospital]}
             >
-              <Text style={styles.enterRoleBtnText}>Login / Register Hospital ➔</Text>
+              <Text style={styles.enterRoleBtnText}>Login / Register Hospital</Text>
             </TouchableOpacity>
           </View>
 
@@ -232,7 +226,7 @@ export default function LandingScreen({ onSelectRole }) {
               onPress={() => onSelectRole('STOCKIST')}
               style={[styles.enterRoleBtn, styles.enterRoleBtnStockist]}
             >
-              <Text style={styles.enterRoleBtnText}>Login / Register Stockist ➔</Text>
+              <Text style={styles.enterRoleBtnText}>Login / Register Stockist</Text>
             </TouchableOpacity>
           </View>
 
@@ -286,7 +280,7 @@ export default function LandingScreen({ onSelectRole }) {
               onPress={() => onSelectRole('MANUFACTURER')}
               style={[styles.enterRoleBtn, styles.enterRoleBtnMfg]}
             >
-              <Text style={styles.enterRoleBtnText}>Login / Register Factory ➔</Text>
+              <Text style={styles.enterRoleBtnText}>Login / Register Factory</Text>
             </TouchableOpacity>
           </View>
         </View>

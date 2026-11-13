@@ -1,4 +1,4 @@
-// Hospital Procurement & Ward Dashboard — v2
+// Hospital Procurement & Ward Dashboard : v2
 // Category-filtered inventory, ward usage, per-hospital orders
 
 import React, { useState, useMemo } from 'react';
@@ -19,10 +19,8 @@ export default function HospitalDashboard() {
     consumeWardItem,
     startUberStockistPing,
     loggedInHospital,
-    loginHospital,
     logoutHospital,
     registeredHospitals,
-    getOrdersForCurrentView,
     allStockists,
     allManufacturers,
     placeDirectOrder,
@@ -33,8 +31,8 @@ export default function HospitalDashboard() {
   const [categoryFilter, setCategoryFilter] = useState('All');
   const [supplierTypeFilter, setSupplierTypeFilter] = useState('ALL'); // 'ALL' | 'STOCKIST' | 'MANUFACTURER'
   const [onboardingSupplier, setOnboardingSupplier] = useState(null);
-  const [selectedSkuToOrder, setSelectedSkuToOrder] = useState(null);
-  const [orderQty, setOrderQty] = useState('50');
+  const [selectedSkuToOrder] = useState(null);
+  const [orderQty] = useState('50');
   const [licenseNo, setLicenseNo] = useState('MH-MUM-DL-2026-8819');
   const [receivingDock, setReceivingDock] = useState('Gate 2 - OT Emergency Bay');
   const [orderFeedback, setOrderFeedback] = useState(null);
@@ -114,7 +112,7 @@ export default function HospitalDashboard() {
     return sku.hospStockLilavati || Math.round(sku.reorderLevel * 1.5);
   };
 
-  // Only show this hospital's orders — strict data isolation
+  // Only show this hospital's orders : strict data isolation
   const myOrders = useMemo(() => {
     return (orders || []).filter(o => o.hospitalId === activeHosp.id);
   }, [orders, activeHosp.id]);
@@ -135,7 +133,7 @@ export default function HospitalDashboard() {
 
   return (
     <View style={styles.container}>
-      {/* 🔒 Hospital Facility Secure Session & Security Header */}
+      {/* Hospital Facility Secure Session & Security Header */}
       <View style={styles.hospitalSecureHeader}>
         <View style={styles.hospitalSecureLeft}>
           <View style={styles.hospitalIconCircle}>
@@ -151,7 +149,7 @@ export default function HospitalDashboard() {
             </View>
 
             <Text style={styles.hospitalSecureMeta}>
-              📍 {activeHosp.area} • ID: <Text style={{ fontWeight: '800', color: '#0f172a' }}>{activeHosp.id}</Text> • Capacity: {activeHosp.beds || 350} Beds • Contact: {activeHosp.contactPerson || 'Procurement Incharge'}
+              {activeHosp.area} • ID: <Text style={{ fontWeight: '800', color: '#0f172a' }}>{activeHosp.id}</Text> • Capacity: {activeHosp.beds || 350} Beds • Contact: {activeHosp.contactPerson || 'Procurement Incharge'}
             </Text>
 
             <View style={styles.privacyGuaranteeRow}>
@@ -274,7 +272,7 @@ export default function HospitalDashboard() {
                   </View>
                   <View style={{ flex: 1 }}>
                     <Text style={styles.supplierCardName} numberOfLines={1}>{stk.name.split('(')[0]}</Text>
-                    <Text style={styles.supplierCardArea}>📍 {stk.hub || stk.area} • {stk.rating || 4.9}★</Text>
+                    <Text style={styles.supplierCardArea}>{stk.hub || stk.area} • Rating: {stk.rating || 4.9} / 5</Text>
                   </View>
                 </View>
 
@@ -307,7 +305,7 @@ export default function HospitalDashboard() {
                         style={styles.directOrderBtn}
                       >
                         <Ionicons name="send" size={12} color="#ffffff" />
-                        <Text style={styles.directOrderBtnText}>Instant Order (50 Boxes) ➔</Text>
+                        <Text style={styles.directOrderBtnText}>Instant Order (50 Boxes)</Text>
                       </TouchableOpacity>
                     </>
                   ) : (
@@ -321,7 +319,7 @@ export default function HospitalDashboard() {
                         style={styles.onboardOrderBtn}
                       >
                         <Ionicons name="document-text" size={12} color="#ffffff" />
-                        <Text style={styles.onboardOrderBtnText}>1-Time Register & Order ➔</Text>
+                        <Text style={styles.onboardOrderBtnText}>1-Time Register & Order</Text>
                       </TouchableOpacity>
                     </>
                   )}
@@ -349,7 +347,7 @@ export default function HospitalDashboard() {
                   </View>
                   <View style={{ flex: 1 }}>
                     <Text style={styles.supplierCardName} numberOfLines={1}>{mfg.brand || mfg.name} Primary Plant</Text>
-                    <Text style={styles.supplierCardArea}>🏭 {mfg.area || mfg.primaryHub} • Official OEM</Text>
+                    <Text style={styles.supplierCardArea}>{mfg.area || mfg.primaryHub} • Official OEM</Text>
                   </View>
                 </View>
 
@@ -378,7 +376,7 @@ export default function HospitalDashboard() {
                         style={[styles.directOrderBtn, { backgroundColor: '#15803d' }]}
                       >
                         <FontAwesome5 name="industry" size={12} color="#ffffff" />
-                        <Text style={styles.directOrderBtnText}>Direct Factory Order (50 Boxes) ➔</Text>
+                        <Text style={styles.directOrderBtnText}>Direct Factory Order (50 Boxes)</Text>
                       </TouchableOpacity>
                     </>
                   ) : (
@@ -392,7 +390,7 @@ export default function HospitalDashboard() {
                         style={[styles.onboardOrderBtn, { backgroundColor: '#059669' }]}
                       >
                         <Ionicons name="document-text" size={12} color="#ffffff" />
-                        <Text style={styles.onboardOrderBtnText}>1-Time Connect & Order ➔</Text>
+                        <Text style={styles.onboardOrderBtnText}>1-Time Connect & Order</Text>
                       </TouchableOpacity>
                     </>
                   )}
@@ -415,7 +413,7 @@ export default function HospitalDashboard() {
                   <View>
                     <Text style={styles.modalDialogTitle}>1-Time Hospital Verification & Supplier Link</Text>
                     <Text style={styles.modalDialogSubtitle}>
-                      Connecting {activeHosp.name} ➔ {onboardingSupplier.supplier.name}
+                      Connecting {activeHosp.name} to {onboardingSupplier.supplier.name}
                     </Text>
                   </View>
                 </View>
@@ -511,7 +509,7 @@ export default function HospitalDashboard() {
                   style={styles.modalConfirmBtn}
                 >
                   <Ionicons name="checkmark-done" size={16} color="#ffffff" />
-                  <Text style={styles.modalConfirmBtnText}>Verify, Connect & Dispatch Order ➔</Text>
+                  <Text style={styles.modalConfirmBtnText}>Verify, Connect & Dispatch Order</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -637,7 +635,7 @@ export default function HospitalDashboard() {
                     </View>
                     <View style={[styles.statusBadge, isCritical ? styles.badgeCritical : isLow ? styles.badgeLow : styles.badgeOk]}>
                       <Text style={[styles.statusBadgeText, isCritical ? styles.badgeTextCritical : isLow ? styles.badgeTextLow : styles.badgeTextOk]}>
-                        {isCritical ? '🔴 CRITICAL' : isLow ? '⚠️ LOW STOCK' : '✓ IN STOCK'}
+                        {isCritical ? 'CRITICAL' : isLow ? 'LOW STOCK' : 'IN STOCK'}
                       </Text>
                     </View>
                   </View>
@@ -735,14 +733,14 @@ export default function HospitalDashboard() {
         </View>
       )}
 
-      {/* TAB 3: Active Orders List — ONLY this hospital's orders */}
+      {/* TAB 3: Active Orders List : ONLY this hospital's orders */}
       {activeTab === 'ORDERS' && (
         <View style={styles.whiteCard}>
           <View style={styles.cardTopHeader}>
             <View>
               <Text style={styles.sectionTitle}>My Orders & Live Delivery Tracker</Text>
               <Text style={styles.sectionSub}>
-                🔒  Private P2P Orders — only {activeHosp.name}'s purchase transactions are shown here
+                Private P2P Orders : only {activeHosp.name}&apos;s purchase transactions are shown here
               </Text>
             </View>
           </View>
@@ -752,7 +750,7 @@ export default function HospitalDashboard() {
               <Ionicons name="receipt-outline" size={36} color="#94a3b8" />
               <Text style={styles.emptyOrdersTitle}>No orders yet</Text>
               <Text style={styles.emptyOrdersDesc}>
-                Place your first order using the 🎤 mic or tap 'Urgent Reorder' on any item above.
+                Place your first order using the mic or tap &apos;Urgent Reorder&apos; on any item above.
               </Text>
             </View>
           ) : (
@@ -828,12 +826,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    backgroundColor: '#ffffff',
+    backgroundColor: 'rgba(255, 255, 255, 0.82)',
     paddingHorizontal: 18,
     paddingVertical: 12,
     borderRadius: 14,
     borderWidth: 1.5,
-    borderColor: '#e2e8f0',
+    borderColor: 'rgba(226, 232, 240, 0.85)',
     shadowColor: '#0f172a',
     shadowOpacity: 0.04,
     shadowRadius: 8
@@ -856,11 +854,11 @@ const styles = StyleSheet.create({
     fontWeight: '800'
   },
   whiteCard: {
-    backgroundColor: '#ffffff',
+    backgroundColor: 'rgba(255, 255, 255, 0.86)',
     borderRadius: 22,
     padding: 22,
     borderWidth: 1.5,
-    borderColor: '#e2e8f0',
+    borderColor: 'rgba(226, 232, 240, 0.85)',
     marginBottom: 20,
     shadowColor: '#0f172a',
     shadowOpacity: 0.06,
@@ -1284,13 +1282,13 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 20
   },
-  // 🔒 Hospital Facility Secure Session Header
+  // Hospital Facility Secure Session Header
   hospitalSecureHeader: {
-    backgroundColor: '#ffffff',
+    backgroundColor: 'rgba(255, 255, 255, 0.82)',
     borderRadius: 16,
     padding: 16,
     borderWidth: 1.5,
-    borderColor: '#cbd5e1',
+    borderColor: 'rgba(203, 213, 225, 0.8)',
     marginBottom: 14,
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -1418,12 +1416,12 @@ const styles = StyleSheet.create({
     flex: 1
   },
   nearestMeshCard: {
-    backgroundColor: '#ffffff',
+    backgroundColor: 'rgba(255, 255, 255, 0.84)',
     borderRadius: 18,
     padding: 16,
     marginBottom: 18,
     borderWidth: 1.5,
-    borderColor: '#cbd5e1',
+    borderColor: 'rgba(203, 213, 225, 0.8)',
     shadowColor: '#000',
     shadowOpacity: 0.05,
     shadowRadius: 10,

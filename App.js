@@ -1,19 +1,18 @@
-// PulseChain AI — v3 Full Implementation
+// PulseChain AI : v3 Full Implementation
 // Hospital + Stockist + Manufacturer Auth | Full Catalog | Voice-to-Order | WhatsApp Import | Data Lake Analytics
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
-  ScrollView,
   SafeAreaView,
   StatusBar,
   Platform,
   useWindowDimensions
 } from 'react-native';
-import { Ionicons, FontAwesome5 } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
 import { AppProvider, useApp } from './src/store/stateManager';
 import UberPingModal from './src/components/UberPingModal';
 import UnknownEntityModal from './src/components/UnknownEntityModal';
@@ -23,10 +22,10 @@ import WhatsAppImportModal from './src/components/WhatsAppImportModal';
 import HospitalAuthScreen from './src/components/HospitalAuthScreen';
 import StockistAuthScreen from './src/components/StockistAuthScreen';
 import ManufacturerAuthScreen from './src/components/ManufacturerAuthScreen';
-import FirstOrderPaperworkModal from './src/components/FirstOrderPaperworkModal';
 import SplitScreenView from './src/components/SplitScreenView';
 import SymbolIcon from './src/components/SymbolIcon';
 import LandingScreen from './src/components/LandingScreen';
+import AmbientBackground from './src/components/AmbientBackground';
 
 function MainScreen() {
   const { width } = useWindowDimensions();
@@ -34,7 +33,6 @@ function MainScreen() {
 
   const {
     currentRole, setCurrentRole,
-    deviceMode, setDeviceMode,
     setShowPermissionsModal,
     setShowDataLakeModal,
     setShowWhatsAppModal,
@@ -50,53 +48,38 @@ function MainScreen() {
   const [showHospitalAuth, setShowHospitalAuth] = useState(false);
   const [showStockistAuth, setShowStockistAuth] = useState(false);
   const [showManufacturerAuth, setShowManufacturerAuth] = useState(false);
-  const [hasChosenRole, setHasChosenRole] = useState(true);
-
-  // Auto-close auth screens once an entity logs in
-  useEffect(() => {
-    if (loggedInHospital && showHospitalAuth) {
-      setShowHospitalAuth(false);
-      setHasChosenRole(true);
-    }
-  }, [loggedInHospital]);
-
-  useEffect(() => {
-    if (loggedInStockist && showStockistAuth) {
-      setShowStockistAuth(false);
-      setHasChosenRole(true);
-    }
-  }, [loggedInStockist]);
-
-  useEffect(() => {
-    if (loggedInManufacturer && showManufacturerAuth) {
-      setShowManufacturerAuth(false);
-      setHasChosenRole(true);
-    }
-  }, [loggedInManufacturer]);
+  const [hasChosenRole, setHasChosenRole] = useState(false);
 
   // ── AUTH SCREENS ─────────────────────────────────────────────────────────────
-  if (showHospitalAuth) {
-    return <HospitalAuthScreen onBack={() => setShowHospitalAuth(false)} />;
+  if (showHospitalAuth && !loggedInHospital) {
+    return (
+      <HospitalAuthScreen
+        onBack={() => {
+          setShowHospitalAuth(false);
+          setHasChosenRole(true);
+        }}
+      />
+    );
   }
-  if (showStockistAuth) {
-    return <StockistAuthScreen onBack={() => setShowStockistAuth(false)} />;
+  if (showStockistAuth && !loggedInStockist) {
+    return (
+      <StockistAuthScreen
+        onBack={() => {
+          setShowStockistAuth(false);
+          setHasChosenRole(true);
+        }}
+      />
+    );
   }
-  if (showManufacturerAuth) {
-    return <ManufacturerAuthScreen onBack={() => setShowManufacturerAuth(false)} />;
-  }
-
-  // ── After login, show dashboard. If role chosen but not logged in, redirect to auth ─
-  if (hasChosenRole) {
-    if (currentRole === 'HOSPITAL' && !loggedInHospital) {
-      setShowHospitalAuth(true);
-      setHasChosenRole(false);
-    } else if (currentRole === 'STOCKIST' && !loggedInStockist) {
-      setShowStockistAuth(true);
-      setHasChosenRole(false);
-    } else if (currentRole === 'MANUFACTURER' && !loggedInManufacturer) {
-      setShowManufacturerAuth(true);
-      setHasChosenRole(false);
-    }
+  if (showManufacturerAuth && !loggedInManufacturer) {
+    return (
+      <ManufacturerAuthScreen
+        onBack={() => {
+          setShowManufacturerAuth(false);
+          setHasChosenRole(true);
+        }}
+      />
+    );
   }
 
   // ── OPENING ROLE SELECTION SCREEN (HIGH-AESTHETIC LANDING PAGE) ───────────────
@@ -120,7 +103,7 @@ function MainScreen() {
     );
   }
 
-  // Guard — if no one is logged in for the active role, go back to splash
+  // Guard : if no one is logged in for the active role, go back to splash
   const isLoggedIn = (currentRole === 'HOSPITAL' && loggedInHospital)
     || (currentRole === 'STOCKIST' && loggedInStockist)
     || (currentRole === 'MANUFACTURER' && loggedInManufacturer);
@@ -150,6 +133,7 @@ function MainScreen() {
   return (
     <SafeAreaView style={styles.mainContainer}>
       <StatusBar barStyle="dark-content" />
+      <AmbientBackground />
 
       {/* Global High-Aesthetic Web CSS */}
       {Platform.OS === 'web' && (
@@ -177,7 +161,20 @@ function MainScreen() {
             }
 
             body {
-              background-color: #f6f8fc;
+              background-color: transparent;
+              color: #0f172a;
+            }
+
+            /* Universal Glassmorphic Surfaces that let the 3D supply-chain mesh fade through gracefully */
+            .glass-panel, [data-glass="true"] {
+              background: rgba(255, 255, 255, 0.84) !important;
+              backdrop-filter: blur(16px) !important;
+              -webkit-backdrop-filter: blur(16px) !important;
+            }
+            .glass-card {
+              background: rgba(255, 255, 255, 0.86) !important;
+              backdrop-filter: blur(14px) !important;
+              -webkit-backdrop-filter: blur(14px) !important;
             }
 
             /* Universal Graceful Button & Tile Hover Effects */
@@ -245,7 +242,7 @@ function MainScreen() {
             </View>
           </TouchableOpacity>
 
-          {/* Role Switcher — only if logged in for that role */}
+          {/* Role Switcher : only if logged in for that role */}
           <View style={styles.roleSwitchRow}>
             {[
               { role: 'HOSPITAL', icon: 'hospital', label: 'Hospital', color: '#0284c7', style: styles.pillActiveHospital },
@@ -272,7 +269,10 @@ function MainScreen() {
         <View style={styles.navRight}>
           {/* Logged-in entity badge */}
           {activeEntityName && (
-            <View style={[styles.loggedInBadge, { borderColor: roleColor + '40', backgroundColor: roleColor + '10' }]}>
+            <View style={[
+              styles.loggedInBadge,
+              { borderColor: roleColor + '40', backgroundColor: roleColor + '10' }
+            ]}>
               <SymbolIcon name={roleIcon} size={12} color={roleColor} />
               <Text style={[styles.loggedInBadgeText, { color: roleColor }]} numberOfLines={1}>
                 {activeEntityName.split(' ').slice(0, 3).join(' ')}
@@ -304,7 +304,7 @@ function MainScreen() {
         </View>
       </View>
 
-      {/* Main Body — SplitScreenView handles desktop/split/mobile layout */}
+      {/* Main Body : SplitScreenView handles desktop/split/mobile layout */}
       <View style={styles.contentBody}>
         <SplitScreenView />
       </View>
@@ -351,7 +351,7 @@ class ErrorBoundary extends React.Component {
               }}
               style={{ backgroundColor: '#0284c7', paddingVertical: 10, paddingHorizontal: 22, borderRadius: 10 }}
             >
-              <Text style={{ color: '#ffffff', fontWeight: '800', fontSize: 13 }}>Reload PulseChain ➔</Text>
+              <Text style={{ color: '#ffffff', fontWeight: '800', fontSize: 13 }}>Reload PulseChain</Text>
             </TouchableOpacity>
           </View>
         </SafeAreaView>
@@ -392,14 +392,14 @@ const styles = StyleSheet.create({
   enterBtnText: { color: '#ffffff', fontSize: 12, fontWeight: '800' },
   footerNote: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, borderTopWidth: 1, borderTopColor: '#e2e8f0', paddingTop: 14 },
   footerText: { fontSize: 11, color: '#64748b' },
-  mainContainer: { flex: 1, backgroundColor: '#f8fafc' },
+  mainContainer: { flex: 1, backgroundColor: 'transparent' },
   navBar: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: '#ffffff',
+    backgroundColor: 'rgba(255, 255, 255, 0.82)',
     borderBottomWidth: 1.5,
-    borderBottomColor: '#e2e8f0',
+    borderBottomColor: 'rgba(226, 232, 240, 0.8)',
     paddingHorizontal: 22,
     paddingVertical: 12,
     flexWrap: 'wrap',
@@ -506,7 +506,7 @@ const styles = StyleSheet.create({
     shadowRadius: 6
   },
   quickNavText: { fontSize: 11.5, fontWeight: '800', color: '#334155' },
-  contentBody: { flex: 1, backgroundColor: '#f8fafc' },
+  contentBody: { flex: 1, backgroundColor: 'transparent' },
   dashboardScrollView: { flex: 1 },
   dashboardWrapper: { width: '100%', maxWidth: 1360, alignSelf: 'center', paddingHorizontal: 24, paddingVertical: 18, paddingBottom: 40 },
   dashboardWrapperMobile: { paddingHorizontal: 10, paddingVertical: 10, maxWidth: '100%' },

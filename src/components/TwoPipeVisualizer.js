@@ -3,12 +3,12 @@
 // Provides:
 // 1. Real Interactive Mumbai Map (OpenStreetMap & Satellite GIS with live GPS corridors, road arteries, Sea Link, and real coordinate markers)
 // 2. MTA Subway Schematic (Angular transit diagram view)
-// 3. Line G (Green): Physical Medical Goods Express Track (Moving Westbound ➔ Factory to Bedside)
-// 4. Line P (Gold): Capital & Smart Escrow Payment Track (Moving Eastbound ➔ Hospital to Factory)
+// 3. Line G (Green): Physical Medical Goods Express Track (Moving Westbound : Factory to Bedside)
+// 4. Line P (Gold): Capital & Smart Escrow Payment Track (Moving Eastbound : Hospital to Factory)
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Platform } from 'react-native';
-import { Ionicons, FontAwesome5, MaterialCommunityIcons } from '@expo/vector-icons';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useApp } from '../store/stateManager';
 import { MUMBAI_HOSPITALS } from '../data/mumbaiData.js';
 
@@ -26,13 +26,13 @@ export default function TwoPipeVisualizer() {
     loggedInManufacturer,
     selectedManufacturer,
     fastForwardDelivery,
-    createOrUpdateBridge
+    createOrUpdateBridge,
+    isDarkMode
   } = useApp();
 
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [inspectedStation, setInspectedStation] = useState(null);
   const [viewMode, setViewMode] = useState('REAL_MAP'); // 'REAL_MAP' | 'SCHEMATIC'
-  const [highlightLine, setHighlightLine] = useState('ALL'); // 'ALL' | 'G' | 'P' | 'B' | 'R'
 
   // Dynamic persona entities
   const activeHospital = (currentRole === 'HOSPITAL' && loggedInHospital)
@@ -75,17 +75,9 @@ export default function TwoPipeVisualizer() {
     return bridges || [];
   }, [bridges, currentRole, activeHospital.id, activeStockist.id, activeMfg.id]);
 
-  useEffect(() => {
-    if (visibleOrders.length > 0) {
-      if (!selectedOrder || !visibleOrders.find(o => o.orderId === selectedOrder.orderId)) {
-        setSelectedOrder(visibleOrders[0]);
-      }
-    } else {
-      setSelectedOrder(null);
-    }
-  }, [visibleOrders]);
-
-  const activeOrder = selectedOrder || visibleOrders[0] || null;
+  const activeOrder = (selectedOrder && visibleOrders.some(o => o.orderId === selectedOrder.orderId))
+    ? selectedOrder
+    : (visibleOrders[0] || null);
 
   // Dynamic role-based map center
   const activeCenter = currentRole === 'HOSPITAL'
@@ -585,33 +577,33 @@ export default function TwoPipeVisualizer() {
 
   <!-- Layer Switcher -->
   <div class="layer-switcher">
-    <button id="btn-street" class="layer-btn active" onclick="setLayer('street')">🗺️ Street Map</button>
-    <button id="btn-sat" class="layer-btn" onclick="setLayer('satellite')">🛰️ Satellite View</button>
-    <button id="btn-dark" class="layer-btn" onclick="setLayer('dark')">🌙 Dark Mode</button>
+    <button id="btn-street" class="layer-btn active" onclick="setLayer('street')">Street Map</button>
+    <button id="btn-sat" class="layer-btn" onclick="setLayer('satellite')">Satellite View</button>
+    <button id="btn-dark" class="layer-btn" onclick="setLayer('dark')">Dark Mode</button>
   </div>
 
   <!-- MTA Subway Legend Box -->
   <div class="floating-legend">
     <div class="legend-title">
-      <span>🚇 MTA SUBWAY & MESH</span>
+      <span>MTA SUBWAY & MESH</span>
       <span style="font-size: 8.5px; color: #64748b;">MUMBAI MED-GRID</span>
     </div>
     <div class="legend-row" onclick="toggleLine('G')">
       <div class="bullet b-g">G</div>
       <div>
         <div>Line G (Goods Express)</div>
-        <div style="font-size: 8.5px; color: #64748b;">${activeStockistObj.name.split('(')[0]} ➔ ${activeHospitalObj.name.split(' ')[0]} OT (Live)</div>
+        <div style="font-size: 8.5px; color: #64748b;">${activeStockistObj.name.split('(')[0]} > ${activeHospitalObj.name.split(' ')[0]} OT (Live)</div>
       </div>
     </div>
     <div class="legend-row" onclick="toggleLine('P')">
       <div class="bullet b-p">P</div>
       <div>
         <div>Line P (Payment Escrow)</div>
-        <div style="font-size: 8.5px; color: #64748b;">Hospital ➔ Smart Escrow Release</div>
+        <div style="font-size: 8.5px; color: #64748b;">Hospital > Smart Escrow Release</div>
       </div>
     </div>
     <div class="legend-row">
-      <div class="bullet b-mesh">🌉</div>
+      <div class="bullet b-mesh">•</div>
       <div>
         <div>Web of Provenance (Mesh)</div>
         <div style="font-size: 8.5px; color: #0891b2;">${bridges.length} Permanent Supply Bridges Active</div>
@@ -621,10 +613,10 @@ export default function TwoPipeVisualizer() {
 
   <!-- Map Quick Focus Buttons -->
   <div class="map-controls">
-    <button class="control-btn" onclick="focusMumbai()">📍 All Mumbai</button>
-    <button class="control-btn" onclick="focusHome()">🏥 ${activeHospitalObj.name.split(' ')[0]} Dock</button>
-    <button class="control-btn" onclick="focusDadar()">🚚 Dadar Hub</button>
-    <button class="control-btn" onclick="focusBhiwandi()">🏭 Bhiwandi C&F</button>
+    <button class="control-btn" onclick="focusMumbai()">All Mumbai</button>
+    <button class="control-btn" onclick="focusHome()">${activeHospitalObj.name.split(' ')[0]} Dock</button>
+    <button class="control-btn" onclick="focusDadar()">Dadar Hub</button>
+    <button class="control-btn" onclick="focusBhiwandi()">Bhiwandi C&F</button>
   </div>
 
   <script>
@@ -649,7 +641,7 @@ export default function TwoPipeVisualizer() {
     const osmStreetLayer = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 19,
       attribution: '&copy; OpenStreetMap'
-    }).addTo(map);
+    });
 
     const esriStreetLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
       maxZoom: 19
@@ -695,6 +687,8 @@ export default function TwoPipeVisualizer() {
       }
     }
 
+    setLayer(${isDarkMode ? "'dark'" : "'street'"});
+
     // 3. Render Hospital Markers & Dynamic Home Pin
     ALL_HOSPITALS.forEach(h => {
       const isHome = CURRENT_ROLE === 'HOSPITAL' && (h.id === ACTIVE_HOSPITAL.id || h.name === ACTIVE_HOSPITAL.name);
@@ -702,7 +696,7 @@ export default function TwoPipeVisualizer() {
 
       if (isHome) {
         const homeIcon = L.divIcon({
-          html: '<div class="home-pin-container"><div class="home-pin-ring"></div><div class="home-pin-core">🏥</div></div>',
+          html: '<div class="home-pin-container"><div class="home-pin-ring"></div><div class="home-pin-core">H</div></div>',
           className: '',
           iconSize: [48, 48],
           iconAnchor: [24, 24]
@@ -710,10 +704,10 @@ export default function TwoPipeVisualizer() {
         const m = L.marker(pos, { icon: homeIcon, zIndexOffset: 2000 }).addTo(map);
         m.bindPopup(
           '<div style="font-family:sans-serif;padding:6px;">' +
-          '<div style="font-weight:900;color:#0284c7;font-size:12px;">🏥 HOME PROCUREMENT PIN</div>' +
+          '<div style="font-weight:900;color:#0284c7;font-size:12px;">HOME PROCUREMENT PIN</div>' +
           '<div style="font-weight:800;font-size:13px;color:#0f172a;margin-top:2px;">' + h.name + '</div>' +
-          '<div style="font-size:11px;color:#64748b;margin:4px 0;">📍 ' + h.area + ' • Beds: ' + h.beds + '</div>' +
-          '<div style="font-size:10.5px;color:#16a34a;font-weight:bold;">✓ Direct automated requisition hub active</div>' +
+          '<div style="font-size:11px;color:#64748b;margin:4px 0;">' + h.area + ' • Beds: ' + h.beds + '</div>' +
+          '<div style="font-size:10.5px;color:#16a34a;font-weight:bold;">Direct automated requisition hub active</div>' +
           '</div>'
         );
       } else {
@@ -727,7 +721,7 @@ export default function TwoPipeVisualizer() {
         m.bindPopup(
           '<div style="font-family:sans-serif;padding:4px;">' +
           '<div style="font-weight:900;font-size:12px;color:#0f172a;">' + h.name + '</div>' +
-          '<div style="font-size:11px;color:#64748b;">📍 ' + h.area + ' • ' + h.contactPerson + '</div>' +
+          '<div style="font-size:11px;color:#64748b;">' + h.area + ' • ' + h.contactPerson + '</div>' +
           '</div>'
         );
       }
@@ -740,7 +734,7 @@ export default function TwoPipeVisualizer() {
       if (stk.isNewBlip) {
         // Spawn pulsating animated radar blip ping!
         const blipIcon = L.divIcon({
-          html: '<div class="radar-blip-container"><div class="radar-ring"></div><div class="radar-ring-cyan"></div><div class="radar-center-dot">⚡</div></div>',
+          html: '<div class="radar-blip-container"><div class="radar-ring"></div><div class="radar-ring-cyan"></div><div class="radar-center-dot">•</div></div>',
           className: '',
           iconSize: [52, 52],
           iconAnchor: [26, 26]
@@ -748,15 +742,15 @@ export default function TwoPipeVisualizer() {
         const m = L.marker(pos, { icon: blipIcon, zIndexOffset: 3000 }).addTo(map);
         m.bindPopup(
           '<div style="font-family:sans-serif;padding:6px;min-width:210px;">' +
-          '<div style="font-weight:900;color:#047857;font-size:12px;">⚡ NEW LIVE GEO-REGISTERED SUPPLIER</div>' +
+          '<div style="font-weight:900;color:#047857;font-size:12px;">NEW LIVE GEO-REGISTERED SUPPLIER</div>' +
           '<div style="font-weight:800;font-size:13.5px;color:#0f172a;margin-top:2px;">' + stk.name + '</div>' +
-          '<div style="font-size:11px;color:#64748b;margin:4px 0;">📍 ' + (stk.area || stk.hub) + ' • Rating: ' + (stk.rating || 5.0) + '★</div>' +
+          '<div style="font-size:11px;color:#64748b;margin:4px 0;">' + (stk.area || stk.hub) + ' • Rating: ' + (stk.rating || 5.0) + ' / 5</div>' +
           '<div style="background:#f0fdf4;border:1px solid #bbf7d0;padding:5px 8px;border-radius:6px;margin:4px 0;">' +
           '<div style="font-size:11px;font-weight:800;color:#15803d;">Opening Declared Stock:</div>' +
           '<div style="font-size:10.5px;color:#166534;">• Gloves 7.5: ' + (stk.stockLevels && stk.stockLevels["SKU-GLV-75"] !== undefined ? stk.stockLevels["SKU-GLV-75"] : 50) + ' boxes @ ₹' + (stk.stockPrices && stk.stockPrices["SKU-GLV-75"] ? stk.stockPrices["SKU-GLV-75"] : 750) + '</div>' +
           '<div style="font-size:10.5px;color:#166534;">• Syringes 5ml: ' + (stk.stockLevels && stk.stockLevels["SKU-SYR-5ML"] !== undefined ? stk.stockLevels["SKU-SYR-5ML"] : 30) + ' cartons @ ₹' + (stk.stockPrices && stk.stockPrices["SKU-SYR-5ML"] ? stk.stockPrices["SKU-SYR-5ML"] : 420) + '</div>' +
           '</div>' +
-          '<div style="font-size:10px;color:#0284c7;font-weight:bold;">✓ Instantly synchronized across all Mumbai hospital maps</div>' +
+          '<div style="font-size:10px;color:#0284c7;font-weight:bold;">Instantly synchronized across all Mumbai hospital maps</div>' +
           '</div>'
         );
       } else {
@@ -770,7 +764,7 @@ export default function TwoPipeVisualizer() {
         m.bindPopup(
           '<div style="font-family:sans-serif;padding:4px;">' +
           '<div style="font-weight:900;font-size:12px;color:#0f172a;">' + stk.name + '</div>' +
-          '<div style="font-size:11px;color:#64748b;">📍 ' + stk.hub + ' • SLA: ' + stk.deliverySLA + '</div>' +
+          '<div style="font-size:11px;color:#64748b;">' + stk.hub + ' • SLA: ' + stk.deliverySLA + '</div>' +
           '</div>'
         );
       }
@@ -788,7 +782,7 @@ export default function TwoPipeVisualizer() {
       L.marker(pos, { icon: mfgIcon }).addTo(map)
         .bindPopup(
           '<div style="font-family:sans-serif;padding:4px;">' +
-          '<div style="font-weight:900;font-size:12px;color:#0f172a;">🏭 ' + mfg.name + '</div>' +
+          '<div style="font-weight:900;font-size:12px;color:#0f172a;">' + mfg.name + '</div>' +
           '<div style="font-size:11px;color:#64748b;">Brand: ' + mfg.brand + ' • Depot: ' + (mfg.area || mfg.primaryHub) + '</div>' +
           '</div>'
         );
@@ -820,7 +814,7 @@ export default function TwoPipeVisualizer() {
       const midLat = (hPos[0] + sPos[0]) / 2;
       const midLng = (hPos[1] + sPos[1]) / 2;
       const bridgeIcon = L.divIcon({
-        html: '<div class="bridge-node-marker" title="Persistent Supply Bridge">🌉</div>',
+        html: '<div class="bridge-node-marker" title="Persistent Supply Bridge">B</div>',
         className: '',
         iconSize: [28, 28],
         iconAnchor: [14, 14]
@@ -828,14 +822,14 @@ export default function TwoPipeVisualizer() {
       const bm = L.marker([midLat, midLng], { icon: bridgeIcon }).addTo(map);
       bm.bindPopup(
         '<div style="font-family:sans-serif;padding:6px;min-width:230px;">' +
-        '<div style="font-weight:900;color:#0284c7;font-size:12px;">⚡ PERSISTENT SUPPLY BRIDGE</div>' +
+        '<div style="font-weight:900;color:#0284c7;font-size:12px;">PERSISTENT SUPPLY BRIDGE</div>' +
         '<div style="font-weight:800;font-size:13px;color:#0f172a;margin-top:2px;">' + bridge.hospitalName + ' ⟷ ' + bridge.stockistName + '</div>' +
         '<hr style="border:none;border-top:1px solid #e2e8f0;margin:6px 0;"/>' +
-        '<div style="font-size:11px;color:#475569;">📦 Lifetime Orders: <b>' + bridge.lifetimeOrders + ' Verified</b></div>' +
-        '<div style="font-size:11px;color:#475569;">💰 Cleared Volume: <b>₹' + Number(bridge.totalValue).toLocaleString("en-IN") + '</b></div>' +
-        '<div style="font-size:11px;color:#475569;">⚡ Avg Speed: <b>' + bridge.avgTransitMins + ' mins</b></div>' +
-        '<div style="font-size:11px;color:#475569;">🔒 Smart Escrow: <b>' + bridge.activeCreditLine + '</b></div>' +
-        '<div style="margin-top:6px;background:#dbeafe;padding:4px 6px;border-radius:4px;font-size:10px;font-weight:bold;color:#1e40af;">✓ ZERO-CLICK MIC REORDERING ACTIVE</div>' +
+        '<div style="font-size:11px;color:#475569;">Lifetime Orders: <b>' + bridge.lifetimeOrders + ' Verified</b></div>' +
+        '<div style="font-size:11px;color:#475569;">Cleared Volume: <b>₹' + Number(bridge.totalValue).toLocaleString("en-IN") + '</b></div>' +
+        '<div style="font-size:11px;color:#475569;">Avg Speed: <b>' + bridge.avgTransitMins + ' mins</b></div>' +
+        '<div style="font-size:11px;color:#475569;">Smart Escrow: <b>' + bridge.activeCreditLine + '</b></div>' +
+        '<div style="margin-top:6px;background:#dbeafe;padding:4px 6px;border-radius:4px;font-size:10px;font-weight:bold;color:#1e40af;">ZERO-CLICK MIC REORDERING ACTIVE</div>' +
         '</div>'
       );
     });
@@ -865,7 +859,7 @@ export default function TwoPipeVisualizer() {
 
     // Live Moving Delivery Vehicle on Line G
     const vanIcon = L.divIcon({
-      html: '<div class="vehicle-marker">🚚</div>',
+      html: '<div class="vehicle-marker">G</div>',
       className: '',
       iconSize: [38, 38],
       iconAnchor: [19, 19]
@@ -983,7 +977,7 @@ export default function TwoPipeVisualizer() {
             >
               <Ionicons name="map" size={13} color={viewMode === 'REAL_MAP' ? '#ffffff' : '#94a3b8'} />
               <Text style={[styles.modeToggleText, viewMode === 'REAL_MAP' && styles.modeToggleTextActive]}>
-                📍 Real Mumbai Map
+                Real Mumbai Map
               </Text>
             </TouchableOpacity>
 
@@ -993,7 +987,7 @@ export default function TwoPipeVisualizer() {
             >
               <MaterialCommunityIcons name="subway-variant" size={13} color={viewMode === 'SCHEMATIC' ? '#ffffff' : '#94a3b8'} />
               <Text style={[styles.modeToggleText, viewMode === 'SCHEMATIC' && styles.modeToggleTextActive]}>
-                🚇 Subway Schematic
+                Subway Schematic
               </Text>
             </TouchableOpacity>
           </View>
@@ -1003,7 +997,7 @@ export default function TwoPipeVisualizer() {
             {visibleOrders.length === 0 ? (
               <View style={{ paddingVertical: 4, paddingHorizontal: 10 }}>
                 <Text style={{ fontSize: 11, color: '#64748b', fontStyle: 'italic' }}>
-                  No active orders for {activeHospital.name.split(' ')[0]} • Tap nearest store below or use 🎤 mic to place order
+                  No active orders for {activeHospital.name.split(' ')[0]} • Tap nearest store below or use mic to place order
                 </Text>
               </View>
             ) : (
@@ -1107,7 +1101,7 @@ export default function TwoPipeVisualizer() {
                 <rect x="-12" y="-5" width="24" height="10" rx="3" fill="#10b981" />
                 <circle cx="11" cy="-2.5" r="2" fill="#ffffff" />
                 <circle cx="11" cy="2.5" r="2" fill="#ffffff" />
-                <text x="-8" y="3" fill="#ffffff" fontSize="8" fontWeight="900">📦 G</text>
+                <text x="-5" y="3" fill="#ffffff" fontSize="8" fontWeight="900">G</text>
               </g>
 
               {/* Animated Cash Token on Line P */}
@@ -1218,7 +1212,7 @@ export default function TwoPipeVisualizer() {
             <View style={styles.telemetryCardTop}>
               <View style={styles.cardHeaderBadgeGreen}>
                 <View style={styles.subwayBadgeTiny}><Text style={styles.subwayBadgeTinyText}>G</Text></View>
-                <Text style={styles.telemetryCardTitleGreen}>LINE G: PHYSICAL GOODS EXPRESS (Westbound ➔)</Text>
+                <Text style={styles.telemetryCardTitleGreen}>LINE G: PHYSICAL GOODS EXPRESS (Westbound)</Text>
               </View>
               <View style={styles.pillStatusGreen}>
                 <Text style={styles.pillStatusGreenText}>{activeOrder.deliveryStatus}</Text>
@@ -1270,7 +1264,7 @@ export default function TwoPipeVisualizer() {
 
             <View style={styles.specRow}>
               <Text style={styles.specLabel}>Subway Express Track:</Text>
-              <Text style={styles.specValueGreen}>Dadar West Hub ➔ Sea Link Corridor ➔ Lilavati Dock Gate 2</Text>
+              <Text style={styles.specValueGreen}>Dadar West Hub to Sea Link Corridor to Lilavati Dock Gate 2</Text>
             </View>
 
             <View style={styles.specRow}>
@@ -1296,7 +1290,7 @@ export default function TwoPipeVisualizer() {
                     onPress={() => fastForwardDelivery && fastForwardDelivery(activeOrder.orderId)}
                   >
                     <Ionicons name="play-forward" size={14} color="#ffffff" />
-                    <Text style={styles.fastForwardBtnText}>⚡ Fast-Forward Stage</Text>
+                    <Text style={styles.fastForwardBtnText}>Fast-Forward Stage</Text>
                   </TouchableOpacity>
 
                   <TouchableOpacity
@@ -1313,13 +1307,13 @@ export default function TwoPipeVisualizer() {
                     }}
                   >
                     <Ionicons name="checkmark-done" size={14} color="#047857" />
-                    <Text style={styles.instantDeliverBtnText}>✨ Instant Deliver & Bridge</Text>
+                    <Text style={styles.instantDeliverBtnText}>Instant Deliver & Bridge</Text>
                   </TouchableOpacity>
                 </>
               ) : (
                 <View style={styles.bridgeFormedBanner}>
                   <Text style={styles.bridgeFormedBannerText}>
-                    🌉 Persistent Supply Bridge Established • Zero-Click Mic Voice Reordering Unlocked
+                    Persistent Supply Bridge Established • Zero-Click Voice Reordering Unlocked
                   </Text>
                 </View>
               )}
@@ -1333,7 +1327,7 @@ export default function TwoPipeVisualizer() {
                 <View style={[styles.subwayBadgeTiny, { backgroundColor: '#b45309' }]}>
                   <Text style={styles.subwayBadgeTinyText}>P</Text>
                 </View>
-                <Text style={styles.telemetryCardTitleGold}>LINE P: CAPITAL & PAYMENT ESCROW (Eastbound ➔)</Text>
+                <Text style={styles.telemetryCardTitleGold}>LINE P: CAPITAL & PAYMENT ESCROW (Eastbound)</Text>
               </View>
               <View style={styles.pillStatusGold}>
                 <Text style={styles.pillStatusGoldText}>
@@ -1350,14 +1344,14 @@ export default function TwoPipeVisualizer() {
             <View style={styles.escrowPipelineBox}>
               <View style={styles.escrowMilestoneRow}>
                 <View style={[styles.escrowMilestone, styles.escrowMilestoneActive]}>
-                  <Text style={styles.escrowMilestoneText}>🔒 1. Escrow Locked</Text>
+                  <Text style={styles.escrowMilestoneText}>1. Escrow Locked</Text>
                 </View>
                 <Ionicons name="arrow-forward" size={12} color="#b45309" />
                 <View style={[
                   styles.escrowMilestone,
                   ['IN_TRANSIT', 'ARRIVING', 'DELIVERED'].includes(activeOrder.deliveryStatus) && styles.escrowMilestoneActive
                 ]}>
-                  <Text style={styles.escrowMilestoneText}>📦 2. Dock Verification</Text>
+                  <Text style={styles.escrowMilestoneText}>2. Dock Verification</Text>
                 </View>
                 <Ionicons name="arrow-forward" size={12} color="#b45309" />
                 <View style={[
@@ -1365,7 +1359,7 @@ export default function TwoPipeVisualizer() {
                   activeOrder.deliveryStatus === 'DELIVERED' && styles.escrowMilestoneSuccess
                 ]}>
                   <Text style={styles.escrowMilestoneText}>
-                    {activeOrder.deliveryStatus === 'DELIVERED' ? '💰 3. Released to Supplier' : '⏳ 3. Release on Delivery'}
+                    {activeOrder.deliveryStatus === 'DELIVERED' ? '3. Released to Supplier' : '3. Release on Delivery'}
                   </Text>
                 </View>
               </View>
@@ -1393,9 +1387,9 @@ export default function TwoPipeVisualizer() {
       <View style={styles.meshBridgesSection}>
         <View style={styles.meshBridgesHeader}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-            <Text style={{ fontSize: 16 }}>🕸️</Text>
+            <Ionicons name="git-network" size={18} color="#0284c7" />
             <View>
-              <Text style={styles.meshBridgesTitle}>PERSISTENT SUPPLY BRIDGES ("WEB OF PROVENANCE")</Text>
+              <Text style={styles.meshBridgesTitle}>PERSISTENT SUPPLY BRIDGES (&quot;WEB OF PROVENANCE&quot;)</Text>
               <Text style={styles.meshBridgesSubtitle}>
                 Permanent glowing supply lines on map with fast-track zero-click reordering
               </Text>
@@ -1410,7 +1404,7 @@ export default function TwoPipeVisualizer() {
           {visibleBridges.length === 0 ? (
             <View style={{ padding: 14, backgroundColor: '#f8fafc', borderRadius: 12, borderWidth: 1, borderColor: '#e2e8f0', minWidth: 280 }}>
               <Text style={{ fontSize: 12, fontWeight: '800', color: '#0369a1' }}>
-                ⚡ Private Web of Provenance: 0 Permanent Bridges
+                Private Web of Provenance: 0 Permanent Bridges
               </Text>
               <Text style={{ fontSize: 11, color: '#64748b', marginTop: 4, lineHeight: 15 }}>
                 Directly order from any nearest distributor or factory below to establish a permanent supply bridge for {activeHospital.name.split(' ')[0]}!
@@ -1420,7 +1414,7 @@ export default function TwoPipeVisualizer() {
             visibleBridges.map((bridge, bIdx) => (
               <View key={bridge.id || bridge.bridgeId || `bridge-${bIdx}`} style={styles.bridgeCard}>
                 <View style={styles.bridgeCardTop}>
-                  <Text style={styles.bridgeNodeIcon}>🌉</Text>
+                  <Ionicons name="link" size={16} color="#0284c7" />
                   <View style={styles.fastTrackTag}>
                     <Ionicons name="flash" size={10} color="#047857" />
                     <Text style={styles.fastTrackTagText}>Fast-Track Unlocked</Text>
@@ -1450,7 +1444,7 @@ export default function TwoPipeVisualizer() {
               <View style={styles.micReadyFooter}>
                 <Ionicons name="mic" size={12} color="#0284c7" />
                 <Text style={styles.micReadyText}>
-                  Say: "Order from {(bridge.stockistName || 'Entero').split(' ')[0]}" for 0-click dispatch
+                  Say: &quot;Order from {(bridge.stockistName || 'Entero').split(' ')[0]}&quot; for 0-click dispatch
                 </Text>
               </View>
             </View>
@@ -1464,11 +1458,11 @@ export default function TwoPipeVisualizer() {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#ffffff',
+    backgroundColor: 'rgba(255, 255, 255, 0.88)',
     borderRadius: 22,
     marginBottom: 20,
     borderWidth: 1.5,
-    borderColor: '#e2e8f0',
+    borderColor: 'rgba(226, 232, 240, 0.85)',
     shadowColor: '#0f172a',
     shadowOpacity: 0.08,
     shadowRadius: 18,

@@ -1,9 +1,9 @@
-// PulseChain AI — Precision Healthcare & Logistics Vector Symbol System
+// PulseChain AI : Precision Healthcare & Logistics Vector Symbol System
 // Guaranteed 100% SVG rendering on web without relying on external .ttf icon font files.
 // Eliminates tofu missing glyph boxes [ ▯ ] completely.
 
 import React from 'react';
-import { View, Platform, StyleSheet } from 'react-native';
+import { View, Platform } from 'react-native';
 import { Ionicons, FontAwesome5 } from '@expo/vector-icons';
 
 export default function SymbolIcon({
@@ -25,11 +25,10 @@ export default function SymbolIcon({
   return renderNativeFallback(name, size, color);
 }
 
-function renderSvgIcon(name, size, color, secondaryColor) {
-  const effectiveSecondary = secondaryColor || color;
+function renderSvgIcon(name, size, color) {
 
   switch (name) {
-    // 🎙️ HERO MICROPHONE
+    // ️ HERO MICROPHONE
     case 'mic':
     case 'microphone':
       return (
@@ -54,7 +53,7 @@ function renderSvgIcon(name, size, color, secondaryColor) {
         </svg>
       );
 
-    // 🔊 SPEAKER / AUDIO / VOICE ANNOUNCER
+    //  SPEAKER / AUDIO / VOICE ANNOUNCER
     case 'speaker':
     case 'volume':
     case 'audio':
@@ -66,7 +65,7 @@ function renderSvgIcon(name, size, color, secondaryColor) {
         </svg>
       );
 
-    // 🏥 HOSPITAL & MEDICAL CARE
+    //  HOSPITAL & MEDICAL CARE
     case 'hospital':
     case 'hospital-building':
       return (
@@ -80,7 +79,7 @@ function renderSvgIcon(name, size, color, secondaryColor) {
         </svg>
       );
 
-    // 🚚 STOCKIST / DISTRIBUTOR DELIVERY TRUCK
+    //  STOCKIST / DISTRIBUTOR DELIVERY TRUCK
     case 'truck':
     case 'delivery':
     case 'distributor':
@@ -94,7 +93,7 @@ function renderSvgIcon(name, size, color, secondaryColor) {
         </svg>
       );
 
-    // 🏭 OEM MANUFACTURER PLANT
+    //  OEM MANUFACTURER PLANT
     case 'factory':
     case 'industry':
     case 'manufacturer':
@@ -107,7 +106,7 @@ function renderSvgIcon(name, size, color, secondaryColor) {
         </svg>
       );
 
-    // 🧤 SURGICAL GLOVES / HAND HYGIENE
+    //  SURGICAL GLOVES / HAND HYGIENE
     case 'gloves':
     case 'hands-wash':
     case 'surgical-gloves':
@@ -119,7 +118,7 @@ function renderSvgIcon(name, size, color, secondaryColor) {
         </svg>
       );
 
-    // 💉 SYRINGE / INJECTION
+    //  SYRINGE / INJECTION
     case 'syringe':
     case 'dispovan':
     case 'injection':
@@ -134,7 +133,7 @@ function renderSvgIcon(name, size, color, secondaryColor) {
         </svg>
       );
 
-    // 💧 IV CANNULA / INFUSION / DRIP
+    //  IV CANNULA / INFUSION / DRIP
     case 'cannula':
     case 'iv-drip':
     case 'infusion':
@@ -147,7 +146,7 @@ function renderSvgIcon(name, size, color, secondaryColor) {
         </svg>
       );
 
-    // 😷 N95 RESPIRATOR MASK
+    //  N95 RESPIRATOR MASK
     case 'mask':
     case 'n95':
     case 'respirator':
@@ -162,7 +161,7 @@ function renderSvgIcon(name, size, color, secondaryColor) {
         </svg>
       );
 
-    // ⚡ FAST TRACK ORDER / OT URGENCY
+    //  FAST TRACK ORDER / OT URGENCY
     case 'bolt':
     case 'flash':
     case 'lightning':
@@ -173,7 +172,7 @@ function renderSvgIcon(name, size, color, secondaryColor) {
         </svg>
       );
 
-    // 📡 RADAR / UBER STOCKIST PING
+    //  RADAR / UBER STOCKIST PING
     case 'radar':
     case 'uber-ping':
     case 'search-dollar':
@@ -188,7 +187,7 @@ function renderSvgIcon(name, size, color, secondaryColor) {
         </svg>
       );
 
-    // 📦 INVENTORY / STOCK CRATE
+    //  INVENTORY / STOCK CRATE
     case 'box':
     case 'cube':
     case 'inventory':
@@ -201,7 +200,7 @@ function renderSvgIcon(name, size, color, secondaryColor) {
         </svg>
       );
 
-    // 🫀 WARD USAGE / ECG PULSE
+    //  WARD USAGE / ECG PULSE
     case 'pulse':
     case 'ecg':
     case 'ward-usage':
@@ -211,7 +210,7 @@ function renderSvgIcon(name, size, color, secondaryColor) {
         </svg>
       );
 
-    // 🧾 ORDERS & RECEIPTS
+    //  ORDERS & RECEIPTS
     case 'receipt':
     case 'orders':
     case 'invoice':
@@ -224,7 +223,7 @@ function renderSvgIcon(name, size, color, secondaryColor) {
         </svg>
       );
 
-    // 🔒 PRIVACY MESH & SECURITY
+    //  PRIVACY MESH & SECURITY
     case 'lock':
     case 'shield':
     case 'privacy':
@@ -236,7 +235,7 @@ function renderSvgIcon(name, size, color, secondaryColor) {
         </svg>
       );
 
-    // ✈️ PAPER PLANE / SEND QUOTE
+    // ️ PAPER PLANE / SEND QUOTE
     case 'paper-plane':
     case 'send':
       return (
@@ -246,7 +245,7 @@ function renderSvgIcon(name, size, color, secondaryColor) {
         </svg>
       );
 
-    // ✓ CHECKMARK
+    //  CHECKMARK
     case 'check':
     case 'checkmark':
       return (
@@ -255,7 +254,7 @@ function renderSvgIcon(name, size, color, secondaryColor) {
         </svg>
       );
 
-    // ⚠️ ALERT / WARNING
+    // ️ ALERT / WARNING
     case 'alert':
     case 'warning':
       return (
@@ -266,7 +265,7 @@ function renderSvgIcon(name, size, color, secondaryColor) {
         </svg>
       );
 
-    // 💬 WHATSAPP
+    //  WHATSAPP
     case 'whatsapp':
       return (
         <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -274,7 +273,7 @@ function renderSvgIcon(name, size, color, secondaryColor) {
         </svg>
       );
 
-    // 🗄️ DATA LAKE / SERVER
+    // ️ DATA LAKE / SERVER
     case 'server':
     case 'data-lake':
       return (
@@ -283,6 +282,31 @@ function renderSvgIcon(name, size, color, secondaryColor) {
           <rect width="20" height="8" x="2" y="14" rx="2" ry="2" fill={color} fillOpacity="0.1" />
           <line x1="6" y1="6" x2="6.01" y2="6" strokeWidth="2.5" />
           <line x1="6" y1="18" x2="6.01" y2="18" strokeWidth="2.5" />
+        </svg>
+      );
+
+    // ️ THEME LIGHT & DARK MODE
+    case 'sun':
+    case 'light-mode':
+      return (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="12" cy="12" r="5" fill={color} fillOpacity="0.25" />
+          <line x1="12" y1="1" x2="12" y2="3" />
+          <line x1="12" y1="21" x2="12" y2="23" />
+          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+          <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+          <line x1="1" y1="12" x2="3" y2="12" />
+          <line x1="21" y1="12" x2="23" y2="12" />
+          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+          <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+        </svg>
+      );
+
+    case 'moon':
+    case 'dark-mode':
+      return (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" fill={color} fillOpacity="0.25" />
         </svg>
       );
 
@@ -367,6 +391,15 @@ function renderNativeFallback(name, size, color) {
     case 'volume':
     case 'audio':
       return <Ionicons name="volume-high" size={size} color={color} />;
+    // ️ THEME LIGHT & DARK MODE
+    case 'sun':
+    case 'light-mode':
+      return <Ionicons name="sunny" size={size} color={color} />;
+
+    case 'moon':
+    case 'dark-mode':
+      return <Ionicons name="moon" size={size} color={color} />;
+
     default:
       return <Ionicons name="help-circle" size={size} color={color} />;
   }

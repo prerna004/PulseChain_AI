@@ -6,7 +6,7 @@ import {
   View, Text, StyleSheet, TouchableOpacity,
   Modal, ScrollView, TextInput
 } from 'react-native';
-import { Ionicons, FontAwesome5 } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
 import { useApp } from '../store/stateManager';
 
 const EVENT_COLORS = {
@@ -196,7 +196,7 @@ export default function CentralDataLakeModal() {
                       style={[styles.chip, filterEvent === ev && styles.chipActive]}
                     >
                       <Text style={[styles.chipText, filterEvent === ev && styles.chipTextActive]}>
-                        {ev === 'ALL' ? '🌐 All' : ev.replace(/_/g, ' ')}
+                        {ev === 'ALL' ? 'All' : ev.replace(/_/g, ' ')}
                       </Text>
                     </TouchableOpacity>
                   ))}
@@ -271,7 +271,7 @@ export default function CentralDataLakeModal() {
                     <View key={o.orderId} style={styles.orderSummaryRow}>
                       <View style={{ flex: 1 }}>
                         <Text style={styles.orderSummaryId}>{o.orderId}</Text>
-                        <Text style={styles.orderSummaryName} numberOfLines={1}>{o.hospitalName} → {o.stockistName}</Text>
+                        <Text style={styles.orderSummaryName} numberOfLines={1}>{o.hospitalName} to {o.stockistName}</Text>
                       </View>
                       <View style={styles.orderSummaryRight}>
                         <Text style={styles.orderSummaryAmt}>₹{(o.totalAmount || 0).toLocaleString('en-IN')}</Text>
@@ -305,11 +305,10 @@ export default function CentralDataLakeModal() {
                     <Text style={styles.stockHeaderCell}>Status</Text>
                   </View>
                   {inventory.map(item => {
-                    const pct = Math.min(100, (item.hospStockLilavati / (item.reorderLevel * 3)) * 100);
                     const isCritical = item.hospStockLilavati <= item.reorderLevel * 0.5;
                     const isLow = item.hospStockLilavati <= item.reorderLevel;
                     const statusColor = isCritical ? '#dc2626' : isLow ? '#d97706' : '#16a34a';
-                    const statusLabel = isCritical ? '🔴 CRITICAL' : isLow ? '🟡 LOW' : '🟢 OK';
+                    const statusLabel = isCritical ? 'CRITICAL' : isLow ? 'LOW' : 'OK';
                     return (
                       <View key={item.skuId} style={[styles.stockRow, isCritical && styles.stockRowCritical]}>
                         <Text style={[styles.stockCell, { flex: 2 }]} numberOfLines={2}>{item.name}</Text>

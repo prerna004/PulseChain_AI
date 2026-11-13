@@ -1,7 +1,7 @@
-// Manufacturer Production & Stockist Oversight Dashboard — v2
+// Manufacturer Production & Stockist Oversight Dashboard : v2
 // Shows logged-in manufacturer's brand + real stockist stock levels per SKU
 
-import React, { useState } from 'react';
+import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { Ionicons, FontAwesome5 } from '@expo/vector-icons';
 import { useApp } from '../store/stateManager';
@@ -18,12 +18,10 @@ export default function ManufacturerDashboard() {
     loginManufacturer,
     allManufacturers,
     handleVoiceOrTextInput,
-    addTelemetryLog,
-    inventory
+    addTelemetryLog
   } = useApp();
 
   const activeMfg = loggedInManufacturer || selectedManufacturer;
-  const [selectedStockistId, setSelectedStockistId] = useState(null);
 
   const handleBulkDispatch = (stockistName, skuName, qty) => {
     addTelemetryLog(selectedManufacturer.name, 'BULK_DISPATCH_CFA', `Dispatched ${qty} of ${skuName} to ${stockistName}`);
@@ -75,7 +73,7 @@ export default function ManufacturerDashboard() {
                     {mfg.brand || mfg.name.split(' ')[0]}
                   </Text>
                   <Text style={[styles.accountMeta, isActive && styles.accountMetaActive]}>
-                    🏭 {mfg.area || mfg.primaryHub || 'Mumbai Depot'}
+                    {mfg.area || mfg.primaryHub || 'Mumbai Depot'}
                   </Text>
                 </View>
                 {isActive ? (
@@ -108,7 +106,7 @@ export default function ManufacturerDashboard() {
                 </View>
               </View>
               <Text style={styles.heroSub}>
-                🏭 Production Hub: <Text style={{ color: '#ffffff', fontWeight: '700' }}>{activeMfg.primaryHub || 'Mumbai Hub'}</Text> • Key Representative: {activeMfg.keyRep || activeMfg.repName || 'Official OEM Desk'}
+                Production Hub: <Text style={{ color: '#ffffff', fontWeight: '700' }}>{activeMfg.primaryHub || 'Mumbai Hub'}</Text> • Key Representative: {activeMfg.keyRep || activeMfg.repName || 'Official OEM Desk'}
               </Text>
             </View>
           </View>
@@ -171,13 +169,13 @@ export default function ManufacturerDashboard() {
       <VoiceRequisitionBar />
       <TwoPipeVisualizer />
 
-      {/* My Brand SKUs — Stockist Coverage */}
+      {/* My Brand SKUs : Stockist Coverage */}
       {mySkus.length > 0 && (
         <View style={[styles.whiteCard, { marginBottom: 16 }]}>
           <View style={styles.cardHeader}>
             <View style={styles.titleWrap}>
               <Ionicons name="cube" size={18} color="#16a34a" />
-              <Text style={styles.cardTitle}>My Brand's SKUs — Stockist Coverage</Text>
+              <Text style={styles.cardTitle}>My Brand&apos;s SKUs : Stockist Coverage</Text>
             </View>
             <Text style={styles.liveTag}>LIVE</Text>
           </View>
@@ -196,7 +194,7 @@ export default function ManufacturerDashboard() {
                     <Text style={[styles.skuCoverageUnits, isLow && { color: '#dc2626' }]}>
                       {total.toLocaleString('en-IN')}
                     </Text>
-                    <Text style={styles.skuCoverageLabel}>{isLow ? '⚠️ LOW' : '✓ OK'}</Text>
+                    <Text style={styles.skuCoverageLabel}>{isLow ? 'LOW' : 'OK'}</Text>
                   </View>
                   {isLow && (
                     <TouchableOpacity
@@ -243,9 +241,9 @@ export default function ManufacturerDashboard() {
                     <View style={styles.stockistTop}>
                       <View>
                         <Text style={styles.stkName}>{stk.name}</Text>
-                        <Text style={styles.stkHub}>📍 {stk.hub} • ⭐{stk.rating}</Text>
+                        <Text style={styles.stkHub}>{stk.hub} • Rating: {stk.rating} / 5</Text>
                       </View>
-                      {hasLow && <View style={styles.lowBadge}><Text style={styles.lowBadgeText}>⚠️ LOW</Text></View>}
+                      {hasLow && <View style={styles.lowBadge}><Text style={styles.lowBadgeText}>LOW</Text></View>}
                     </View>
 
                     {/* Per-SKU stock levels */}
@@ -329,7 +327,7 @@ export default function ManufacturerDashboard() {
 
               <View style={styles.clearanceItem}>
                 <View>
-                  <Text style={styles.clearanceName}>Entero Healthcare ➔ Lilavati Hospital</Text>
+                  <Text style={styles.clearanceName}>Entero Healthcare to Lilavati Hospital</Text>
                   <Text style={styles.clearanceSub}>ORD-MUM-8921 • Delivery Verified</Text>
                 </View>
                 <View style={{ alignItems: 'flex-end' }}>
@@ -340,7 +338,7 @@ export default function ManufacturerDashboard() {
 
               <View style={styles.clearanceItem}>
                 <View>
-                  <Text style={styles.clearanceName}>Sagar Medical ➔ Kokilaben Hospital</Text>
+                  <Text style={styles.clearanceName}>Sagar Medical to Kokilaben Hospital</Text>
                   <Text style={styles.clearanceSub}>ORD-MUM-8919 • Delivered & Paid</Text>
                 </View>
                 <View style={{ alignItems: 'flex-end' }}>
@@ -361,11 +359,11 @@ const styles = StyleSheet.create({
 
   // CONNECTED MANUFACTURER ACCOUNTS BAR
   networkCard: {
-    backgroundColor: '#ffffff',
+    backgroundColor: 'rgba(255, 255, 255, 0.84)',
     borderRadius: 20,
     padding: 16,
     borderWidth: 1.5,
-    borderColor: '#e2e8f0',
+    borderColor: 'rgba(226, 232, 240, 0.85)',
     marginBottom: 16,
     shadowColor: '#0f172a',
     shadowOpacity: 0.04,
@@ -632,10 +630,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: '#ffffff',
+    backgroundColor: 'rgba(255, 255, 255, 0.84)',
     borderRadius: 18,
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
+    borderWidth: 1.5,
+    borderColor: 'rgba(226, 232, 240, 0.85)',
     padding: 16,
     marginBottom: 16,
     flexWrap: 'wrap',
@@ -691,11 +689,11 @@ const styles = StyleSheet.create({
     minWidth: 320
   },
   whiteCard: {
-    backgroundColor: '#ffffff',
+    backgroundColor: 'rgba(255, 255, 255, 0.86)',
     borderRadius: 20,
     padding: 18,
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
+    borderWidth: 1.5,
+    borderColor: 'rgba(226, 232, 240, 0.85)',
     shadowColor: '#000',
     shadowOpacity: 0.04,
     shadowRadius: 10

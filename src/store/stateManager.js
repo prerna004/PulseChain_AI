@@ -122,7 +122,7 @@ export function AppProvider({ children }) {
   // Supply Chain State
   const [inventory, setInventory] = useState(MEDICAL_CATALOG);
   const [orders, setOrders] = useState(INITIAL_SUPPLY_CHAIN_ORDERS);
-  const [wards, setWards] = useState(HOSPITAL_WARDS);
+  const [wards] = useState(HOSPITAL_WARDS);
 
   // Central Data Lake Telemetry
   const [dataLakeLogs, setDataLakeLogs] = useState([
@@ -144,14 +144,119 @@ export function AppProvider({ children }) {
   const [showDataLakeModal, setShowDataLakeModal] = useState(false);
   const [showWhatsAppModal, setShowWhatsAppModal] = useState(false);
 
+  // ── THEME (Light / Dark Mode) ────────────────────────────────────────────────
+  const [isDarkMode, setIsDarkMode] = useState(false);
+
+  const toggleTheme = () => {
+    setIsDarkMode(prev => {
+      const next = !prev;
+      broadcastEvent('THEME_CHANGE', next);
+      return next;
+    });
+  };
+
+  const theme = isDarkMode ? {
+    isDark: true,
+    mode: 'dark',
+    bg: '#090d16',
+    bgSecondary: '#0f172a',
+    surface: '#111928',
+    surfaceElevated: '#1a2333',
+    surfaceHover: '#233047',
+    border: '#1e293b',
+    borderLight: '#334155',
+    text: '#f8fafc',
+    textSecondary: '#94a3b8',
+    textMuted: '#64748b',
+    navBg: '#0b1120',
+    navBorder: '#1e293b',
+    cardBg: '#111928',
+    cardBorder: '#1e293b',
+    inputBg: '#0f172a',
+    inputBorder: '#334155',
+    badgeBg: '#1e293b',
+    chipBg: '#1e293b',
+    divider: '#1e293b',
+    accentHospital: '#38bdf8',
+    accentStockist: '#f59e0b',
+    accentMfg: '#22c55e',
+    mapTile: 'dark'
+  } : {
+    isDark: false,
+    mode: 'light',
+    bg: '#f6f8fc',
+    bgSecondary: '#f8fafc',
+    surface: '#ffffff',
+    surfaceElevated: '#f1f5f9',
+    surfaceHover: '#e2e8f0',
+    border: '#e2e8f0',
+    borderLight: '#cbd5e1',
+    text: '#0f172a',
+    textSecondary: '#475569',
+    textMuted: '#64748b',
+    navBg: '#ffffff',
+    navBorder: '#e2e8f0',
+    cardBg: '#ffffff',
+    cardBorder: '#e2e8f0',
+    inputBg: '#ffffff',
+    inputBorder: '#cbd5e1',
+    badgeBg: '#f1f5f9',
+    chipBg: '#f1f5f9',
+    divider: '#e2e8f0',
+    accentHospital: '#0284c7',
+    accentStockist: '#d97706',
+    accentMfg: '#16a34a',
+    mapTile: 'street'
+  };
+
   // AI & Voice State
   const [isListening, setIsListening] = useState(false);
   const [transcript, setTranscript] = useState('');
+  const getRoleDefaultAiMessage = (role) => {
+    if (role === 'STOCKIST') {
+      return {
+        title: 'Distributor AI Command Ready',
+        text: 'Click mic or speak: "show me which hospitals need our products" or "Quote ₹790 for gloves to Lilavati"',
+        type: 'INFO'
+      };
+    }
+    if (role === 'MANUFACTURER') {
+      return {
+        title: 'OEM Factory Oversight Ready',
+        text: 'Click mic or speak: "Show inventory of stockists/distributors" or "Dispatch 50,000 units to Entero Dadar"',
+        type: 'INFO'
+      };
+    }
+    return {
+      title: 'PulseChain Hospital AI Ready',
+      text: 'Click the mic or speak: "Order 200 boxes of 7.5 gloves" or "Get me best prices for Dispovan 5ml"',
+      type: 'INFO'
+    };
+  };
+
   const [lastAiMessage, setLastAiMessage] = useState({
     title: 'PulseChain AI Ready',
     text: 'Click the mic or speak: "Order 200 boxes of 7.5 gloves" or "Get me best prices for Dispovan 5ml"',
     type: 'INFO'
   });
+
+  const addTelemetryLog = (source, event, detail) => {
+    const time = new Date().toLocaleTimeString('en-IN', { hour12: false });
+    setDataLakeLogs(prev => [
+      { id: 'log-' + Date.now(), timestamp: time, source, event, detail, status: 'RECORDED' },
+      ...prev.slice(0, 99) // Keep last 100
+    ]);
+  };
+
+  const broadcastEvent = (type, payload) => {
+    if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
+      try {
+        const ch = new BroadcastChannel('mumbai_medpulse_sync');
+        ch.postMessage({ type, payload });
+        ch.close();
+      } catch (_e) {}
+    }
+  };
 
   // Cross-Tab / Cross-Device Broadcast Channel Sync
   useEffect(() => {
@@ -182,6 +287,8 @@ export function AppProvider({ children }) {
             }));
           } else if (type === 'ROLE_CHANGE') {
             setCurrentRole(payload);
+          } else if (type === 'THEME_CHANGE') {
+            setIsDarkMode(Boolean(payload));
           } else if (type === 'SUPPLIER_REGISTERED') {
             if (payload.stockLevels || (payload.id && payload.id.startsWith('STK'))) {
               setAllStockists(prev => {
@@ -224,30 +331,12 @@ export function AppProvider({ children }) {
             addTelemetryLog('Provenance Mesh', 'BRIDGE_FORMED', `Persistent Supply Bridge synced: ${payload.hospitalName} ⟷ ${payload.stockistName}`);
           }
         };
-      } catch (e) {
-        console.warn('BroadcastChannel not supported:', e);
+      } catch (_e) {
+        console.warn('BroadcastChannel not supported:', _e);
       }
     }
     return () => { if (channel) channel.close(); };
   }, []);
-
-  const broadcastEvent = (type, payload) => {
-    if (typeof window !== 'undefined' && 'BroadcastChannel' in window) {
-      try {
-        const ch = new BroadcastChannel('mumbai_medpulse_sync');
-        ch.postMessage({ type, payload });
-        ch.close();
-      } catch (e) {}
-    }
-  };
-
-  const addTelemetryLog = (source, event, detail) => {
-    const time = new Date().toLocaleTimeString('en-IN', { hour12: false });
-    setDataLakeLogs(prev => [
-      { id: 'log-' + Date.now(), timestamp: time, source, event, detail, status: 'RECORDED' },
-      ...prev.slice(0, 99) // Keep last 100
-    ]);
-  };
 
   // Voice / Text Processing
   const handleVoiceOrTextInput = (text) => {
@@ -268,7 +357,7 @@ export function AppProvider({ children }) {
 
     if (result.intent === 'UNKNOWN_ENTITY') {
       setShowUnknownEntityModal(true);
-      setUnknownEntityData({ prompt: text });
+      setUnknownEntityData({ prompt: text, extracted: result.extractedEntity });
       setLastAiMessage({ title: 'Unknown Entity Detected', text: result.speechReply, type: 'WARNING' });
       return;
     }
@@ -347,7 +436,7 @@ export function AppProvider({ children }) {
       addTelemetryLog(selectedHospital.name, 'FAST_TRACK_DISPATCH', `Zero-click voice order ${fastTrackOrder.orderId} dispatched to ${targetStockist.name} for ${finalQty} ${targetSku.unit}`);
 
       setLastAiMessage({
-        title: '⚡ Zero-Click Fast-Track Order Dispatched',
+        title: 'Zero-Click Fast-Track Order Dispatched',
         text: `Privileged order of ${finalQty} ${targetSku.unit} confirmed with ${targetStockist.name}. Bypassed RFQ paperwork. Driver en route, ETA 14 mins.`,
         type: 'SUCCESS'
       });
@@ -369,6 +458,26 @@ export function AppProvider({ children }) {
 
     if (result.intent === 'STOCKIST_DEMAND_RADAR') {
       setLastAiMessage({ title: 'Mumbai Hospital Demand Radar', text: result.speechReply, type: 'SUCCESS' });
+      return;
+    }
+
+    if (result.intent === 'MFG_STOCKIST_INVENTORY_OVERSIGHT') {
+      setLastAiMessage({ title: 'Distributor Stock Oversight', text: result.speechReply, type: 'SUCCESS' });
+      return;
+    }
+
+    if (result.intent === 'MFG_BULK_DISPATCH') {
+      setLastAiMessage({ title: 'Bhiwandi C&F Dispatch Scheduled', text: result.speechReply, type: 'SUCCESS' });
+      return;
+    }
+
+    if (result.intent === 'STOCKIST_SEND_QUOTE') {
+      setLastAiMessage({ title: 'Wholesale Quote Transmitted', text: result.speechReply, type: 'SUCCESS' });
+      return;
+    }
+
+    if (result.intent === 'STOCKIST_RESTOCK_FACTORY') {
+      setLastAiMessage({ title: 'Upstream Factory Restock Requisitioned', text: result.speechReply, type: 'SUCCESS' });
       return;
     }
 
@@ -734,7 +843,7 @@ export function AppProvider({ children }) {
     return () => clearInterval(timer);
   }, []);
 
-  // Ward Inventory Depletion → Auto-Reorder (Isolated per hospital)
+  // Ward Inventory Depletion to Auto-Reorder (Isolated per hospital)
   const consumeWardItem = (skuId, amount = 10, wardName = 'Operation Theatre 1') => {
     const hosp = loggedInHospital || selectedHospital || MUMBAI_HOSPITALS[0];
     const hospId = hosp.id;
@@ -941,11 +1050,17 @@ export function AppProvider({ children }) {
       value={{
         // Roles & entities
         currentRole,
-        setCurrentRole: (r) => { setCurrentRole(r); broadcastEvent('ROLE_CHANGE', r); },
+        setCurrentRole: (r) => {
+          setCurrentRole(r);
+          setLastAiMessage(getRoleDefaultAiMessage(r));
+          broadcastEvent('ROLE_CHANGE', r);
+        },
         selectedHospital, setSelectedHospital,
         selectedStockist, setSelectedStockist,
         selectedManufacturer, setSelectedManufacturer,
         deviceMode, setDeviceMode,
+        // Theme (Dark / Light Mode)
+        isDarkMode, setIsDarkMode, toggleTheme, theme,
         // Dynamic Suppliers & Distributed Mesh State
         allStockists, setAllStockists,
         allManufacturers, setAllManufacturers,

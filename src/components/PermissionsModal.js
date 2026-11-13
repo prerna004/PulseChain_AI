@@ -3,7 +3,7 @@
 
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Modal } from 'react-native';
-import { Ionicons, FontAwesome5, MaterialCommunityIcons } from '@expo/vector-icons';
+import { Ionicons, FontAwesome5 } from '@expo/vector-icons';
 import { useApp } from '../store/stateManager';
 
 export default function PermissionsModal() {
@@ -11,7 +11,7 @@ export default function PermissionsModal() {
 
   const [whatsappGranted, setWhatsappGranted] = useState(true);
   const [excelGranted, setExcelGranted] = useState(true);
-  const [uploadedFile, setUploadedFile] = useState('Lilavati_CSSD_Inventory_Nov2026.xlsx');
+  const [uploadedFile] = useState('Lilavati_CSSD_Inventory_Nov2026.xlsx');
 
   if (!showPermissionsModal) return null;
 
@@ -67,10 +67,10 @@ export default function PermissionsModal() {
                 <View style={styles.previewBox}>
                   <Text style={styles.previewTitle}>Live WhatsApp Stream Telemetry:</Text>
                   <Text style={styles.previewSnippet}>
-                    • 18:04: [Lilavati Stores] "Please send 50 boxes 7.5 gloves by 8 PM" ➔ Parsed to SKU-GLV-75
+                    • 18:04: [Lilavati Stores] &quot;Please send 50 boxes 7.5 gloves by 8 PM&quot; &gt; Parsed to SKU-GLV-75
                   </Text>
                   <Text style={styles.previewSnippet}>
-                    • 18:11: [Entero Stockist] "Dispatched via Western Express Highway" ➔ In-Transit
+                    • 18:11: [Entero Stockist] &quot;Dispatched via Western Express Highway&quot; &gt; In-Transit
                   </Text>
                 </View>
               )}
@@ -111,7 +111,7 @@ export default function PermissionsModal() {
                     <Text style={styles.fileSize}>(48 KB • Auto-Synced)</Text>
                   </View>
                   <Text style={styles.previewSnippet}>
-                    ✓ 9 Medical SKUs mapped • 4 Wards indexed • Reorder Points locked
+                    Ready : 9 Medical SKUs mapped • 4 Wards indexed • Reorder Points locked
                   </Text>
                 </View>
               )}

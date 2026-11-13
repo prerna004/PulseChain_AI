@@ -1,4 +1,4 @@
-// Hospital Auth Screen — Signup & Login
+// Hospital Auth Screen : Signup & Login
 // New hospitals register here. Returning hospitals log in.
 
 import React, { useState } from 'react';
@@ -149,7 +149,7 @@ export default function HospitalAuthScreen({ onBack }) {
                         )}
                       </View>
                       <Text style={styles.demoHospitalMeta}>
-                        📍 {h.area} • ID: <Text style={{ fontWeight: '800', color: '#0f172a' }}>{h.id}</Text> • PIN: <Text style={{ fontWeight: '800', color: '#0f172a' }}>1234</Text>
+                        {h.area} • ID: <Text style={{ fontWeight: '800', color: '#0f172a' }}>{h.id}</Text> • PIN: <Text style={{ fontWeight: '800', color: '#0f172a' }}>1234</Text>
                       </Text>
                     </View>
                     <TouchableOpacity
@@ -194,7 +194,7 @@ export default function HospitalAuthScreen({ onBack }) {
             </TouchableOpacity>
 
             <Text style={styles.footerNote}>
-              🔒  Each hospital account is private. No other hospital can see your orders or data.
+              Each hospital account is private. No other hospital can see your orders or data.
             </Text>
           </View>
         </ScrollView>
@@ -245,7 +245,7 @@ export default function HospitalAuthScreen({ onBack }) {
                       <Text style={[
                         styles.quickPickChipText,
                         loginHospitalId === h.id && styles.quickPickChipTextActive
-                      ]}>🏥 {h.name.split(' ')[0]}</Text>
+                      ]}>{h.name.split(' ')[0]}</Text>
                     </TouchableOpacity>
                   ))}
                 </View>
@@ -292,7 +292,7 @@ export default function HospitalAuthScreen({ onBack }) {
 
             <TouchableOpacity onPress={() => setMode('SIGNUP')} style={styles.switchModeBtn}>
               <Text style={styles.switchModeBtnText}>
-                New hospital? <Text style={{ color: '#16a34a', fontWeight: '800' }}>Register here →</Text>
+                New hospital? <Text style={{ color: '#16a34a', fontWeight: '800' }}>Register here</Text>
               </Text>
             </TouchableOpacity>
           </View>
@@ -338,7 +338,7 @@ export default function HospitalAuthScreen({ onBack }) {
               <Text style={[styles.formTitle, { color: '#166534' }]}>New Hospital Registration</Text>
               <Text style={styles.formSub}>
                 Register your hospital to access distributors and place orders.
-                Your data will always be private — other hospitals cannot see your orders.
+                Your data will always be private : other hospitals cannot see your orders.
               </Text>
             </View>
 
@@ -353,7 +353,7 @@ export default function HospitalAuthScreen({ onBack }) {
 
             {/* Quick Demo Pre-fill Pills for Interview */}
             <View style={styles.demoFillWrap}>
-              <Text style={styles.demoFillLabel}>⚡ Interview Demo: 1-Tap Fill Real Mumbai Hospital</Text>
+              <Text style={styles.demoFillLabel}>Interview Demo: 1-Tap Fill Real Mumbai Hospital</Text>
               <View style={styles.demoFillPillsRow}>
                 <TouchableOpacity
                   onPress={() => {
@@ -367,7 +367,7 @@ export default function HospitalAuthScreen({ onBack }) {
                   }}
                   style={styles.demoFillPill}
                 >
-                  <Text style={styles.demoFillPillText}>🏥 Saifee Hospital</Text>
+                  <Text style={styles.demoFillPillText}>Saifee Hospital</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity
@@ -382,7 +382,7 @@ export default function HospitalAuthScreen({ onBack }) {
                   }}
                   style={styles.demoFillPill}
                 >
-                  <Text style={styles.demoFillPillText}>🏥 Fortis Mulund</Text>
+                  <Text style={styles.demoFillPillText}>Fortis Mulund</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity
@@ -397,14 +397,14 @@ export default function HospitalAuthScreen({ onBack }) {
                   }}
                   style={styles.demoFillPill}
                 >
-                  <Text style={styles.demoFillPillText}>🏥 Apollo Spectra</Text>
+                  <Text style={styles.demoFillPillText}>Apollo Spectra</Text>
                 </TouchableOpacity>
               </View>
             </View>
 
             {/* Form fields */}
             <View style={styles.sectionLabel}>
-              <Text style={styles.sectionLabelText}>👤  Your Contact Details</Text>
+              <Text style={styles.sectionLabelText}>Your Contact Details</Text>
             </View>
 
             <View style={styles.fieldRow}>
@@ -431,7 +431,7 @@ export default function HospitalAuthScreen({ onBack }) {
             </View>
 
             <View style={styles.sectionLabel}>
-              <Text style={styles.sectionLabelText}>🏥  Hospital Details</Text>
+              <Text style={styles.sectionLabelText}>Hospital Details</Text>
             </View>
 
             <View style={styles.fieldGroup}>
@@ -470,7 +470,7 @@ export default function HospitalAuthScreen({ onBack }) {
             </View>
 
             <View style={styles.sectionLabel}>
-              <Text style={styles.sectionLabelText}>🔒  Set Account PIN</Text>
+              <Text style={styles.sectionLabelText}>Set Account PIN</Text>
             </View>
 
             <View style={styles.fieldRow}>
@@ -516,7 +516,7 @@ export default function HospitalAuthScreen({ onBack }) {
 
             <TouchableOpacity onPress={() => setMode('LOGIN')} style={styles.switchModeBtn}>
               <Text style={styles.switchModeBtnText}>
-                Already registered? <Text style={{ color: '#0284c7', fontWeight: '800' }}>Log in →</Text>
+                Already registered? <Text style={{ color: '#0284c7', fontWeight: '800' }}>Log in</Text>
               </Text>
             </TouchableOpacity>
           </View>

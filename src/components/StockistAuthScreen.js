@@ -1,14 +1,13 @@
-// StockistAuthScreen — Friendly login & signup for Wholesalers / Distributors
+// StockistAuthScreen : Friendly login & signup for Wholesalers / Distributors
 // Easy for store owners & staff in Dadar, Princess Street, Dawa Bazar
 
 import React, { useState } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity, StyleSheet,
-  ScrollView, ActivityIndicator, Animated
+  ScrollView, ActivityIndicator
 } from 'react-native';
 import { Ionicons, FontAwesome5 } from '@expo/vector-icons';
 import { useApp } from '../store/stateManager';
-import { MUMBAI_GEO_AREAS } from '../data/mumbaiData';
 
 export default function StockistAuthScreen({ onBack }) {
   const { loginStockist, signupStockist, registeredStockists } = useApp();
@@ -149,7 +148,7 @@ export default function StockistAuthScreen({ onBack }) {
               }}>
                 <View style={{ flex: 1 }}>
                   <Text style={{ fontSize: 12.5, fontWeight: '800', color: '#0f172a' }}>{stk.name.split('(')[0]}</Text>
-                  <Text style={{ fontSize: 10.5, color: '#78350f', marginTop: 2 }}>📍 {stk.hub} • PIN: 1234</Text>
+                  <Text style={{ fontSize: 10.5, color: '#78350f', marginTop: 2 }}>{stk.hub} • PIN: 1234</Text>
                 </View>
                 <TouchableOpacity
                   onPress={() => loginStockist(stk)}
@@ -177,7 +176,7 @@ export default function StockistAuthScreen({ onBack }) {
 
           <TouchableOpacity onPress={() => setMode('SIGNUP')} style={[styles.choiceBtn, { backgroundColor: '#ffffff', borderWidth: 2, borderColor: '#d97706' }]}>
             <Ionicons name="business-outline" size={20} color="#d97706" />
-            <Text style={[styles.choiceBtnText, { color: '#d97706' }]}>New Business — Register Here</Text>
+            <Text style={[styles.choiceBtnText, { color: '#d97706' }]}>New Business : Register Here</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -250,7 +249,7 @@ export default function StockistAuthScreen({ onBack }) {
           </TouchableOpacity>
 
           <TouchableOpacity onPress={() => { setMode('SIGNUP'); setErrorMsg(''); }} style={styles.linkBtn}>
-            <Text style={styles.linkBtnText}>New business? Register here →</Text>
+            <Text style={styles.linkBtnText}>New business? Register here</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -285,7 +284,7 @@ export default function StockistAuthScreen({ onBack }) {
         <TouchableOpacity onPress={autofillXyzStockist} style={styles.autofillBanner}>
           <Ionicons name="flash" size={16} color="#d97706" />
           <View style={{ flex: 1 }}>
-            <Text style={styles.autofillTitle}>⚡ Quick-Fill: "XYZ Surgical Supplies"</Text>
+            <Text style={styles.autofillTitle}>Quick-Fill: &quot;XYZ Surgical Supplies&quot;</Text>
             <Text style={styles.autofillSub}>Dadar West • 50 Boxes Gloves @ ₹750 • 1234 PIN</Text>
           </View>
         </TouchableOpacity>
@@ -293,7 +292,7 @@ export default function StockistAuthScreen({ onBack }) {
         <View style={styles.divider} />
 
         <View style={styles.formField}>
-          <Text style={styles.label}>Owner's / Manager's Name</Text>
+          <Text style={styles.label}>Owner&apos;s / Manager&apos;s Name</Text>
           <TextInput
             style={styles.input}
             placeholder="e.g. Vikram Somani"
@@ -326,7 +325,7 @@ export default function StockistAuthScreen({ onBack }) {
                 style={[styles.areaChip, signupArea === area && styles.areaChipActive]}
               >
                 <Text style={[styles.areaChipText, signupArea === area && styles.areaChipTextActive]}>
-                  {signupArea === area ? '✓ ' : ''}{area}
+                  {signupArea === area ? '• ' : ''}{area}
                 </Text>
               </TouchableOpacity>
             ))}
@@ -351,7 +350,7 @@ export default function StockistAuthScreen({ onBack }) {
             <Text style={styles.stockDeclarationTitle}>Declare Initial Warehouse Stock & Rates</Text>
           </View>
           <Text style={styles.stockDeclarationNotice}>
-            ⚡ Your declared stock will be immediately visible to Lilavati, Hinduja & KEM Hospitals upon registration with an animated map radar blip.
+            Your declared stock will be immediately visible to Lilavati, Hinduja & KEM Hospitals upon registration with an animated map radar blip.
           </Text>
 
           {/* Item 1: Surgical Gloves */}
@@ -467,7 +466,7 @@ export default function StockistAuthScreen({ onBack }) {
         </TouchableOpacity>
 
         <TouchableOpacity onPress={() => { setMode('LOGIN'); setErrorMsg(''); }} style={styles.linkBtn}>
-          <Text style={styles.linkBtnText}>Already registered? Login →</Text>
+          <Text style={styles.linkBtnText}>Already registered? Login</Text>
         </TouchableOpacity>
       </View>
     </ScrollView>

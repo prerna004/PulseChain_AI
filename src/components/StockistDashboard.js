@@ -1,9 +1,9 @@
-// Stockist / Distributor Command Center — v3 High-Aesthetic Fintech & Health SaaS Redesign
+// Stockist / Distributor Command Center : v3 High-Aesthetic Fintech & Health SaaS Redesign
 // Inspired by modern multi-account, card-driven, subtle pastel & symbol hierarchy
 
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Platform } from 'react-native';
-import { Ionicons, FontAwesome5 } from '@expo/vector-icons';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useApp } from '../store/stateManager';
 import TwoPipeVisualizer from './TwoPipeVisualizer';
 import VoiceRequisitionBar from './VoiceRequisitionBar';
@@ -16,7 +16,6 @@ export default function StockistDashboard() {
     loggedInStockist,
     loginStockist,
     allStockists,
-    orders,
     handleVoiceOrTextInput,
     addTelemetryLog
   } = useApp();
@@ -67,7 +66,7 @@ export default function StockistDashboard() {
                     {stk.name.split('(')[0]}
                   </Text>
                   <Text style={[styles.accountMeta, isActive && styles.accountMetaActive]}>
-                    📍 {stk.hub || stk.area}
+                    {stk.hub || stk.area}
                   </Text>
                 </View>
                 {isActive ? (
@@ -101,7 +100,7 @@ export default function StockistDashboard() {
                 </View>
               </View>
               <Text style={styles.heroSub}>
-                📍 Central Hub: <Text style={{ color: '#ffffff', fontWeight: '700' }}>{activeStockist.hub}</Text> • Authorized Brands: {(activeStockist.authorizedBrands || ['HMD Dispovan', 'Polymed', '3M', 'Cipla']).join(', ')}
+                Central Hub: <Text style={{ color: '#ffffff', fontWeight: '700' }}>{activeStockist.hub}</Text> • Authorized Brands: {(activeStockist.authorizedBrands || ['HMD Dispovan', 'Polymed', '3M', 'Cipla']).join(', ')}
               </Text>
             </View>
           </View>
@@ -229,7 +228,7 @@ export default function StockistDashboard() {
                     style={styles.sendQuoteBtn}
                   >
                     <SymbolIcon name="paper-plane" size={13} color="#ffffff" />
-                    <Text style={styles.sendQuoteBtnText}>Send Quote (रेट भेजें) ➔</Text>
+                    <Text style={styles.sendQuoteBtnText}>Send Quote (रेट भेजें)</Text>
                   </TouchableOpacity>
                 </View>
               </View>
@@ -272,7 +271,7 @@ export default function StockistDashboard() {
                     style={styles.sendQuoteBtn}
                   >
                     <SymbolIcon name="paper-plane" size={13} color="#ffffff" />
-                    <Text style={styles.sendQuoteBtnText}>Send Quote (रेट भेजें) ➔</Text>
+                    <Text style={styles.sendQuoteBtnText}>Send Quote (रेट भेजें)</Text>
                   </TouchableOpacity>
                 </View>
               </View>
@@ -315,7 +314,7 @@ export default function StockistDashboard() {
                     style={styles.sendQuoteBtn}
                   >
                     <SymbolIcon name="paper-plane" size={13} color="#ffffff" />
-                    <Text style={styles.sendQuoteBtnText}>Send Quote (रेट भेजें) ➔</Text>
+                    <Text style={styles.sendQuoteBtnText}>Send Quote (रेट भेजें)</Text>
                   </TouchableOpacity>
                 </View>
               </View>
@@ -371,7 +370,7 @@ export default function StockistDashboard() {
                   style={styles.orderFactoryBtn}
                 >
                   <SymbolIcon name="truck" size={15} color="#ffffff" />
-                  <Text style={styles.orderFactoryBtnText}>Order 50 Cartons from Factory ➔</Text>
+                  <Text style={styles.orderFactoryBtnText}>Order 50 Cartons from Factory</Text>
                 </TouchableOpacity>
               </View>
 
@@ -403,7 +402,7 @@ export default function StockistDashboard() {
                   style={styles.orderFactoryBtn}
                 >
                   <SymbolIcon name="truck" size={15} color="#ffffff" />
-                  <Text style={styles.orderFactoryBtnText}>Order 100 Boxes from Factory ➔</Text>
+                  <Text style={styles.orderFactoryBtnText}>Order 100 Boxes from Factory</Text>
                 </TouchableOpacity>
               </View>
 
@@ -435,7 +434,7 @@ export default function StockistDashboard() {
                   style={styles.orderFactoryBtn}
                 >
                   <SymbolIcon name="truck" size={15} color="#ffffff" />
-                  <Text style={styles.orderFactoryBtnText}>Order 50 Boxes from Factory ➔</Text>
+                  <Text style={styles.orderFactoryBtnText}>Order 50 Boxes from Factory</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -451,11 +450,11 @@ const styles = StyleSheet.create({
 
   // 1. CONNECTED DISTRIBUTOR ACCOUNTS BAR
   networkCard: {
-    backgroundColor: '#ffffff',
+    backgroundColor: 'rgba(255, 255, 255, 0.84)',
     borderRadius: 20,
     padding: 16,
     borderWidth: 1.5,
-    borderColor: '#e2e8f0',
+    borderColor: 'rgba(226, 232, 240, 0.85)',
     marginBottom: 16,
     shadowColor: '#0f172a',
     shadowOpacity: 0.04,
@@ -699,11 +698,11 @@ const styles = StyleSheet.create({
     minWidth: 340
   },
   sectionCard: {
-    backgroundColor: '#ffffff',
+    backgroundColor: 'rgba(255, 255, 255, 0.86)',
     borderRadius: 22,
     padding: 22,
     borderWidth: 1.5,
-    borderColor: '#e2e8f0',
+    borderColor: 'rgba(226, 232, 240, 0.85)',
     shadowColor: '#0f172a',
     shadowOpacity: 0.05,
     shadowRadius: 16,
@@ -819,10 +818,10 @@ const styles = StyleSheet.create({
     gap: 14
   },
   demandCardItem: {
-    backgroundColor: '#ffffff',
+    backgroundColor: 'rgba(255, 255, 255, 0.86)',
     borderRadius: 16,
     borderWidth: 1.5,
-    borderColor: '#e2e8f0',
+    borderColor: 'rgba(226, 232, 240, 0.85)',
     padding: 16,
     shadowColor: '#0f172a',
     shadowOpacity: 0.03,
@@ -941,10 +940,10 @@ const styles = StyleSheet.create({
     gap: 14
   },
   factoryCardItem: {
-    backgroundColor: '#ffffff',
+    backgroundColor: 'rgba(255, 255, 255, 0.86)',
     borderRadius: 16,
     borderWidth: 1.5,
-    borderColor: '#e2e8f0',
+    borderColor: 'rgba(226, 232, 240, 0.85)',
     padding: 16,
     shadowColor: '#0f172a',
     shadowOpacity: 0.03,

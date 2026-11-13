@@ -1,6 +1,6 @@
 // First Order Paperwork & Distributor Introduction Modal
 // Shown ONLY on the very first order placed by a newly registered hospital.
-// From the 2nd order onwards this is skipped — direct order placement.
+// From the 2nd order onwards this is skipped : direct order placement.
 
 import React, { useState } from 'react';
 import {
@@ -9,13 +9,13 @@ import {
 import { Ionicons, FontAwesome5 } from '@expo/vector-icons';
 import { useApp } from '../store/stateManager';
 
-export default function FirstOrderPaperworkModal({ onComplete, onCancel, selectedQuote, orderItem }) {
+export default function FirstOrderPaperworkModal({ onComplete, onCancel, selectedQuote, orderItem: _orderItem }) {
   const { loggedInHospital, addTelemetryLog } = useApp();
   const [step, setStep] = useState(1); // 1 = intro, 2 = documents, 3 = distributor, 4 = done
-  const [gstNumber, setGstNumber] = useState('');
-  const [regNumber, setRegNumber] = useState('');
-  const [panNumber, setPanNumber] = useState('');
-  const [agreed, setAgreed] = useState(false);
+  const [gstNumber, setGstNumber] = useState('27AABCL1234F1Z9');
+  const [regNumber, setRegNumber] = useState('MH/MUM/HOSP/2026/89');
+  const [panNumber, setPanNumber] = useState('AABCL1234F');
+  const [agreed, setAgreed] = useState(true);
 
   const hospitalName = loggedInHospital?.name || 'Your Hospital';
 
@@ -39,7 +39,7 @@ export default function FirstOrderPaperworkModal({ onComplete, onCancel, selecte
               <FontAwesome5 name="file-signature" size={20} color="#f59e0b" />
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={styles.headerTitle}>First Order — Verification Required</Text>
+              <Text style={styles.headerTitle}>First Order : Verification Required</Text>
               <Text style={styles.headerSub}>
                 Step {step} of 3 • One-time process • Direct ordering from 2nd order
               </Text>
@@ -76,7 +76,7 @@ export default function FirstOrderPaperworkModal({ onComplete, onCancel, selecte
                   <Text style={styles.yellowNoticeText}>
                     As this is your <Text style={{ fontWeight: '900' }}>first order</Text> on PulseChain,
                     your distributor needs to verify your hospital credentials and sign a credit agreement.
-                    This is a one-time step — from your 2nd order, you can order directly instantly.
+                    This is a one-time step : from your 2nd order, you can order directly instantly.
                   </Text>
                 </View>
 
@@ -91,17 +91,17 @@ export default function FirstOrderPaperworkModal({ onComplete, onCancel, selecte
                   {
                     icon: 'handshake',
                     title: 'Distributor Introduction',
-                    desc: `Meet ${selectedQuote?.stockistName || 'your assigned distributor'} — they will be your primary supplier`
+                    desc: `Meet ${selectedQuote?.stockistName || 'your assigned distributor'} : they will be your primary supplier`
                   },
                   {
                     icon: 'file-contract',
                     title: 'Credit Agreement Signing',
-                    desc: 'Sign the credit terms (30–60 day payment window) to unlock escrow ordering'
+                    desc: 'Sign the credit terms (30 to 60 day payment window) to unlock escrow ordering'
                   },
                   {
                     icon: 'rocket',
                     title: 'Unlock Direct Ordering',
-                    desc: 'All future orders go directly — no more paperwork, ever!'
+                    desc: 'All future orders go directly : no more paperwork, ever!'
                   }
                 ].map((item, idx) => (
                   <View key={idx} style={styles.stepItem}>
@@ -235,7 +235,7 @@ export default function FirstOrderPaperworkModal({ onComplete, onCancel, selecte
                     </View>
                     <Text style={styles.checkboxText}>
                       I confirm that the hospital details and documents provided are accurate.
-                      I agree to the standard credit terms (30–60 day escrow payment) for PulseChain procurement.
+                      I agree to the standard credit terms (30 to 60 day escrow payment) for PulseChain procurement.
                       I understand that <Text style={{ fontWeight: '800' }}>from my 2nd order, I can place orders directly</Text> without any verification.
                     </Text>
                   </TouchableOpacity>

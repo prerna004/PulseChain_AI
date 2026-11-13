@@ -3,60 +3,181 @@
 
 import React, { useState } from 'react';
 import { View, Text, TextInput, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
-import { Ionicons, FontAwesome5 } from '@expo/vector-icons';
 import { useApp } from '../store/stateManager';
 import { aiEngine } from '../ai/agentEngine';
 import SymbolIcon from './SymbolIcon';
 
 export default function VoiceRequisitionBar() {
   const {
+    currentRole,
     handleVoiceOrTextInput,
     lastAiMessage,
     isListening,
-    setIsListening
+    setIsListening,
+    isDarkMode,
+    theme
   } = useApp();
 
   const [inputVal, setInputVal] = useState('');
 
-  // 1-Tap everyday hospital supplies (Senior staff / OT nurse friendly)
-  const QUICK_ITEMS = [
-    {
-      icon: 'bolt',
-      name: '⚡ Privileged Mic: 50 Dispovan (Entero)',
-      hindi: 'फास्ट ट्रैक आर्डर',
-      prompt: 'Order 50 boxes of Dispovan syringes from Entero'
+  const darkCfg = {
+    HOSPITAL: { cardBorder: '#1e3a5f', cardBg: '#0c1a2e' },
+    STOCKIST: { cardBorder: '#45260a', cardBg: '#1f1606' },
+    MANUFACTURER: { cardBorder: '#144222', cardBg: '#071c10' },
+  };
+
+  // Role-specific config tailored to each persona
+  const roleConfig = {
+    HOSPITAL: {
+      color: '#0284c7',
+      cardBorder: '#bae6fd',
+      cardBg: '#f0f9ff',
+      micBg: '#0284c7',
+      mainTitle: 'Hospital Requisition Mic / बोलकर मांग करें (OT/ICU)',
+      subTitle: 'Say items, quantities & ward (e.g. "Order 200 boxes 7.5 gloves for OT Complex", "Get best prices for syringes")',
+      placeholder: 'Or type here: e.g. 50 boxes gloves or 20 cartons syringes...',
+      fallbackSpoken: 'Order 100 boxes of 7.5 surgical gloves urgently for Lilavati ICU',
+      sectionLabel: '1-Tap Hospital Requisitions (अस्पताल के लिए तुरंत आर्डर):',
+      quickItems: [
+        {
+          icon: 'bolt',
+          name: 'Privileged Mic: 50 Dispovan (Entero)',
+          hindi: 'फास्ट ट्रैक आर्डर',
+          prompt: 'Order 50 boxes of Dispovan syringes from Entero'
+        },
+        {
+          icon: 'radar',
+          name: 'Find Best Price (Uber Ping)',
+          hindi: 'सस्ता रेट ढूंढो',
+          prompt: 'get me the best prices for gloves across Mumbai stockists'
+        },
+        {
+          icon: 'cube',
+          name: 'Inventory to Order Tomorrow',
+          hindi: 'कल का आर्डर स्टॉक',
+          prompt: 'show me the inventory that we need to order tomorrow'
+        },
+        {
+          icon: 'gloves',
+          name: 'Surgical Gloves 7.5',
+          hindi: 'दस्ताने (OT)',
+          prompt: 'Order 100 boxes of 7.5 sterile surgical gloves for OT urgently'
+        },
+        {
+          icon: 'syringe',
+          name: 'Dispovan 5ml Syringes',
+          hindi: 'सिरिंज (ICU)',
+          prompt: 'Send 20 cartons of HMD Dispovan 5ml syringes for ICU'
+        },
+        {
+          icon: 'cannula',
+          name: 'Polymed Cannula 20G',
+          hindi: 'कैनुला (वार्ड)',
+          prompt: 'Order 50 boxes of Polymed IV cannula 20G Pink'
+        }
+      ]
     },
-    {
-      icon: 'gloves',
-      name: 'Surgical Gloves 7.5',
-      hindi: 'दस्ताने',
-      prompt: 'Order 100 boxes of 7.5 sterile surgical gloves for Lilavati ICU urgently'
+    STOCKIST: {
+      color: '#d97706',
+      cardBorder: '#fde68a',
+      cardBg: '#fffbeb',
+      micBg: '#d97706',
+      mainTitle: 'Distributor Command Mic / डिस्ट्रीब्यूटर वॉइस कंट्रोल',
+      subTitle: 'Scan hospital demand, broadcast spot quotes, or restock in bulk from factory CFA depot',
+      placeholder: 'Or type here: e.g. Show me which hospitals need our products, or Quote ₹790 for gloves...',
+      fallbackSpoken: 'show me which hospitals need our products',
+      sectionLabel: '1-Tap Distributor Actions (डिस्ट्रीब्यूटर त्वरित कार्य):',
+      quickItems: [
+        {
+          icon: 'radar',
+          name: 'Hospitals Needing Products',
+          hindi: 'अस्पतालों की मांग स्कैन करें',
+          prompt: 'show me which hospitals need our products'
+        },
+        {
+          icon: 'paper-plane',
+          name: 'Quote ₹790 Gloves to Lilavati',
+          hindi: 'लीलावती को रेट भेजें',
+          prompt: 'Quote ₹790 for gloves and ₹2450 for Dispovan to Lilavati'
+        },
+        {
+          icon: 'paper-plane',
+          name: 'Quote ₹1650 Cannula to Hinduja',
+          hindi: 'हिंदुजा को कोटेशन भेजें',
+          prompt: 'Quote ₹1650 for Polymed Cannula to Hinduja'
+        },
+        {
+          icon: 'factory',
+          name: 'Bulk Restock from Bhiwandi CFA',
+          hindi: 'फैक्ट्री से माल मंगाएं',
+          prompt: 'Reorder 10,000 units from Bhiwandi CFA factory depot'
+        },
+        {
+          icon: 'truck',
+          name: 'Track Dispatch Van #8921',
+          hindi: 'डिलीवरी वैन ट्रैक करें',
+          prompt: 'Track delivery van MH-02-EE-8921 to Lilavati dock'
+        },
+        {
+          icon: 'cube',
+          name: 'Check Dadar Warehouse Stock',
+          hindi: 'गोदाम स्टॉक चेक करें',
+          prompt: 'Show Dadar warehouse stock levels'
+        }
+      ]
     },
-    {
-      icon: 'syringe',
-      name: 'Dispovan 5ml Syringes',
-      hindi: 'सिरिंज',
-      prompt: 'Send 20 cartons of HMD Dispovan 5ml syringes urgently'
-    },
-    {
-      icon: 'cannula',
-      name: 'IV Cannula 20G',
-      hindi: 'कैनुला',
-      prompt: 'Order 50 boxes of Polymed IV cannula 20G Pink'
-    },
-    {
-      icon: 'mask',
-      name: '3M N95 Masks',
-      hindi: 'मास्क',
-      prompt: 'Order 50 boxes 3M N95 masks for emergency ward'
-    },
-    {
-      icon: 'radar',
-      name: 'Find Best Price (Uber Ping)',
-      hindi: 'सस्ता रेट ढूंढो',
-      prompt: 'get me the best prices for gloves across Mumbai stockists'
+    MANUFACTURER: {
+      color: '#16a34a',
+      cardBorder: '#bbf7d0',
+      cardBg: '#f0fdf4',
+      micBg: '#16a34a',
+      mainTitle: 'OEM Production & Oversight Mic / फैक्ट्री व डिस्ट्रीब्यूटर निगरानी',
+      subTitle: 'Monitor distributor stock levels across Mumbai, allocate Bhiwandi C&F batches, and authorize dispatches',
+      placeholder: 'Or type here: e.g. Show inventory of stockists/distributors, or Dispatch 50,000 Dispovan...',
+      fallbackSpoken: 'Show inventory of stockists/distributors',
+      sectionLabel: '1-Tap Manufacturer Actions (फैक्ट्री हेड त्वरित कार्य):',
+      quickItems: [
+        {
+          icon: 'eye',
+          name: 'Stockist Inventory Oversight',
+          hindi: 'डिस्ट्रीब्यूटर का स्टॉक देखें',
+          prompt: 'Show inventory of stockists/distributors'
+        },
+        {
+          icon: 'alert-triangle',
+          name: 'Check Low Stocks in Mumbai',
+          hindi: 'कम स्टॉक वाले स्टॉकिस्ट',
+          prompt: 'Which stockists are low on stock in Mumbai?'
+        },
+        {
+          icon: 'truck',
+          name: 'Dispatch 50k to Entero Dadar',
+          hindi: 'दादर सीएंडएफ डिस्पैच',
+          prompt: 'Dispatch 50,000 units of Dispovan via Bhiwandi C&F depot to Entero Healthcare'
+        },
+        {
+          icon: 'truck',
+          name: 'Dispatch 30k to Sagar Andheri',
+          hindi: 'अंधेरी सीएंडएफ डिस्पैच',
+          prompt: 'Dispatch 30,000 units of Polymed via Bhiwandi C&F depot to Sagar Medical'
+        },
+        {
+          icon: 'factory',
+          name: 'Bhiwandi C&F Buffer Status',
+          hindi: 'सेंट्रल बफर स्टॉक जांचें',
+          prompt: 'Show Bhiwandi central C&F stock levels and factory buffer'
+        },
+        {
+          icon: 'shield',
+          name: 'Check Escrow Settlements',
+          hindi: 'पेमेंट व एस्क्रो स्थिति',
+          prompt: 'Show bank escrow clearance and payment status'
+        }
+      ]
     }
-  ];
+  };
+
+  const currentCfg = roleConfig[currentRole] || roleConfig.HOSPITAL;
 
   const toggleMic = () => {
     if (isListening) {
@@ -82,7 +203,7 @@ export default function VoiceRequisitionBar() {
         } catch (e) {
           console.warn('Speech start error, using simulation fallback:', e);
           setTimeout(() => {
-            const testSpoken = 'Order 100 boxes of 7.5 surgical gloves urgently';
+            const testSpoken = currentCfg.fallbackSpoken;
             setInputVal(testSpoken);
             setIsListening(false);
             handleVoiceOrTextInput(testSpoken);
@@ -91,7 +212,7 @@ export default function VoiceRequisitionBar() {
       } else {
         // Fallback simulation for browsers blocking mic
         setTimeout(() => {
-          const testSpoken = 'Order 100 boxes of 7.5 surgical gloves urgently';
+          const testSpoken = currentCfg.fallbackSpoken;
           setInputVal(testSpoken);
           setIsListening(false);
           handleVoiceOrTextInput(testSpoken);
@@ -107,12 +228,18 @@ export default function VoiceRequisitionBar() {
   };
 
   return (
-    <View style={styles.card}>
+    <View style={[styles.card, isDarkMode && { backgroundColor: theme.cardBg, borderColor: theme.cardBorder }]}>
       {/* Big Friendly Hero Voice Section */}
-      <View style={styles.micSection}>
+      <View style={[
+        styles.micSection,
+        {
+          backgroundColor: isDarkMode ? (darkCfg[currentRole]?.cardBg || '#0c1a2e') : currentCfg.cardBg,
+          borderColor: isDarkMode ? (darkCfg[currentRole]?.cardBorder || '#1e3a5f') : currentCfg.cardBorder
+        }
+      ]}>
         <TouchableOpacity
           onPress={toggleMic}
-          style={[styles.bigMicButton, isListening && styles.bigMicButtonListening]}
+          style={[styles.bigMicButton, { backgroundColor: currentCfg.micBg }, isListening && styles.bigMicButtonListening]}
           accessibilityLabel="Mic Button"
         >
           <SymbolIcon
@@ -123,22 +250,22 @@ export default function VoiceRequisitionBar() {
         </TouchableOpacity>
 
         <View style={styles.micTextWrap}>
-          <Text style={styles.micMainTitle}>
-            {isListening ? 'Listening... Bolna shuru karein 🎙️' : 'Tap to Speak / बोलकर आर्डर करें'}
+          <Text style={[styles.micMainTitle, isDarkMode && { color: theme.text }]}>
+            {isListening ? 'Listening... Bolna shuru karein' : currentCfg.mainTitle}
           </Text>
-          <Text style={styles.micSubTitle}>
+          <Text style={[styles.micSubTitle, isDarkMode && { color: theme.textSecondary }]}>
             {isListening
-              ? 'Say what items and quantity you need (जैसे: "200 box surgical gloves chahiye")'
-              : 'No typing or forms needed. Just tap the green button and speak.'}
+              ? 'Bolna shuru karein... AI is transcribing your command'
+              : currentCfg.subTitle}
           </Text>
         </View>
       </View>
 
       {/* Or Type / Seek Item Box */}
-      <View style={styles.inputBar}>
+      <View style={[styles.inputBar, isDarkMode && { backgroundColor: theme.inputBg, borderColor: theme.inputBorder }]}>
         <TextInput
-          style={styles.textInput}
-          placeholder="Or type here: e.g. 50 boxes gloves or 20 cartons syringes..."
+          style={[styles.textInput, isDarkMode && { color: theme.text }]}
+          placeholder={currentCfg.placeholder}
           placeholderTextColor="#94a3b8"
           value={inputVal}
           onChangeText={setInputVal}
@@ -154,32 +281,32 @@ export default function VoiceRequisitionBar() {
           <SymbolIcon
             name={isListening ? 'mic-listening' : 'mic'}
             size={18}
-            color={isListening ? '#dc2626' : '#059669'}
+            color={isListening ? '#dc2626' : currentCfg.color}
           />
         </TouchableOpacity>
         <TouchableOpacity
           onPress={handleSend}
-          style={[styles.sendBtn, !inputVal.trim() && styles.sendBtnDisabled]}
+          style={[styles.sendBtn, { backgroundColor: currentCfg.color }, !inputVal.trim() && styles.sendBtnDisabled]}
           disabled={!inputVal.trim()}
         >
           <SymbolIcon name="send" size={16} color="#ffffff" />
         </TouchableOpacity>
       </View>
 
-      {/* 1-Tap Quick Order Buttons (For fast selection without typing) */}
-      <Text style={styles.quickLabel}>1-Tap Quick Orders (एक क्लिक में आर्डर करें):</Text>
+      {/* 1-Tap Quick Actions (Role-Tailored) */}
+      <Text style={[styles.quickLabel, isDarkMode && { color: theme.textSecondary }]}>{currentCfg.sectionLabel}</Text>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.quickScroll}>
-        {QUICK_ITEMS.map((item, idx) => (
+        {currentCfg.quickItems.map((item, idx) => (
           <TouchableOpacity
             key={idx}
             onPress={() => handleVoiceOrTextInput(item.prompt)}
-            style={styles.quickCard}
+            style={[styles.quickCard, isDarkMode && { backgroundColor: theme.surfaceElevated, borderColor: theme.border }]}
           >
-            <View style={styles.quickIconBg}>
-              <SymbolIcon name={item.icon} size={18} color="#0284c7" />
+            <View style={[styles.quickIconBg, { backgroundColor: currentCfg.color + '15' }]}>
+              <SymbolIcon name={item.icon} size={18} color={currentCfg.color} />
             </View>
             <View>
-              <Text style={styles.quickName}>{item.name}</Text>
+              <Text style={[styles.quickName, isDarkMode && { color: theme.text }]}>{item.name}</Text>
               <Text style={styles.quickHindi}>{item.hindi}</Text>
             </View>
           </TouchableOpacity>
@@ -190,6 +317,7 @@ export default function VoiceRequisitionBar() {
       {lastAiMessage && (
         <View style={[
           styles.feedbackCard,
+          isDarkMode && { backgroundColor: '#0b1322', borderColor: theme.border },
           lastAiMessage.type === 'CRITICAL' && styles.feedbackCritical,
           lastAiMessage.type === 'SUCCESS' && styles.feedbackSuccess
         ]}>
@@ -197,21 +325,21 @@ export default function VoiceRequisitionBar() {
             <SymbolIcon
               name={lastAiMessage.type === 'SUCCESS' ? 'check' : 'speaker'}
               size={22}
-              color={lastAiMessage.type === 'SUCCESS' ? '#166534' : '#0284c7'}
+              color={lastAiMessage.type === 'SUCCESS' ? '#166534' : currentCfg.color}
             />
           </View>
           <View style={{ flex: 1 }}>
             <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 2 }}>
-              <Text style={styles.feedbackTitle}>{lastAiMessage.title}</Text>
+              <Text style={[styles.feedbackTitle, isDarkMode && { color: theme.text }]}>{lastAiMessage.title}</Text>
               <TouchableOpacity
                 onPress={() => aiEngine.speak(lastAiMessage.text)}
-                style={styles.listenSpeechBtn}
+                style={[styles.listenSpeechBtn, { borderColor: currentCfg.color + '40', backgroundColor: currentCfg.color + '12' }]}
               >
-                <SymbolIcon name="speaker" size={13} color="#0284c7" />
-                <Text style={styles.listenSpeechBtnText}>Speaker / बोलकर सुनें 🔊</Text>
+                <SymbolIcon name="speaker" size={13} color={currentCfg.color} />
+                <Text style={[styles.listenSpeechBtnText, { color: currentCfg.color }]}>Speaker / बोलकर सुनें</Text>
               </TouchableOpacity>
             </View>
-            <Text style={styles.feedbackText}>{lastAiMessage.text}</Text>
+            <Text style={[styles.feedbackText, isDarkMode && { color: theme.textSecondary }]}>{lastAiMessage.text}</Text>
           </View>
         </View>
       )}
@@ -221,12 +349,12 @@ export default function VoiceRequisitionBar() {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: '#ffffff',
+    backgroundColor: 'rgba(255, 255, 255, 0.82)',
     borderRadius: 22,
     padding: 22,
     marginBottom: 18,
     borderWidth: 1.5,
-    borderColor: '#e2e8f0',
+    borderColor: 'rgba(226, 232, 240, 0.85)',
     shadowColor: '#0f172a',
     shadowOpacity: 0.06,
     shadowRadius: 18,
@@ -236,11 +364,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 18,
-    backgroundColor: '#f0fdf4',
+    backgroundColor: 'rgba(240, 253, 244, 0.82)',
     padding: 16,
     borderRadius: 18,
     borderWidth: 2,
-    borderColor: '#bbf7d0',
+    borderColor: 'rgba(187, 247, 208, 0.85)',
     marginBottom: 16,
     shadowColor: '#10b981',
     shadowOpacity: 0.08,
@@ -280,10 +408,10 @@ const styles = StyleSheet.create({
   inputBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#f8fafc',
+    backgroundColor: 'rgba(248, 250, 252, 0.80)',
     borderRadius: 16,
     borderWidth: 1.5,
-    borderColor: '#cbd5e1',
+    borderColor: 'rgba(203, 213, 225, 0.85)',
     paddingHorizontal: 16,
     paddingVertical: 8,
     marginBottom: 14,
@@ -359,9 +487,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
-    backgroundColor: '#ffffff',
+    backgroundColor: 'rgba(255, 255, 255, 0.85)',
     borderWidth: 1.5,
-    borderColor: '#e2e8f0',
+    borderColor: 'rgba(226, 232, 240, 0.85)',
     paddingHorizontal: 14,
     paddingVertical: 10,
     borderRadius: 14,

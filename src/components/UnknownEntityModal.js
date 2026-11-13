@@ -3,7 +3,7 @@
 
 import React, { useState } from 'react';
 import { View, Text, TextInput, StyleSheet, TouchableOpacity, Modal } from 'react-native';
-import { Ionicons, FontAwesome5 } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
 import { useApp } from '../store/stateManager';
 
 export default function UnknownEntityModal() {
@@ -14,10 +14,20 @@ export default function UnknownEntityModal() {
     registerNewEntity
   } = useApp();
 
-  const [name, setName] = useState('Dr. Rajesh Mehta');
-  const [title, setTitle] = useState('Chief Medical Officer & SCM');
-  const [entityName, setEntityName] = useState('Asha Critical Care & Nursing Home');
-  const [mobile, setMobile] = useState('+91 98205 99312');
+  const [customName, setCustomName] = useState(null);
+  const [customTitle, setCustomTitle] = useState(null);
+  const [customEntityName, setCustomEntityName] = useState(null);
+  const [customMobile, setCustomMobile] = useState(null);
+
+  const name = customName !== null ? customName : (unknownEntityData?.extracted?.name || 'Dr. Rajesh Mehta');
+  const title = customTitle !== null ? customTitle : (unknownEntityData?.extracted?.title || 'Chief Medical Officer & SCM');
+  const entityName = customEntityName !== null ? customEntityName : (unknownEntityData?.extracted?.entityName || 'Asha Critical Care & Nursing Home');
+  const mobile = customMobile !== null ? customMobile : (unknownEntityData?.extracted?.mobile || '+91 98205 99312');
+
+  const setName = setCustomName;
+  const setTitle = setCustomTitle;
+  const setEntityName = setCustomEntityName;
+  const setMobile = setCustomMobile;
 
   if (!showUnknownEntityModal) return null;
 
@@ -48,7 +58,15 @@ export default function UnknownEntityModal() {
           <View style={styles.speechBox}>
             <Ionicons name="mic-circle" size={24} color="#f59e0b" />
             <Text style={styles.speechText}>
-              "We don't seem to have you on our database. Please share your name, title, hospital and mobile no or WhatsApp business account for us to do your search better."
+              &quot;We don&apos;t seem to have you on our database. Please share your name, title, hospital and mobile no or WhatsApp business account for us to do your search better.&quot;
+            </Text>
+          </View>
+
+          {/* Auto-fill indicator */}
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: 'rgba(16, 185, 129, 0.12)', padding: 8, borderRadius: 8, marginBottom: 12, borderWidth: 1, borderColor: 'rgba(16, 185, 129, 0.3)' }}>
+            <Ionicons name="sparkles" size={14} color="#10b981" />
+            <Text style={{ fontSize: 11, color: '#34d399', fontWeight: '700' }}>
+              Zero-Click Voice AI • All fields populated automatically from speech
             </Text>
           </View>
 

@@ -1,26 +1,26 @@
-// WhatsAppImportModal — Simulated WhatsApp Business Message Import
-// Paste any WA conversation → AI extracts order intent → Auto-fills order (no manual entry)
+// WhatsAppImportModal : Simulated WhatsApp Business Message Import
+// Paste any WA conversation : AI extracts order intent : Auto-fills order (no manual entry)
 
 import React, { useState } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity, StyleSheet,
   Modal, ScrollView, ActivityIndicator
 } from 'react-native';
-import { Ionicons, FontAwesome5 } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
 import { useApp } from '../store/stateManager';
 import { aiEngine } from '../ai/agentEngine';
 
 const DEMO_CONVERSATIONS = [
   {
-    label: 'Procure Manager → Stockist (Gloves)',
+    label: 'Procure Manager to Stockist (Gloves)',
     text: `[09:15 AM] Dr. Priya Rao: Hello Rajesh bhai, urgent hai!\n[09:15 AM] Dr. Priya Rao: We need 60 boxes sterile latex gloves size 7.5 before 1pm today\n[09:16 AM] Rajesh Shah: Yes doctor ji, Entero ke paas stock hai\n[09:16 AM] Rajesh Shah: ₹790 per box, delivery in 45 mins from Dadar\n[09:17 AM] Dr. Priya Rao: Please send. OT has 2 cardiac surgeries at 2pm`
   },
   {
-    label: 'Ward Sister → Pharmacist (Syringes)',
+    label: 'Ward Sister to Pharmacist (Syringes)',
     text: `[11:30 AM] Sister Meena: Bhai IV ward mein Dispovan 5ml khatam ho raha hai\n[11:31 AM] Sister Meena: Please 20 cartons order karo jaldi\n[11:31 AM] Suresh Pharmacist: OK sister, emergency order deta hoon abhi\n[11:32 AM] Sister Meena: ICU mein bhi chahiye, 5 cartons extra`
   },
   {
-    label: 'KEM Hospital → Stockist (N95 Masks)',
+    label: 'KEM Hospital to Stockist (N95 Masks)',
     text: `[02:00 PM] KEM Procurement: We need 100 boxes of 3M 1860 N95 masks urgently\n[02:01 PM] KEM Procurement: Infection control committee approved requisition\n[02:02 PM] Ketan Parekh: Princess Street warehouse mein available hai\n[02:02 PM] Ketan Parekh: ₹1180/box, cash/15days credit, delivery 90 mins`
   }
 ];
@@ -100,7 +100,7 @@ export default function WhatsAppImportModal() {
               </View>
               <View>
                 <Text style={styles.sheetTitle}>WhatsApp Import</Text>
-                <Text style={styles.sheetSub}>Paste WA conversation → AI auto-creates order</Text>
+                <Text style={styles.sheetSub}>Paste WA conversation : AI auto-creates order</Text>
               </View>
             </View>
             <TouchableOpacity onPress={() => { setShowWhatsAppModal(false); setExtractedOrder(null); setInputText(''); }} style={styles.closeBtn}>
@@ -154,35 +154,35 @@ export default function WhatsAppImportModal() {
               <View style={styles.extractedCard}>
                 <View style={styles.extractedHeader}>
                   <Ionicons name="checkmark-circle" size={20} color="#16a34a" />
-                  <Text style={styles.extractedTitle}>AI Extracted — Ready to Order</Text>
+                  <Text style={styles.extractedTitle}>AI Extracted : Ready to Order</Text>
                 </View>
                 <Text style={styles.extractedNote}>No manual entry needed. All fields filled from your conversation:</Text>
 
                 <View style={styles.extractedGrid}>
                   {extractedOrder.sku && (
                     <View style={styles.extractedRow}>
-                      <Text style={styles.extractedKey}>📦 Item</Text>
+                      <Text style={styles.extractedKey}>Item</Text>
                       <Text style={styles.extractedVal}>{extractedOrder.sku.name}</Text>
                     </View>
                   )}
                   <View style={styles.extractedRow}>
-                    <Text style={styles.extractedKey}>🔢 Quantity</Text>
+                    <Text style={styles.extractedKey}>Quantity</Text>
                     <Text style={styles.extractedVal}>{extractedOrder.quantity} {extractedOrder.sku?.unit || 'units'}</Text>
                   </View>
                   {extractedOrder.sku?.stockistPrice && (
                     <View style={styles.extractedRow}>
-                      <Text style={styles.extractedKey}>💰 Est. Rate</Text>
+                      <Text style={styles.extractedKey}>Est. Rate</Text>
                       <Text style={styles.extractedVal}>₹{extractedOrder.sku.stockistPrice}/unit</Text>
                     </View>
                   )}
                   <View style={styles.extractedRow}>
-                    <Text style={styles.extractedKey}>⚡ Urgency</Text>
+                    <Text style={styles.extractedKey}>Urgency</Text>
                     <Text style={[styles.extractedVal, extractedOrder.urgency === 'CRITICAL_EMERGENCY' && styles.urgentText]}>
-                      {extractedOrder.urgency === 'CRITICAL_EMERGENCY' ? '🔴 URGENT' : 'Standard'}
+                      {extractedOrder.urgency === 'CRITICAL_EMERGENCY' ? 'URGENT' : 'Standard'}
                     </Text>
                   </View>
                   <View style={styles.extractedRow}>
-                    <Text style={styles.extractedKey}>👤 From</Text>
+                    <Text style={styles.extractedKey}>From</Text>
                     <Text style={styles.extractedVal}>{extractedOrder.fromContact}</Text>
                   </View>
                 </View>

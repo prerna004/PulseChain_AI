@@ -1,9 +1,9 @@
 // Ultra-Simple Uber-Style Stockist Ping & Order Customizer Modal
 // Allows picking supplier as per price, customizing quantity, and 1-click final confirmation
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Modal, TextInput } from 'react-native';
-import { Ionicons, FontAwesome5 } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
 import { useApp } from '../store/stateManager';
 import FirstOrderPaperworkModal from './FirstOrderPaperworkModal';
 
@@ -17,26 +17,20 @@ export default function UberPingModal() {
     currentRole
   } = useApp();
 
-  const [qty, setQty] = useState(100);
-  const [selectedStockistId, setSelectedStockistId] = useState(null);
+  const [customQty, setCustomQty] = useState(null);
+  const [customStockistId, setCustomStockistId] = useState(null);
   const [showPaperwork, setShowPaperwork] = useState(false);
-
-  // Sync state whenever activeUberPing changes
-  useEffect(() => {
-    if (activeUberPing) {
-      const initialQty = activeUberPing.quantity || 100;
-      setQty(initialQty);
-      // Auto-select lowest-priced AVAILABLE quote (skip out of stock)
-      if (activeUberPing.quotes && activeUberPing.quotes.length > 0) {
-        const availableQuote = activeUberPing.quotes.find(q => !q.isOutOfStock) || activeUberPing.quotes[0];
-        setSelectedStockistId(availableQuote.stockistId);
-      }
-    }
-  }, [activeUberPing]);
 
   if (!activeUberPing) return null;
 
   const { sku, hospital, quotes } = activeUberPing;
+
+  const defaultStockistId = (quotes && quotes.find(q => !q.isOutOfStock)?.stockistId) || quotes?.[0]?.stockistId;
+  const selectedStockistId = customStockistId !== null ? customStockistId : defaultStockistId;
+  const qty = customQty !== null ? customQty : (activeUberPing.quantity || 100);
+
+  const setSelectedStockistId = setCustomStockistId;
+  const setQty = setCustomQty;
 
   // Handle quantity adjustment
   const updateQuantity = (newQty) => {
@@ -201,25 +195,25 @@ export default function UberPingModal() {
                       </View>
                       <View>
                         <Text style={[styles.stockistName, isOutOfStock && styles.textDisabled]}>{quote.stockistName}</Text>
-                        <Text style={styles.stockistArea}>📍 {quote.hub} ({quote.distanceKm} km away)</Text>
+                        <Text style={styles.stockistArea}>{quote.hub} ({quote.distanceKm} km away)</Text>
                       </View>
                     </View>
 
                     <View style={styles.ribbonsGroup}>
                       {isOutOfStock ? (
                         <View style={styles.outOfStockRibbon}>
-                          <Text style={styles.outOfStockRibbonText}>🚫 OUT OF STOCK (Sold out to KEM)</Text>
+                          <Text style={styles.outOfStockRibbonText}>OUT OF STOCK (Sold out to KEM)</Text>
                         </View>
                       ) : (
                         <>
                           {quote.isBestPrice && (
                             <View style={styles.bestRibbon}>
-                              <Text style={styles.bestRibbonText}>★ LOWEST PRICE (सबसे सस्ता)</Text>
+                              <Text style={styles.bestRibbonText}>LOWEST PRICE (सबसे सस्ता)</Text>
                             </View>
                           )}
                           {quote.isFastest && !quote.isBestPrice && (
                             <View style={styles.fastRibbon}>
-                              <Text style={styles.fastRibbonText}>⚡ FASTEST (25 Mins)</Text>
+                              <Text style={styles.fastRibbonText}>FASTEST (25 Mins)</Text>
                             </View>
                           )}
                         </>
@@ -265,7 +259,7 @@ export default function UberPingModal() {
                     ]}>
                       {isOutOfStock
                         ? "Batch Exhausted (Recently ordered by KEM Hospital) • Routed to Alternate"
-                        : (isSelected ? "Selected for Delivery ✓" : "Tap to Select this Supplier")}
+                        : (isSelected ? "Selected for Delivery" : "Tap to Select this Supplier")}
                     </Text>
                   </View>
                 </TouchableOpacity>
