@@ -76,29 +76,33 @@ export default function MobileDeviceFrame({ isStandalone = false }) {
 
   const content = (
     <View style={[styles.phoneScreen, isDarkMode && { backgroundColor: '#090d16' }]}>
-      {/* iOS Status Bar */}
-      <View style={styles.statusBar}>
-        <Text style={[styles.statusTime, isDarkMode && { color: '#f8fafc' }]}>18:15</Text>
-        <View style={styles.dynamicIsland}>
-          <View style={styles.islandDot} />
+      {/* iOS Status Bar : ONLY in fake desktop frame, NEVER on real phone */}
+      {!isStandalone && (
+        <View style={styles.statusBar}>
+          <Text style={[styles.statusTime, isDarkMode && { color: '#f8fafc' }]}>18:15</Text>
+          <View style={styles.dynamicIsland}>
+            <View style={styles.islandDot} />
+          </View>
+          <View style={styles.statusIcons}>
+            <Ionicons name="cellular" size={12} color={isDarkMode ? '#f8fafc' : '#0f172a'} />
+            <Ionicons name="wifi" size={12} color={isDarkMode ? '#f8fafc' : '#0f172a'} />
+            <Ionicons name="battery-full" size={14} color={isDarkMode ? '#f8fafc' : '#0f172a'} />
+          </View>
         </View>
-        <View style={styles.statusIcons}>
-          <Ionicons name="cellular" size={12} color={isDarkMode ? '#f8fafc' : '#0f172a'} />
-          <Ionicons name="wifi" size={12} color={isDarkMode ? '#f8fafc' : '#0f172a'} />
-          <Ionicons name="battery-full" size={14} color={isDarkMode ? '#f8fafc' : '#0f172a'} />
-        </View>
-      </View>
+      )}
 
-      {/* App Top Bar */}
-      <View style={[styles.appTopBar, isDarkMode && { backgroundColor: '#0b1120', borderBottomColor: '#1e293b' }]}>
-        <View style={styles.appTitleWrap}>
-          <Ionicons name="medical" size={18} color="#0284c7" />
-          <Text style={[styles.appTitle, isDarkMode && { color: '#f8fafc' }]}>PulseChain Mobile</Text>
+      {/* App Top Bar : ONLY in fake desktop frame */}
+      {!isStandalone && (
+        <View style={[styles.appTopBar, isDarkMode && { backgroundColor: '#0b1120', borderBottomColor: '#1e293b' }]}>
+          <View style={styles.appTitleWrap}>
+            <Ionicons name="medical" size={18} color="#0284c7" />
+            <Text style={[styles.appTitle, isDarkMode && { color: '#f8fafc' }]}>PulseChain Mobile</Text>
+          </View>
+          <View style={styles.roleBadgeMobile}>
+            <Text style={styles.roleBadgeTextMobile}>{currentRole}</Text>
+          </View>
         </View>
-        <View style={styles.roleBadgeMobile}>
-          <Text style={styles.roleBadgeTextMobile}>{currentRole}</Text>
-        </View>
-      </View>
+      )}
 
       {/* Sync Status Banner */}
       <View style={[styles.syncBanner, isDarkMode && { backgroundColor: '#0f172a', borderBottomColor: '#1e293b' }]}>
@@ -414,12 +418,15 @@ const styles = StyleSheet.create({
   },
   standaloneWrapper: {
     flex: 1,
-    backgroundColor: '#ffffff'
+    width: '100%',
+    backgroundColor: 'transparent'
   },
   phoneScreen: {
     flex: 1,
-    display: 'flex',
-    flexDirection: 'column'
+    width: '100%',
+    maxWidth: 640,
+    alignSelf: 'center',
+    backgroundColor: 'transparent'
   },
   statusBar: {
     flexDirection: 'row',

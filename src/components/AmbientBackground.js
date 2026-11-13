@@ -3,9 +3,12 @@
 // Features sweeping 3D architectural ribbons and stepped 3D isometric supply-chain platforms
 
 import React from 'react';
-import { View, StyleSheet, Platform } from 'react-native';
+import { View, StyleSheet, Platform, useWindowDimensions } from 'react-native';
 
 export default function AmbientBackground() {
+  const { width } = useWindowDimensions();
+  const isMobile = width < 860;
+
   if (Platform.OS !== 'web') {
     return <View style={styles.nativeFallback} pointerEvents="none" />;
   }
@@ -162,8 +165,8 @@ export default function AmbientBackground() {
         />
 
         {/* 3. HERO STEPPED 3D ISOMETRIC SUPPLY CHAIN PLATFORM (Upper Dashboard Area) */}
-        {/* Positioned at x=750, y=75 so it floats in the hero area of the dashboard shining through glass cards */}
-        <g transform="translate(750, 75) scale(1.18)" filter="url(#blockShadow)">
+        {/* Positioned at x=750, y=75 on desktop, and gently watermarked on mobile screens */}
+        <g transform={isMobile ? "translate(700, 260) scale(0.65)" : "translate(750, 75) scale(1.18)"} opacity={isMobile ? "0.32" : "1"} filter="url(#blockShadow)">
           {/* Stepped Terraced Blocks Base */}
 
           {/* Platform Level 1: Bottom Right Foundation */}
@@ -294,7 +297,7 @@ export default function AmbientBackground() {
 
         {/* 4. LEFT MARGIN ACCENT ISOMETRIC CLUSTER */}
         {/* Ensures the supply-chain 3D theme is immediately visible on the left side too */}
-        <g transform="translate(70, 130) scale(0.85)" opacity="0.85" filter="url(#blockShadow)">
+        <g transform={isMobile ? "translate(30, 280) scale(0.45)" : "translate(70, 130) scale(0.85)"} opacity={isMobile ? "0.2" : "0.85"} filter="url(#blockShadow)">
           {/* Stepped platform */}
           <polygon points="50,28 100,0 50,-28 0,0" fill="url(#blockTopLight)" />
           <polygon points="0,0 50,28 50,60 0,32" fill="url(#blockLeftDark)" />
@@ -326,7 +329,7 @@ export default function AmbientBackground() {
         </g>
 
         {/* 4.5 UPPER RIGHT HERO MESH ACCENT (Visible in Header / Split Transition) */}
-        <g transform="translate(1420, 85) scale(0.95)" opacity="0.85" filter="url(#blockShadow)">
+        <g transform={isMobile ? "translate(1100, 220) scale(0.45)" : "translate(1420, 85) scale(0.95)"} opacity={isMobile ? "0.2" : "0.85"} filter="url(#blockShadow)">
           {/* Stepped platform */}
           <polygon points="55,32 110,0 55,-32 0,0" fill="url(#blockTopLight)" />
           <polygon points="0,0 55,32 55,65 0,33" fill="url(#blockLeftDark)" />
@@ -357,7 +360,7 @@ export default function AmbientBackground() {
         </g>
 
         {/* 5. RIGHT MARGIN ISOMETRIC ACCENT (Continuous Mesh behind companion) */}
-        <g transform="translate(1560, 480) scale(0.9)" opacity="0.75" filter="url(#blockShadow)">
+        <g transform="translate(1560, 480) scale(0.9)" opacity={isMobile ? "0.2" : "0.75"} filter="url(#blockShadow)">
           <polygon points="55,30 110,0 55,-30 0,0" fill="url(#blockTopLight)" />
           <polygon points="0,0 55,30 55,65 0,35" fill="url(#blockLeftDark)" />
           <polygon points="55,30 110,0 110,35 55,65" fill="url(#blockRightMed)" />

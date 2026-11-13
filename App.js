@@ -10,6 +10,7 @@ import {
   SafeAreaView,
   StatusBar,
   Platform,
+  ScrollView,
   useWindowDimensions
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -22,6 +23,10 @@ import WhatsAppImportModal from './src/components/WhatsAppImportModal';
 import HospitalAuthScreen from './src/components/HospitalAuthScreen';
 import StockistAuthScreen from './src/components/StockistAuthScreen';
 import ManufacturerAuthScreen from './src/components/ManufacturerAuthScreen';
+import HospitalDashboard from './src/components/HospitalDashboard';
+import StockistDashboard from './src/components/StockistDashboard';
+import ManufacturerDashboard from './src/components/ManufacturerDashboard';
+import MobileDeviceFrame from './src/components/MobileDeviceFrame';
 import SplitScreenView from './src/components/SplitScreenView';
 import SymbolIcon from './src/components/SymbolIcon';
 import LandingScreen from './src/components/LandingScreen';
@@ -29,7 +34,7 @@ import AmbientBackground from './src/components/AmbientBackground';
 
 function MainScreen() {
   const { width } = useWindowDimensions();
-  const isMobileScreen = width < 820;
+  const isMobileScreen = width < 960;
 
   const {
     currentRole, setCurrentRole,
@@ -229,25 +234,51 @@ function MainScreen() {
         }} />
       )}
 
-      {/* Navigation Bar */}
-      <View style={styles.navBar}>
-        <View style={styles.navLeft}>
-          <TouchableOpacity onPress={() => setHasChosenRole(false)} style={styles.brandRow}>
-            <View style={styles.navLogoWrap}>
-              <SymbolIcon name="hospital" size={20} color="#0284c7" />
-            </View>
-            <View>
-              <Text style={styles.navBrandText}>PulseChain AI</Text>
-              <Text style={styles.navSubBrand}>MUMBAI HEALTHCARE MESH</Text>
-            </View>
-          </TouchableOpacity>
+      {/* ── RESPONSIVE HEADER: Clean 2-row mobile bar on phone, spacious single-line bar on laptop ── */}
+      {isMobileScreen ? (
+        <View style={styles.mobileNavHeader}>
+          {/* Row 1: Brand & Facility & Quick Action Icons */}
+          <View style={styles.mobileNavTopRow}>
+            <TouchableOpacity onPress={() => setHasChosenRole(false)} style={styles.mobileBrandRow}>
+              <View style={styles.mobileLogoWrap}>
+                <SymbolIcon name="hospital" size={16} color="#0284c7" />
+              </View>
+              <Text style={styles.mobileBrandText}>PulseChain AI</Text>
+            </TouchableOpacity>
 
-          {/* Role Switcher : only if logged in for that role */}
-          <View style={styles.roleSwitchRow}>
+            <View style={styles.mobileRightActions}>
+              {activeEntityName && (
+                <View style={[styles.mobileEntityBadge, { borderColor: roleColor + '40', backgroundColor: roleColor + '15' }]}>
+                  <Text style={[styles.mobileEntityBadgeText, { color: roleColor }]} numberOfLines={1}>
+                    {activeEntityName.split(' ')[0]}
+                  </Text>
+                </View>
+              )}
+              {/* WhatsApp Import */}
+              <TouchableOpacity onPress={() => setShowWhatsAppModal(true)} style={styles.mobileActionIconBtn} accessibilityLabel="WhatsApp Import">
+                <SymbolIcon name="whatsapp" size={14} color="#16a34a" />
+              </TouchableOpacity>
+              {/* Permissions */}
+              <TouchableOpacity onPress={() => setShowPermissionsModal(true)} style={styles.mobileActionIconBtn} accessibilityLabel="Permissions">
+                <SymbolIcon name="shield" size={14} color="#d97706" />
+              </TouchableOpacity>
+              {/* Central Data Lake */}
+              <TouchableOpacity onPress={() => setShowDataLakeModal(true)} style={styles.mobileActionIconBtn} accessibilityLabel="Data Lake">
+                <SymbolIcon name="server" size={14} color="#7c3aed" />
+              </TouchableOpacity>
+              {/* Logout */}
+              <TouchableOpacity onPress={handleLogout} style={styles.mobileLogoutBtn} accessibilityLabel="Logout">
+                <Ionicons name="log-out-outline" size={14} color="#dc2626" />
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          {/* Row 2: 1-Tap Mobile Role Switcher (Hospital | Stockist | Manufacturer) */}
+          <View style={styles.mobileRoleRow}>
             {[
               { role: 'HOSPITAL', icon: 'hospital', label: 'Hospital', color: '#0284c7', style: styles.pillActiveHospital },
               { role: 'STOCKIST', icon: 'truck', label: 'Stockist', color: '#d97706', style: styles.pillActiveStockist },
-              { role: 'MANUFACTURER', icon: 'industry', label: 'Mfg', color: '#16a34a', style: styles.pillActiveMfg },
+              { role: 'MANUFACTURER', icon: 'industry', label: 'Manufacturer', color: '#16a34a', style: styles.pillActiveMfg },
             ].map(r => (
               <TouchableOpacity
                 key={r.role}
@@ -257,56 +288,102 @@ function MainScreen() {
                   else if (r.role === 'MANUFACTURER' && !loggedInManufacturer) { setCurrentRole(r.role); setShowManufacturerAuth(true); }
                   else setCurrentRole(r.role);
                 }}
-                style={[styles.roleSwitchPill, currentRole === r.role && r.style]}
+                style={[styles.mobileRolePill, currentRole === r.role && r.style]}
               >
-                <SymbolIcon name={r.icon} size={13} color={currentRole === r.role ? '#fff' : '#64748b'} />
-                <Text style={[styles.pillText, currentRole === r.role && styles.pillTextActive]}>{r.label}</Text>
+                <SymbolIcon name={r.icon} size={11} color={currentRole === r.role ? '#fff' : '#64748b'} />
+                <Text style={[styles.mobileRolePillText, currentRole === r.role && styles.mobileRolePillTextActive]}>{r.label}</Text>
               </TouchableOpacity>
             ))}
           </View>
         </View>
+      ) : (
+        /* Desktop Navigation Bar */
+        <View style={styles.navBar}>
+          <View style={styles.navLeft}>
+            <TouchableOpacity onPress={() => setHasChosenRole(false)} style={styles.brandRow}>
+              <View style={styles.navLogoWrap}>
+                <SymbolIcon name="hospital" size={20} color="#0284c7" />
+              </View>
+              <View>
+                <Text style={styles.navBrandText}>PulseChain AI</Text>
+                <Text style={styles.navSubBrand}>MUMBAI HEALTHCARE MESH</Text>
+              </View>
+            </TouchableOpacity>
 
-        <View style={styles.navRight}>
-          {/* Logged-in entity badge */}
-          {activeEntityName && (
-            <View style={[
-              styles.loggedInBadge,
-              { borderColor: roleColor + '40', backgroundColor: roleColor + '10' }
-            ]}>
-              <SymbolIcon name={roleIcon} size={12} color={roleColor} />
-              <Text style={[styles.loggedInBadgeText, { color: roleColor }]} numberOfLines={1}>
-                {activeEntityName.split(' ').slice(0, 3).join(' ')}
-              </Text>
-              <TouchableOpacity onPress={handleLogout} style={styles.logoutBtn}>
-                <Ionicons name="log-out-outline" size={13} color="#dc2626" />
-                {!isMobileScreen && <Text style={styles.logoutBtnText}>Logout</Text>}
-              </TouchableOpacity>
+            {/* Role Switcher : only if logged in for that role */}
+            <View style={styles.roleSwitchRow}>
+              {[
+                { role: 'HOSPITAL', icon: 'hospital', label: 'Hospital', color: '#0284c7', style: styles.pillActiveHospital },
+                { role: 'STOCKIST', icon: 'truck', label: 'Stockist', color: '#d97706', style: styles.pillActiveStockist },
+                { role: 'MANUFACTURER', icon: 'industry', label: 'Mfg', color: '#16a34a', style: styles.pillActiveMfg },
+              ].map(r => (
+                <TouchableOpacity
+                  key={r.role}
+                  onPress={() => {
+                    if (r.role === 'HOSPITAL' && !loggedInHospital) { setCurrentRole(r.role); setShowHospitalAuth(true); }
+                    else if (r.role === 'STOCKIST' && !loggedInStockist) { setCurrentRole(r.role); setShowStockistAuth(true); }
+                    else if (r.role === 'MANUFACTURER' && !loggedInManufacturer) { setCurrentRole(r.role); setShowManufacturerAuth(true); }
+                    else setCurrentRole(r.role);
+                  }}
+                  style={[styles.roleSwitchPill, currentRole === r.role && r.style]}
+                >
+                  <SymbolIcon name={r.icon} size={13} color={currentRole === r.role ? '#fff' : '#64748b'} />
+                  <Text style={[styles.pillText, currentRole === r.role && styles.pillTextActive]}>{r.label}</Text>
+                </TouchableOpacity>
+              ))}
             </View>
-          )}
+          </View>
 
-          {/* WhatsApp Import */}
-          <TouchableOpacity onPress={() => setShowWhatsAppModal(true)} style={styles.quickNavBtn}>
-            <SymbolIcon name="whatsapp" size={16} color="#16a34a" />
-            {!isMobileScreen && <Text style={styles.quickNavText}>WA Import</Text>}
-          </TouchableOpacity>
+          <View style={styles.navRight}>
+            {/* Logged-in entity badge */}
+            {activeEntityName && (
+              <View style={[
+                styles.loggedInBadge,
+                { borderColor: roleColor + '40', backgroundColor: roleColor + '10' }
+              ]}>
+                <SymbolIcon name={roleIcon} size={12} color={roleColor} />
+                <Text style={[styles.loggedInBadgeText, { color: roleColor }]} numberOfLines={1}>
+                  {activeEntityName.split(' ').slice(0, 3).join(' ')}
+                </Text>
+                <TouchableOpacity onPress={handleLogout} style={styles.logoutBtn}>
+                  <Ionicons name="log-out-outline" size={13} color="#dc2626" />
+                  <Text style={styles.logoutBtnText}>Logout</Text>
+                </TouchableOpacity>
+              </View>
+            )}
 
-          {/* Permissions */}
-          <TouchableOpacity onPress={() => setShowPermissionsModal(true)} style={styles.quickNavBtn}>
-            <SymbolIcon name="shield" size={16} color="#d97706" />
-            {!isMobileScreen && <Text style={styles.quickNavText}>Permissions</Text>}
-          </TouchableOpacity>
+            {/* WhatsApp Import */}
+            <TouchableOpacity onPress={() => setShowWhatsAppModal(true)} style={styles.quickNavBtn}>
+              <SymbolIcon name="whatsapp" size={16} color="#16a34a" />
+              <Text style={styles.quickNavText}>WA Import</Text>
+            </TouchableOpacity>
 
-          {/* Data Lake */}
-          <TouchableOpacity onPress={() => setShowDataLakeModal(true)} style={styles.quickNavBtn}>
-            <SymbolIcon name="server" size={16} color="#7c3aed" />
-            {!isMobileScreen && <Text style={styles.quickNavText}>Data Lake</Text>}
-          </TouchableOpacity>
+            {/* Permissions */}
+            <TouchableOpacity onPress={() => setShowPermissionsModal(true)} style={styles.quickNavBtn}>
+              <SymbolIcon name="shield" size={16} color="#d97706" />
+              <Text style={styles.quickNavText}>Permissions</Text>
+            </TouchableOpacity>
+
+            {/* Data Lake */}
+            <TouchableOpacity onPress={() => setShowDataLakeModal(true)} style={styles.quickNavBtn}>
+              <SymbolIcon name="server" size={16} color="#7c3aed" />
+              <Text style={styles.quickNavText}>Data Lake</Text>
+            </TouchableOpacity>
+          </View>
         </View>
-      </View>
+      )}
 
-      {/* Main Body : SplitScreenView handles desktop/split/mobile layout */}
+      {/* ── MAIN BODY: Pure Mobile App on Phone, Full Desktop Dashboard on Laptop (NO MODE SWITCHER) ── */}
       <View style={styles.contentBody}>
-        <SplitScreenView />
+        {isMobileScreen ? (
+          <MobileDeviceFrame isStandalone={true} />
+        ) : (
+          <ScrollView style={styles.desktopMainScroll} contentContainerStyle={styles.desktopMainContent} showsVerticalScrollIndicator={false}>
+            {currentRole === 'HOSPITAL' && <HospitalDashboard />}
+            {currentRole === 'STOCKIST' && <StockistDashboard />}
+            {currentRole === 'MANUFACTURER' && <ManufacturerDashboard />}
+          </ScrollView>
+        )}
       </View>
 
       {/* Modals */}
@@ -506,6 +583,115 @@ const styles = StyleSheet.create({
     shadowRadius: 6
   },
   quickNavText: { fontSize: 11.5, fontWeight: '800', color: '#334155' },
+  mobileNavHeader: {
+    backgroundColor: 'rgba(255, 255, 255, 0.88)',
+    borderBottomWidth: 1.5,
+    borderBottomColor: 'rgba(226, 232, 240, 0.8)',
+    paddingHorizontal: 14,
+    paddingTop: 10,
+    paddingBottom: 8,
+    gap: 8,
+    shadowColor: '#0f172a',
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 2 }
+  },
+  mobileNavTopRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center'
+  },
+  mobileBrandRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8
+  },
+  mobileLogoWrap: {
+    width: 32,
+    height: 32,
+    borderRadius: 10,
+    backgroundColor: '#e0f2fe',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: '#bae6fd'
+  },
+  mobileBrandText: {
+    fontSize: 15,
+    fontWeight: '900',
+    color: '#0f172a',
+    letterSpacing: -0.2
+  },
+  mobileRightActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6
+  },
+  mobileEntityBadge: {
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingHorizontal: 7,
+    paddingVertical: 3,
+    maxWidth: 95
+  },
+  mobileEntityBadgeText: {
+    fontSize: 10.5,
+    fontWeight: '800'
+  },
+  mobileActionIconBtn: {
+    width: 32,
+    height: 32,
+    borderRadius: 8,
+    backgroundColor: 'rgba(241, 245, 249, 0.95)',
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  mobileLogoutBtn: {
+    width: 32,
+    height: 32,
+    borderRadius: 8,
+    backgroundColor: '#fef2f2',
+    borderWidth: 1,
+    borderColor: '#fecaca',
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  mobileRoleRow: {
+    flexDirection: 'row',
+    backgroundColor: 'rgba(241, 245, 249, 0.85)',
+    borderRadius: 12,
+    padding: 3,
+    gap: 3,
+    borderWidth: 1,
+    borderColor: '#e2e8f0'
+  },
+  mobileRolePill: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 5,
+    paddingVertical: 6,
+    borderRadius: 9
+  },
+  mobileRolePillText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#64748b'
+  },
+  mobileRolePillTextActive: {
+    color: '#ffffff',
+    fontWeight: '800'
+  },
+  desktopMainScroll: {
+    flex: 1,
+    width: '100%'
+  },
+  desktopMainContent: {
+    padding: 24
+  },
   contentBody: { flex: 1, backgroundColor: 'transparent' },
   dashboardScrollView: { flex: 1 },
   dashboardWrapper: { width: '100%', maxWidth: 1360, alignSelf: 'center', paddingHorizontal: 24, paddingVertical: 18, paddingBottom: 40 },
